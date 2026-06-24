@@ -75,9 +75,9 @@ def test_modified_morrow_raises_when_mean_exceeds_sigma_f():
 
 # --- Walker gamma -----------------------------------------------------------
 def test_walker_gamma_steel():
-    # Dowling et al. 2009: gamma = 0.883 - 2e-4 * sigma_u
-    assert ms.walker_gamma_steel(600.0) == pytest.approx(0.883 - 0.12)
-    assert ms.walker_gamma_steel(0.0) == pytest.approx(0.883)
+    # Dowling et al. 2009 / Dowling 4th ed. Eq. 9.20: gamma = 0.8818 - 2.00e-4 * sigma_u
+    assert ms.walker_gamma_steel(600.0) == pytest.approx(0.8818 - 0.12)
+    assert ms.walker_gamma_steel(0.0) == pytest.approx(0.8818)
 
 
 # --- strain-life curve forms ------------------------------------------------

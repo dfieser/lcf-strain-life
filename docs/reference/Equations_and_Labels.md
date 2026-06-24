@@ -5,8 +5,9 @@ The canonical reference mapping each LCF equation to its **symbols**, **units**,
 Keep names here identical to the implementation so the math, the library API, and the agent-facing
 tool arguments all line up.
 
-> **Convention:** all analysis uses **true stress (σ)** and **true strain (ε)**, SI base units
-> internally (Pa, dimensionless strain). Convert engineering inputs at ingestion:
+> **Convention:** all analysis uses **true stress (σ)** and **true strain (ε)**. Internal units
+> are **MPa** for stress/modulus and **dimensionless (fraction)** for strain — so a hysteresis
+> loop area comes out directly in MJ/m³ (see `lcf.units`). Convert engineering inputs at ingestion:
 > `eps_true = ln(1 + eps_eng)`, `sigma_true = sigma_eng * (1 + eps_eng)`.
 
 ---
@@ -48,7 +49,7 @@ $$W=\oint \sigma(\varepsilon)\,d\varepsilon$$
 - **Output:** `energy_density` (J/m³ → report MJ/m³).
 - **Label note:** computed per cycle; summarized as `energy_peak_hardened`, `energy_half_life`,
   `energy_delta` (= half_life − peak_hardened).
-- **Library:** `energy.cyclic_energy_density(stress, strain)`
+- **Library:** `energy.loop_area(strain, stress)` (per-cycle via `metrics.per_cycle_metrics`)
 
 ### E2 — Total strain–life (Basquin + Coffin-Manson)
 
@@ -113,7 +114,7 @@ $$R_{TC}=\frac{|\sigma_{max,tension}|}{|\sigma_{max,compression}|}$$
 - **Output:** `tc_ratio` vs cycle; plus `stress_max`/`stress_min` hardening curves.
 - **Note:** LCF runs fully reversed at strain ratio `R = ε_min/ε_max = -1`; `R_TC ≠ 1`
   reflects a nonzero mean stress (see E2b).
-- **Library:** `response.cyclic_response(stress_max, stress_min)`
+- **Library:** `metrics.per_cycle_metrics(...)` (adds `r_tc`, `stress_max`, `stress_min` columns)
 
 ---
 
@@ -123,7 +124,7 @@ When all parameters are mutually consistent these hold — used as automatic val
 
 $$n' \approx \frac{b}{c} \qquad K' \approx \frac{\sigma'_f}{(\varepsilon'_f)^{\,b/c}}$$
 
-- **Library:** `fits.validate_parameters(...)` → returns deviations + boolean flags.
+- **Library:** `fits.check_consistency(...)` → returns deviations + `masing_ok` flag.
 
 ---
 

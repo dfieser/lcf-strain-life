@@ -51,7 +51,11 @@ def estimate_modulus(strain, stress, *, frac: float = 0.25) -> float:
 
     Regresses stress on strain over the first ``frac`` of the samples following a
     strain reversal (where the response is elastic), returning ``|slope|`` (MPa).
-    Best-effort only; supplying a measured ``E`` is preferred.
+
+    Best-effort only; supplying a measured ``E`` is strongly preferred. The fixed
+    ``frac`` assumes the window begins at a reversal (true for the loops produced
+    by :func:`lcf.cycles.reduce_cycles`) and that the initial segment is elastic;
+    a long plastic plateau right after the peak will bias the slope low.
     """
     s = np.asarray(strain, dtype=np.float64)
     y = np.asarray(stress, dtype=np.float64)
@@ -100,6 +104,9 @@ def per_cycle_metrics(
     elastic_strain_amp = stress_amp / E
     plastic_strain_amp = total_strain_amp - elastic_strain_amp
 
+    # Tension/compression ratio |σ_max| / |σ_min|. Meaningful for reversed loops
+    # (σ_max > 0 > σ_min); NaN when σ_min == 0, and not a true T/C ratio for
+    # same-sign (non-reversed) loops. See docs (L5).
     with np.errstate(divide="ignore", invalid="ignore"):
         r_tc = np.abs(stress_max) / np.abs(stress_min)
         r_tc = np.where(np.isfinite(r_tc), r_tc, np.nan)

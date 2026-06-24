@@ -63,7 +63,7 @@ def plot_strain_life(fit: StrainLifeFit, *, reversals=None, total_strain_amp=Non
     nt = fit.transition_reversals
     if np.isfinite(nt):
         ax.axvline(nt, color="gray", ls=":", lw=1)
-        ax.annotate(f"2Nt≈{nt:,.0f}", xy=(nt, tot.min()), color="gray", fontsize=8)
+        ax.annotate(rf"$2N_t\approx${nt:,.0f}", xy=(nt, tot.min()), color="gray", fontsize=8)
     if reversals is not None and total_strain_amp is not None:
         ax.scatter(reversals, total_strain_amp, color="black", zorder=5, label="data")
     ax.set_xlabel("Reversals to failure, $2N_f$")
@@ -178,7 +178,7 @@ def plot_energy(metrics: PerCycleMetrics) -> Figure:
     ax.plot(tbl["cycle"], tbl["energy_density"], color="tab:green")
     ax.axvline(metrics.half_life_cycle, color="gray", ls=":", lw=1, label="half-life")
     ax.set_xlabel("Cycle")
-    ax.set_ylabel(r"Energy density (MJ/m³)")
+    ax.set_ylabel(r"Energy density (MJ/m$^3$)")
     ax.set_title("Cyclic energy density")
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)

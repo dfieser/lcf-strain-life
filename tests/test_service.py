@@ -60,7 +60,7 @@ def test_mean_stress_walker_from_sigma_u(service):
     out = service.mean_stress_equivalent_stress(
         300.0, 100.0, "walker", sigma_u=600.0
     )
-    assert out["gamma"] == pytest.approx(0.883 - 2e-4 * 600.0)
+    assert out["gamma"] == pytest.approx(0.8818 - 2.00e-4 * 600.0)
 
 
 def test_list_results(service):

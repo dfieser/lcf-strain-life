@@ -174,14 +174,18 @@ disagreement beyond a tolerance.
 
 ## 10. Pipeline → tool mapping
 
+Names below are the **implemented** API (module.function). See the README and module
+docstrings for signatures.
+
 | Step | Function | Inputs → Outputs |
 |---|---|---|
-| Unit/engineering→true conversion | `normalize_inputs` | raw σ–ε (any units, eng or true) → SI true σ–ε |
-| Loop energy (§2) | `compute_cyclic_energy_density` | loop σ–ε → W per cycle; peak/half-life/Δ summary |
-| Cyclic response (§3) | `cyclic_response_curves` | per-cycle peak stresses → hardening curve, T/C ratio |
-| Coffin-Manson (§5) | `fit_coffin_manson` | (Δε_p/2, 2N_f) → ε'_f, c, R² |
-| Basquin (§6) | `fit_basquin` | (Δσ/2, 2N_f) → σ'_f, b, R² |
-| Strain–life (§4) | `predict_strain_life` | fitted params → Δε_t/2 vs. 2N_f; life at given amplitude |
-| Morrow correction (§4.1) | `morrow_correction` | fitted params + σ_m → mean-stress-corrected Δε_t/2; life |
-| Ramberg–Osgood (§7) | `fit_ramberg_osgood` | (Δσ/2, Δε_p/2) → K', n', R² |
-| Consistency checks (§8) | `validate_parameters` | fitted params → flags |
+| Unit/engineering→true conversion | `ingest.normalize` / `ingest.from_timeseries` | raw (t, ε, F) + meta → true σ–ε `TestRun` |
+| Loop energy (§2) | `energy.loop_area` (per-cycle via `metrics.per_cycle_metrics`) | loop σ–ε → W per cycle; peak/half-life summary |
+| Cyclic response (§3) | `cycles.reduce_cycles` + `metrics.per_cycle_metrics` | per-cycle peak stresses → hardening curve, T/C ratio |
+| Coffin-Manson (§5) | `fits.fit_coffin_manson` | (Δε_p/2, 2N_f) → ε'_f, c, R² |
+| Basquin (§6) | `fits.fit_basquin` | (Δσ/2, 2N_f) → σ'_f, b, R² |
+| Strain–life (§4) | `fits.fit_strain_life` / `life.predict_reversals` | fitted params → Δε_t/2 vs. 2N_f; life at given amplitude |
+| Morrow correction (§4.1) | `meanstress.morrow_strain_life` / `meanstress.equivalent_fully_reversed_stress` | fitted params + σ_m → corrected Δε_t/2; life |
+| Ramberg–Osgood (§7) | `fits.fit_ramberg_osgood` | (Δσ/2, Δε_p/2) → K', n', R² |
+| Consistency checks (§8) | `fits.check_consistency` | fitted params → `masing_ok` flag + deviations |
+| Persistence / recall | `store.LcfStore` / `service.LcfService` | compute → save → recall (SQLite + Parquet) |

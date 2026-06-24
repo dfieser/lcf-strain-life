@@ -11,7 +11,7 @@ corrections exist: Morrow, modified Morrow, Smith-Watson-Topper (SWT), and Walke
 - Also provide **Morrow** and **modified Morrow** (use when a reliable σ′f / true fracture
   strength is available) and **Walker** (most accurate when multi-R data exist).
 - **Walker exponent γ:** fit from multi-R data when available; `γ = 0.5` recovers SWT exactly.
-  For steels with no multi-R data, estimate `γ ≈ 0.883 − 2×10⁻⁴·σ_u` (Dowling et al. 2009);
+  For steels with no multi-R data, estimate `γ ≈ 0.8818 − 2.00×10⁻⁴·σ_u` (Dowling et al. 2009);
   for 2000/7000-series aluminium, `γ ≈ 0.5` (≈ SWT).
 - Caution surfaced in output: Morrow is unreliable for aluminium unless true fracture strength
   is used (Dowling et al. 2009); the Goodman relation is not offered.

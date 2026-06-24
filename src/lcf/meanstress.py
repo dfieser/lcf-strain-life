@@ -32,10 +32,11 @@ __all__ = [
 def walker_gamma_steel(sigma_u: float) -> float:
     """Estimate the Walker exponent γ for steels from ultimate strength.
 
-    ``γ = 0.883 − 2e-4·σ_u`` (Dowling, Calhoun & Arcari 2009; σ_u in MPa).
+    ``γ = 0.8818 − 2.00e-4·σ_u`` (Dowling, Calhoun & Arcari 2009, as in Dowling
+    4th ed. Eq. 9.20; σ_u in MPa; widely rounded to 0.883 in secondary sources).
     For 2000/7000-series aluminium, γ ≈ 0.5 (≈ SWT) is recommended instead.
     """
-    return 0.883 - 2.0e-4 * sigma_u
+    return 0.8818 - 2.00e-4 * sigma_u
 
 
 def equivalent_fully_reversed_stress(

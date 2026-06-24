@@ -45,7 +45,20 @@ Major design decisions are recorded as ADRs in [docs/decisions/](docs/decisions/
 ### Validation
 - Golden-value tests reproduce published SAE 1137 strain-life constants
   (Williams, Lee & Rilly 2003): c ≈ −0.62, ε'f ≈ 1.1, transition ≈ 22,000 reversals.
-- 114 tests passing.
+
+### Hardened (critical review — ADR-0009)
+- Three-part review (web-verified physics, web-verified API currency, adversarial
+  code audit). Physics 13/13 and API usage confirmed correct.
+- Non-finite floats (NaN/Inf) serialize as JSON `null` (`allow_nan=False`) — fixes
+  invalid JSON from 2-point fits that could break strict MCP clients.
+- Noise-aware turning-point detection (amplitude gate + density warning).
+- Robust failure-criterion reference (max peak, post-peak search, positive-only).
+- Guards on Morrow/modified-Morrow (σ_m ≥ σ'f), `transition_reversals`, Basquin
+  life-inverse, life inversion (decreasing-curve), and `check_consistency`.
+- Ingest validation (NaN rows rejected, non-monotonic time warned).
+- Store: injective Parquet filenames; SQLite WAL + busy_timeout.
+- Walker steel-γ intercept corrected to 0.8818 (Dowling 2009).
+- 135 tests passing; clean under `-W error::DeprecationWarning,FutureWarning`.
 
 ### Notes
 - Pre-existing documentation (`docs/reference/`, `docs/design/`) authored during the
