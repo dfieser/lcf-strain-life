@@ -35,8 +35,9 @@ dev = ["pytest>=8"]
 lcf-mcp = "lcf.mcp_server:main"
 
 [project.urls]
-Homepage = "https://github.com/dfieser9/lcf-strain-life"
-Documentation = "https://github.com/dfieser9/lcf-strain-life/tree/main/docs"
+Homepage = "https://github.com/dfieser/lcf-strain-life"
+Documentation = "https://github.com/dfieser/lcf-strain-life/tree/main/docs"
+Repository = "https://github.com/dfieser/lcf-strain-life"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lcf"]
