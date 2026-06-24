@@ -77,6 +77,12 @@ class AnalysisParams(BaseModel):
         None, description="Walker exponent γ; if None and the Walker model is used, it "
         "is estimated or fit from data."
     )
+    min_plastic_strain: float | None = Field(
+        None, ge=0,
+        description="Minimum plastic strain amplitude for a test to enter the plastic "
+        "(Coffin-Manson) and cyclic (Ramberg-Osgood) fits, excluding near-runout points "
+        "whose plastic strain is at measurement-noise level (ADR-0005).",
+    )
 
     @model_validator(mode="after")
     def _check(self) -> "AnalysisParams":
