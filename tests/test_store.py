@@ -1,10 +1,13 @@
 """Tests for lcf.store — SQLite/Parquet/PNG persistence and hashing."""
 
+import json
+import math
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from lcf.store import LcfStore, hash_inputs, to_jsonable
+from lcf.store import LcfStore, dumps, hash_inputs, to_jsonable
 
 
 def test_save_and_recall_scalar(tmp_path):
@@ -82,3 +85,50 @@ def test_to_jsonable_handles_numpy():
     out = to_jsonable({"a": np.float64(1.5), "b": np.int64(3), "c": np.array([1.0, 2.0])})
     assert out == {"a": 1.5, "b": 3, "c": [1.0, 2.0]}
     assert isinstance(out["a"], float) and isinstance(out["b"], int)
+
+
+# --- C1: non-finite -> valid JSON ------------------------------------------
+def test_to_jsonable_maps_nonfinite_to_none():
+    out = to_jsonable(
+        {"nan": float("nan"), "inf": float("inf"), "ninf": float("-inf"),
+         "npnan": np.float64("nan"), "arr": np.array([1.0, np.nan, np.inf])}
+    )
+    assert out["nan"] is None and out["inf"] is None and out["ninf"] is None
+    assert out["npnan"] is None
+    assert out["arr"] == [1.0, None, None]
+
+
+def test_dumps_rejects_nan_tokens():
+    s = dumps({"x": float("nan"), "y": 2.0})
+    assert "NaN" not in s and "Infinity" not in s
+    # strict parse (allow_nan=False) must succeed -> valid JSON
+    assert json.loads(s) == {"x": None, "y": 2.0}
+
+
+def test_store_save_nan_value_is_valid_json(tmp_path):
+    s = LcfStore(tmp_path / "store")
+    s.save("T1", "fit", {"b_stderr": float("nan"), "b": -0.09})
+    # raw stored JSON must be strictly valid (no NaN literal)
+    rec = s.recall("T1", "fit")
+    assert rec["value"]["b"] == -0.09
+    assert rec["value"]["b_stderr"] is None
+
+
+def test_two_point_fit_serializes_valid_json():
+    from lcf import fits
+    fit = fits.fit_strain_life([0.009, 0.002], [553.0, 350.0], [4234.0, 437498.0], 208000.0)
+    s = dumps(fit)
+    assert json.loads(s)  # strictly valid
+    assert "NaN" not in s
+
+
+# --- M4: injective parquet filenames ---------------------------------------
+def test_safe_collision_keys_do_not_clobber_parquet(tmp_path):
+    s = LcfStore(tmp_path / "store")
+    df_a = pd.DataFrame({"v": [1, 2]})
+    df_b = pd.DataFrame({"v": [9, 9, 9]})
+    # "a/b" and "a_b" both sanitize to "a_b" -> must still be distinct on disk
+    s.save("a/b", "per_cycle", {}, dataframe=df_a)
+    s.save("a_b", "per_cycle", {}, dataframe=df_b)
+    pd.testing.assert_frame_equal(s.get_dataframe("a/b", "per_cycle"), df_a)
+    pd.testing.assert_frame_equal(s.get_dataframe("a_b", "per_cycle"), df_b)

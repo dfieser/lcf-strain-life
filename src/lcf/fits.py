@@ -138,6 +138,11 @@ def fit_coffin_manson(
     pa = np.asarray(plastic_strain_amp, dtype=np.float64)
     rev = np.asarray(reversals, dtype=np.float64)
     m = _plastic_mask(pa, min_plastic_strain)
+    if min_plastic_strain is not None and int(m.sum()) < 2:
+        raise ValueError(
+            f"min_plastic_strain={min_plastic_strain} excluded all but {int(m.sum())} "
+            "point(s); lower the threshold (need >= 2 points for the plastic branch)."
+        )
     pl = power_law_fit(rev[m], pa[m])
     return CoffinMansonFit(
         eps_f=pl.coeff, c=pl.exponent, r_squared=pl.r_squared,
@@ -170,6 +175,11 @@ def transition_reversals(sigma_f: float, b: float, eps_f: float, c: float, E: fl
     """
     if b == c:
         raise ValueError("b and c must differ to compute a transition life")
+    if not (sigma_f > 0 and eps_f > 0 and E > 0):
+        raise ValueError(
+            f"transition life requires positive sigma_f, eps_f, E; "
+            f"got sigma_f={sigma_f}, eps_f={eps_f}, E={E}"
+        )
     return float((eps_f * E / sigma_f) ** (1.0 / (b - c)))
 
 
@@ -198,7 +208,16 @@ def check_consistency(
 
     Compatibility predicts ``n' = b/c`` and ``K' = σ'_f / (ε'_f)**(b/c)``.
     ``masing_ok`` is True when both relative differences are within ``tolerance``.
+    If the relations are undefined (c == 0, or ε'_f <= 0 so the power is complex),
+    the check returns ``masing_ok=False`` with NaN differences rather than raising.
     """
+    if coffin_manson.c == 0 or coffin_manson.eps_f <= 0:
+        return ConsistencyCheck(
+            n_fitted=ramberg_osgood.n, n_from_bc=float("nan"),
+            K_fitted=ramberg_osgood.K, K_from_params=float("nan"),
+            n_rel_diff=float("nan"), K_rel_diff=float("nan"),
+            masing_ok=False, tolerance=tolerance,
+        )
     n_from_bc = basquin.b / coffin_manson.c
     K_from_params = basquin.sigma_f / (coffin_manson.eps_f**n_from_bc)
     n_rel = abs(ramberg_osgood.n - n_from_bc) / abs(n_from_bc)

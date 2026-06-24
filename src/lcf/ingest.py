@@ -13,6 +13,7 @@ treated as true and the conversion is skipped (no double conversion).
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
@@ -45,12 +46,18 @@ class TestRun:
         return self.data[schema.COL_STRESS_TRUE]
 
 
-def normalize(df: pd.DataFrame, metadata: TestMetadata) -> pd.DataFrame:
+def normalize(df: pd.DataFrame, metadata: TestMetadata, *, validate: bool = True) -> pd.DataFrame:
     """Return a copy of ``df`` with derived stress/strain columns added.
 
     Required raw columns: ``time``, ``strain``, ``force`` (see :mod:`lcf.schema`).
-    If ``metadata.already_true`` is True, ``strain``/``force``-derived stress are
-    taken to be true values directly.
+
+    Stress precedence: if a ``stress_eng`` column is present it is used as-is and
+    ``area`` is not required; otherwise stress is derived as ``force / area``.
+    If ``metadata.already_true`` is True, the (engineering-named) strain and stress
+    are taken to be *true* values directly and the eng->true conversion is skipped.
+
+    With ``validate=True`` (default), NaN values in the required columns raise, and
+    non-monotonic ``time`` emits a warning.
     """
     missing = [c for c in schema.REQUIRED_RAW if c not in df.columns]
     if missing:
@@ -58,6 +65,21 @@ def normalize(df: pd.DataFrame, metadata: TestMetadata) -> pd.DataFrame:
             f"raw data missing required column(s): {missing}. "
             f"Expected {schema.REQUIRED_RAW}."
         )
+
+    if validate:
+        nan_cols = [c for c in schema.REQUIRED_RAW if df[c].isna().any()]
+        if nan_cols:
+            raise ValueError(
+                f"raw data contains NaN in column(s) {nan_cols}; clean or drop those "
+                "rows (e.g. df.dropna()) before ingestion, or pass validate=False."
+            )
+        t = df[schema.COL_TIME].to_numpy()
+        if t.size > 1 and np.any(np.diff(t) < 0):
+            warnings.warn(
+                "time column is not monotonically non-decreasing; cycle ordering may "
+                "be affected.",
+                stacklevel=2,
+            )
 
     out = df.copy()
 

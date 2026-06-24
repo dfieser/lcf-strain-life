@@ -83,6 +83,12 @@ class AnalysisParams(BaseModel):
         "(Coffin-Manson) and cyclic (Ramberg-Osgood) fits, excluding near-runout points "
         "whose plastic strain is at measurement-noise level (ADR-0005).",
     )
+    min_strain_range: float | None = Field(
+        None, ge=0,
+        description="Amplitude gate for turning-point detection: reversals with a strain "
+        "swing below this are treated as noise and removed. If None, a mild default of 2% "
+        "of the total strain range is used (ADR-0003).",
+    )
 
     @model_validator(mode="after")
     def _check(self) -> "AnalysisParams":

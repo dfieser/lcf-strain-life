@@ -12,6 +12,7 @@ cycles-to-failure ``N_f`` (configurable percent load-drop criterion, ADR-0004).
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -30,13 +31,16 @@ __all__ = [
 ]
 
 
-def find_turning_points(x) -> np.ndarray:
+def find_turning_points(x, *, min_range: float = 0.0) -> np.ndarray:
     """Indices of local extrema (reversals) in ``x``.
 
     Flats (consecutive equal values) do not count as reversals: the direction is
-    forward-filled across them. Endpoints are not returned. Robust to noise only
-    to the extent the signal is already turning-point-reducible; pre-filter noisy
-    lab data first (see docs/design/IMPLEMENTATION_REFERENCE.md §3).
+    forward-filled across them. Endpoints are not returned.
+
+    ``min_range`` applies an amplitude gate (hysteresis filter): small reversal
+    pairs whose swing is below ``min_range`` are removed, so sensor noise does not
+    fabricate cycles. With ``min_range=0`` no gating is applied. For noisy lab
+    data set ``min_range`` to a few times the noise amplitude (ADR-0003; H7).
     """
     x = np.asarray(x, dtype=np.float64)
     if x.size < 3:
@@ -51,8 +55,32 @@ def find_turning_points(x) -> np.ndarray:
     np.maximum.accumulate(idx, out=idx)
     sign_ff = sign[idx]
     # A turning point is where the (filled) slope sign changes.
-    changes = np.where(np.diff(sign_ff) != 0)[0] + 1
-    return changes.astype(np.intp)
+    tp = (np.where(np.diff(sign_ff) != 0)[0] + 1).astype(np.intp)
+
+    if min_range > 0 and tp.size >= 2:
+        tp = _gate_extrema(tp, x[tp], min_range)
+    return tp
+
+
+def _gate_extrema(idx: np.ndarray, vals: np.ndarray, gate: float) -> np.ndarray:
+    """Remove alternating-extrema pairs whose swing is below ``gate``.
+
+    Extrema alternate (max, min, ...); removing an adjacent pair merges the two
+    same-direction runs around it, preserving alternation. Iterates until no
+    sub-gate swing remains (small-cycle elimination).
+    """
+    keep = list(map(int, idx))
+    vlist = list(map(float, vals))
+    changed = True
+    while changed and len(keep) >= 2:
+        changed = False
+        for i in range(len(keep) - 1):
+            if abs(vlist[i + 1] - vlist[i]) < gate:
+                del keep[i : i + 2]
+                del vlist[i : i + 2]
+                changed = True
+                break
+    return np.asarray(keep, dtype=np.intp)
 
 
 @dataclass
@@ -83,25 +111,37 @@ def find_failure_cycle(
 ) -> tuple[int, bool]:
     """Locate the failure cycle from a per-cycle peak (tensile) stress series.
 
-    Failure = first cycle whose peak stress has dropped below
-    ``(1 - pct/100) * stabilized_value`` (ADR-0004). If ``stabilized_value`` is
-    None, the half-life peak stress is used as the stabilized reference.
+    Failure = the first cycle **at or after the maximum-load (cyclically hardened)
+    cycle** whose peak stress drops below ``(1 - pct/100) * stabilized_value``
+    (ADR-0004).
 
-    Returns ``(n_f, runout)`` where ``n_f`` is a 1-based cycle count and
-    ``runout`` is True if the threshold was never crossed (then ``n_f`` is the
-    total number of cycles).
+    The stabilized reference defaults to the **maximum** peak stress, which is
+    robust to two common artifacts the naive series-midpoint is not (H2/M3):
+    acquisition continuing past failure (a low tail cannot lower the max) and the
+    initial hardening transient (searching only from the peak-load cycle ignores
+    the rising part). A non-positive reference (e.g. an all-compressive or
+    sign-flipped column) is rejected.
+
+    Returns ``(n_f, runout)`` — ``n_f`` is a 1-based cycle count; ``runout`` is
+    True if the threshold was never crossed (then ``n_f`` is the total cycles).
     """
     peak = np.asarray(peak_stress, dtype=np.float64)
     n = peak.size
     if n == 0:
         return 0, True
     if stabilized_value is None:
-        stabilized_value = float(peak[(n - 1) // 2])  # half-life reference
+        stabilized_value = float(np.nanmax(peak))  # cyclically-hardened peak
+    if not (stabilized_value > 0):
+        raise ValueError(
+            f"stabilized peak tensile stress must be positive, got {stabilized_value}; "
+            "check the sign/units of the stress data (peak load should be tensile)."
+        )
     threshold = (1.0 - pct / 100.0) * stabilized_value
-    below = np.where(peak < threshold)[0]
+    start = int(np.nanargmax(peak))  # ignore the initial hardening transient
+    below = np.where(peak[start:] < threshold)[0]
     if below.size == 0:
         return n, True
-    return int(below[0] + 1), False  # 1-based
+    return int(start + below[0] + 1), False  # 1-based
 
 
 def reduce_cycles(test: TestRun, params: AnalysisParams | None = None) -> ReducedCycles:
@@ -116,11 +156,25 @@ def reduce_cycles(test: TestRun, params: AnalysisParams | None = None) -> Reduce
     strain = test.data[schema.COL_STRAIN_TRUE].to_numpy()
     stress = test.data[schema.COL_STRESS_TRUE].to_numpy()
 
-    tp = find_turning_points(strain)
+    # Amplitude gate for noise rejection: explicit value, else a mild default of
+    # 2% of the total strain range (won't remove genuine constant-amplitude loops).
+    if params.min_strain_range is not None:
+        gate = params.min_strain_range
+    else:
+        rng = float(np.nanmax(strain) - np.nanmin(strain)) if strain.size else 0.0
+        gate = 0.02 * rng
+
+    tp = find_turning_points(strain, min_range=gate)
     if tp.size < 2:
         raise ValueError(
             "could not detect at least two reversals; data does not contain a "
-            "complete cycle (or needs pre-filtering)."
+            "complete cycle (or needs pre-filtering / a smaller min_strain_range)."
+        )
+    if tp.size > strain.size // 4:
+        warnings.warn(
+            f"detected {tp.size} reversals from {strain.size} samples — implausibly "
+            "dense; data may be noisy. Consider setting AnalysisParams.min_strain_range.",
+            stacklevel=2,
         )
 
     # Classify turning points as peaks (local maxima) or valleys (local minima).

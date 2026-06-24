@@ -42,13 +42,22 @@ def total_strain_life(reversals, sigma_f, b, eps_f, c, E):
 
 
 def _solve_decreasing(func, target, bracket):
-    """Solve ``func(x) == target`` for a strictly decreasing positive ``func``."""
+    """Solve ``func(x) == target`` for a strictly decreasing positive ``func``.
+
+    Raises if ``func`` is not decreasing over the bracket — which happens for a
+    degenerate fit with ``b >= 0`` or ``c >= 0`` and would otherwise return a
+    silently wrong clamped life (H6).
+    """
     lo, hi = bracket
-    f_lo = func(lo) - target
-    f_hi = func(hi) - target
-    if f_lo < 0:  # target above the curve max (life shorter than lo) -> clamp
+    v_lo, v_hi = func(lo), func(hi)
+    if not (v_lo > v_hi):
+        raise ValueError(
+            "strain-life curve is not decreasing over the bracket; check that "
+            "b < 0 and c < 0 (degenerate fit cannot be inverted for life)."
+        )
+    if target >= v_lo:  # target above the curve max (life shorter than lo) -> clamp
         return lo
-    if f_hi > 0:  # target below the curve min (life longer than hi) -> clamp
+    if target <= v_hi:  # target below the curve min (life longer than hi) -> clamp
         return hi
     return float(optimize.brentq(lambda x: func(x) - target, lo, hi, xtol=1e-6, rtol=1e-10))
 
@@ -70,6 +79,13 @@ def predict_reversals_from_total_strain(
 
 def predict_reversals_basquin(stress_amp, sigma_f, b) -> float:
     """Reversals from stress amplitude via inverted Basquin: ``(σa/σ'_f)^(1/b)``."""
+    if not (stress_amp > 0 and sigma_f > 0):
+        raise ValueError(
+            f"Basquin life requires positive stress_amp and sigma_f; "
+            f"got stress_amp={stress_amp}, sigma_f={sigma_f}"
+        )
+    if b == 0:
+        raise ValueError("Basquin exponent b must be nonzero (and is conventionally < 0)")
     return float((stress_amp / sigma_f) ** (1.0 / b))
 
 

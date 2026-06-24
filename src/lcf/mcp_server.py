@@ -10,10 +10,10 @@ The store directory comes from the ``LCF_STORE_DIR`` environment variable
 
 from __future__ import annotations
 
-import json
 import os
 
 from .service import LcfService
+from .store import dumps
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -157,7 +157,7 @@ def list_results(key: str | None = None) -> list[dict]:
 def result_resource(key: str, quantity: str) -> str:
     """Expose a stored result as a readable resource (JSON)."""
     rec = _service.recall(key, quantity)
-    return json.dumps(rec if rec is not None else {"error": "not found"}, indent=2)
+    return dumps(rec if rec is not None else {"error": "not found"}, indent=2)
 
 
 def main() -> None:

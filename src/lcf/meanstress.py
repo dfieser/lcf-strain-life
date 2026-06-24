@@ -75,6 +75,11 @@ def equivalent_fully_reversed_stress(
     if model is MeanStressModel.MORROW:
         if sigma_f is None:
             raise ValueError("Morrow correction requires sigma_f")
+        if np.any(sm >= sigma_f):
+            raise ValueError(
+                "Morrow correction is undefined for mean stress >= sigma_f "
+                f"(sigma_f={sigma_f}); the cycle exceeds the fatigue strength coefficient."
+            )
         return sa / (1.0 - sm / sigma_f)
     if model in (MeanStressModel.SWT,):
         # σ_ar = sqrt(σ_max · σ_a), valid for σ_max > 0
@@ -108,6 +113,11 @@ def modified_morrow_strain_life(reversals, *, sigma_f, b, eps_f, c, E, mean_stre
     """
     tn = np.asarray(reversals, dtype=np.float64)
     factor = (sigma_f - mean_stress) / sigma_f
+    if np.any(factor <= 0):
+        raise ValueError(
+            "modified Morrow is undefined for mean stress >= sigma_f "
+            f"(sigma_f={sigma_f}); (sigma_f - mean_stress) must be positive."
+        )
     return (sigma_f - mean_stress) / E * tn**b + eps_f * factor ** (c / b) * tn**c
 
 

@@ -15,6 +15,7 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
+import math
 import sqlite3
 import time
 from pathlib import Path
@@ -27,15 +28,24 @@ __all__ = ["LcfStore", "hash_inputs", "to_jsonable"]
 
 
 def to_jsonable(obj: Any) -> Any:
-    """Convert dataclasses, pydantic models, and numpy scalars to JSON-able data."""
-    if obj is None or isinstance(obj, (bool, int, float, str)):
+    """Convert dataclasses, pydantic models, and numpy scalars to JSON-able data.
+
+    Non-finite floats (NaN, +/-Inf) are mapped to ``None`` so the result is
+    *valid* JSON (RFC 8259 has no NaN/Infinity literals). This matters because
+    these values are produced by ordinary use — e.g. a 2-point regression yields
+    NaN standard errors — and bare ``NaN`` tokens break strict MCP/JSON clients.
+    """
+    if obj is None or isinstance(obj, bool) or isinstance(obj, (int, str)):
         return obj
-    if isinstance(obj, (np.integer,)):
+    if isinstance(obj, float):
+        return obj if math.isfinite(obj) else None
+    if isinstance(obj, np.integer):
         return int(obj)
-    if isinstance(obj, (np.floating,)):
-        return float(obj)
+    if isinstance(obj, np.floating):
+        f = float(obj)
+        return f if math.isfinite(f) else None
     if isinstance(obj, np.ndarray):
-        return obj.tolist()
+        return [to_jsonable(v) for v in obj.tolist()]
     if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
         return {k: to_jsonable(v) for k, v in dataclasses.asdict(obj).items()}
     if hasattr(obj, "model_dump"):  # pydantic v2
@@ -47,6 +57,11 @@ def to_jsonable(obj: Any) -> Any:
     return str(obj)
 
 
+def dumps(obj: Any, **kwargs) -> str:
+    """``json.dumps`` of a sanitized object with NaN/Inf rejected (valid JSON)."""
+    return json.dumps(to_jsonable(obj), allow_nan=False, **kwargs)
+
+
 def hash_inputs(*parts: Any) -> str:
     """SHA-256 over the given parts (bytes used directly; others JSON-encoded)."""
     h = hashlib.sha256()
@@ -54,7 +69,7 @@ def hash_inputs(*parts: Any) -> str:
         if isinstance(p, (bytes, bytearray)):
             h.update(bytes(p))
         else:
-            h.update(json.dumps(to_jsonable(p), sort_keys=True).encode("utf-8"))
+            h.update(json.dumps(to_jsonable(p), sort_keys=True, allow_nan=False).encode("utf-8"))
     return h.hexdigest()
 
 
@@ -83,8 +98,12 @@ class LcfStore:
             con.executescript(_SCHEMA)
 
     def _conn(self) -> sqlite3.Connection:
-        con = sqlite3.connect(self.db_path)
+        con = sqlite3.connect(self.db_path, timeout=30.0)
         con.row_factory = sqlite3.Row
+        # WAL + a generous busy timeout avoid "database is locked" when the MCP
+        # server runs tools concurrently (M6).
+        con.execute("PRAGMA journal_mode=WAL")
+        con.execute("PRAGMA busy_timeout=30000")
         return con
 
     # ----------------------------------------------------------------- save
@@ -101,10 +120,13 @@ class LcfStore:
         """Upsert a result. ``dataframe`` is written to Parquet under the store."""
         parquet_path = None
         if dataframe is not None:
-            parquet_path = self.root / f"{_safe(key)}__{_safe(quantity)}.parquet"
+            # Hash suffix keeps the filename injective: distinct (key, quantity)
+            # never collide after _safe() flattens separators (M4).
+            suffix = hashlib.sha256(f"{key}\x00{quantity}".encode()).hexdigest()[:8]
+            parquet_path = self.root / f"{_safe(key)}__{_safe(quantity)}__{suffix}.parquet"
             dataframe.to_parquet(parquet_path)
             parquet_path = str(parquet_path)
-        value_json = json.dumps(to_jsonable(value)) if value is not None else None
+        value_json = dumps(value) if value is not None else None
         with self._conn() as con:
             con.execute(
                 """INSERT INTO results

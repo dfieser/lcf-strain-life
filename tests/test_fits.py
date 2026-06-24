@@ -102,6 +102,32 @@ def test_transition_requires_b_ne_c():
         fits.transition_reversals(1000.0, -0.1, 1.0, -0.1, 200000.0)
 
 
+def test_transition_requires_positive_params():
+    # M2: negative sigma_f / eps_f would give a complex result -> must raise
+    with pytest.raises(ValueError, match="positive"):
+        fits.transition_reversals(-1000.0, -0.1, 1.0, -0.6, 200000.0)
+    with pytest.raises(ValueError, match="positive"):
+        fits.transition_reversals(1000.0, -0.1, -1.0, -0.6, 200000.0)
+
+
+def test_consistency_handles_degenerate_c_zero():
+    # M1: c == 0 -> undefined b/c; return masing_ok False with NaN, not raise
+    bq = fits.BasquinFit(sigma_f=1000.0, b=-0.09, r_squared=1.0, n_points=5)
+    cm = fits.CoffinMansonFit(eps_f=0.5, c=0.0, r_squared=1.0, n_points=5)
+    ro = fits.RambergOsgoodFit(K=1200.0, n=0.15, r_squared=1.0, n_points=5)
+    chk = fits.check_consistency(bq, cm, ro)
+    assert chk.masing_ok is False
+    assert chk.n_from_bc != chk.n_from_bc  # NaN
+
+
+def test_coffin_manson_threshold_excludes_too_many():
+    # M5: clear error mentioning the threshold
+    with pytest.raises(ValueError, match="min_plastic_strain"):
+        fits.fit_coffin_manson(
+            [1e-5, 2e-5, 3e-5], [1e4, 1e5, 1e6], min_plastic_strain=1e-3
+        )
+
+
 def test_nonlinear_refinement_runs(sae1137):
     g = sae1137
     f = fits.fit_strain_life(

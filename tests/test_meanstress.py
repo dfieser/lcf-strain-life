@@ -57,6 +57,22 @@ def test_modified_morrow_has_no_equivalent_stress():
         ms.equivalent_fully_reversed_stress(300.0, 100.0, "modified_morrow")
 
 
+def test_morrow_raises_when_mean_exceeds_sigma_f():
+    # H3: sigma_m >= sigma_f -> inf/negative; must raise instead
+    with pytest.raises(ValueError, match="sigma_f"):
+        ms.equivalent_fully_reversed_stress(100.0, 1000.0, "morrow", sigma_f=1000.0)
+    with pytest.raises(ValueError, match="sigma_f"):
+        ms.equivalent_fully_reversed_stress(100.0, 1200.0, "morrow", sigma_f=1000.0)
+
+
+def test_modified_morrow_raises_when_mean_exceeds_sigma_f():
+    # H5: factor <= 0 -> complex result; must raise instead
+    with pytest.raises(ValueError, match="sigma_f"):
+        ms.modified_morrow_strain_life(
+            [1e3], sigma_f=1000.0, b=-0.09, eps_f=0.5, c=-0.6, E=2e5, mean_stress=1200.0
+        )
+
+
 # --- Walker gamma -----------------------------------------------------------
 def test_walker_gamma_steel():
     # Dowling et al. 2009: gamma = 0.883 - 2e-4 * sigma_u

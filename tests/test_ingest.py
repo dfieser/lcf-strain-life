@@ -101,3 +101,31 @@ def test_analysis_params_defaults():
 def test_analysis_params_rejects_bad_pct():
     with pytest.raises(Exception):
         AnalysisParams(failure_criterion_pct=150.0)
+
+
+# --- input validation (M1/L1) ----------------------------------------------
+def test_normalize_rejects_nan():
+    df = pd.DataFrame({"time": [0.0, 1.0, 2.0], "strain": [0.0, np.nan, 0.01],
+                       "force": [0.0, 100.0, 200.0]})
+    meta = TestMetadata(name="t", area=10.0)
+    with pytest.raises(ValueError, match="NaN"):
+        normalize(df, meta)
+
+
+def test_normalize_nan_bypass_with_validate_false():
+    df = pd.DataFrame({"time": [0.0, 1.0], "strain": [0.0, np.nan],
+                       "force": [0.0, 100.0]})
+    meta = TestMetadata(name="t", area=10.0)
+    out = normalize(df, meta, validate=False)  # should not raise
+    assert np.isnan(out[schema.COL_STRAIN_TRUE].iloc[1])
+
+
+def test_normalize_warns_on_nonmonotonic_time():
+    import warnings as _w
+    df = pd.DataFrame({"time": [0.0, 2.0, 1.0], "strain": [0.0, 0.01, 0.02],
+                       "force": [0.0, 100.0, 200.0]})
+    meta = TestMetadata(name="t", area=10.0)
+    with _w.catch_warnings(record=True) as w:
+        _w.simplefilter("always")
+        normalize(df, meta)
+        assert any("monoton" in str(x.message) for x in w)

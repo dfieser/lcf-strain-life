@@ -53,6 +53,21 @@ def test_predict_reversals_clamps_low_strain():
     assert tn == pytest.approx(1e12)
 
 
+def test_predict_reversals_basquin_rejects_negative():
+    # H4: negative base must raise a clear error, not a TypeError on complex
+    with pytest.raises(ValueError, match="positive"):
+        life.predict_reversals_basquin(-100.0, 1000.0, -0.09)
+    with pytest.raises(ValueError, match="positive"):
+        life.predict_reversals_basquin(100.0, -1000.0, -0.09)
+
+
+def test_predict_reversals_rejects_increasing_curve():
+    # H6: degenerate fit with b>0, c>0 -> not invertible -> must raise
+    bad = dict(sigma_f=1000.0, b=0.09, eps_f=0.5, c=0.6, E=200000.0)
+    with pytest.raises(ValueError, match="decreasing"):
+        life.predict_reversals_from_total_strain(0.005, **bad)
+
+
 def test_predict_reversals_from_fit():
     fit = StrainLifeFit(
         E=200000.0,
