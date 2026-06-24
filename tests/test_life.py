@@ -1,4 +1,4 @@
-"""Tests for lcf.life — model curves and life inversion."""
+"""Tests for lcf.life: model curves and life inversion."""
 
 import numpy as np
 import pytest

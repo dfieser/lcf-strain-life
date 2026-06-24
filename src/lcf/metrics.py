@@ -3,7 +3,7 @@
 For each cycle: stress amplitude, mean stress, total/elastic/plastic strain
 amplitude, tension/compression ratio, and the hysteresis energy density. Plastic
 strain amplitude uses the **computed** form ``Δε_p/2 = Δε_t/2 − Δσ/(2E)``
-(the practical standard default; ADR-0005, IMPLEMENTATION_REFERENCE §1).
+(the practical standard default, ADR-0005, IMPLEMENTATION_REFERENCE §1).
 
 Also provides :func:`estimate_modulus` for when ``E`` is not supplied.
 """
@@ -52,10 +52,10 @@ def estimate_modulus(strain, stress, *, frac: float = 0.25) -> float:
     Regresses stress on strain over the first ``frac`` of the samples following a
     strain reversal (where the response is elastic), returning ``|slope|`` (MPa).
 
-    Best-effort only; supplying a measured ``E`` is strongly preferred. The fixed
+    Best-effort only, supplying a measured ``E`` is strongly preferred. The fixed
     ``frac`` assumes the window begins at a reversal (true for the loops produced
-    by :func:`lcf.cycles.reduce_cycles`) and that the initial segment is elastic;
-    a long plastic plateau right after the peak will bias the slope low.
+    by :func:`lcf.cycles.reduce_cycles`) and that the initial segment is elastic.
+    A long plastic plateau right after the peak will bias the slope low.
     """
     s = np.asarray(strain, dtype=np.float64)
     y = np.asarray(stress, dtype=np.float64)
@@ -105,7 +105,7 @@ def per_cycle_metrics(
     plastic_strain_amp = total_strain_amp - elastic_strain_amp
 
     # Tension/compression ratio |σ_max| / |σ_min|. Meaningful for reversed loops
-    # (σ_max > 0 > σ_min); NaN when σ_min == 0, and not a true T/C ratio for
+    # (σ_max > 0 > σ_min), NaN when σ_min == 0, and not a true T/C ratio for
     # same-sign (non-reversed) loops. See docs (L5).
     with np.errstate(divide="ignore", invalid="ignore"):
         r_tc = np.abs(stress_max) / np.abs(stress_min)

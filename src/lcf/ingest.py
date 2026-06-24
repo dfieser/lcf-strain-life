@@ -1,10 +1,10 @@
-"""Ingestion and normalization — raw test data -> true stress/strain series.
+"""Ingestion and normalization: raw test data -> true stress/strain series.
 
 Entry points:
 
-* :func:`from_timeseries` — build a :class:`Test` from arrays ``(time, strain, force)``.
-* :func:`from_dataframe`  — build a :class:`Test` from a raw DataFrame.
-* :func:`read_csv`        — read a delimited file (with optional column mapping).
+* :func:`from_timeseries`: build a :class:`Test` from arrays ``(time, strain, force)``.
+* :func:`from_dataframe`:  build a :class:`Test` from a raw DataFrame.
+* :func:`read_csv`:        read a delimited file (with optional column mapping).
 
 All paths run :func:`normalize`, which adds the derived true-stress/true-strain
 columns (ADR-0002). If ``metadata.already_true`` is set, the supplied values are
@@ -52,7 +52,7 @@ def normalize(df: pd.DataFrame, metadata: TestMetadata, *, validate: bool = True
     Required raw columns: ``time``, ``strain``, ``force`` (see :mod:`lcf.schema`).
 
     Stress precedence: if a ``stress_eng`` column is present it is used as-is and
-    ``area`` is not required; otherwise stress is derived as ``force / area``.
+    ``area`` is not required. Otherwise stress is derived as ``force / area``.
     If ``metadata.already_true`` is True, the (engineering-named) strain and stress
     are taken to be *true* values directly and the eng->true conversion is skipped.
 
@@ -70,13 +70,13 @@ def normalize(df: pd.DataFrame, metadata: TestMetadata, *, validate: bool = True
         nan_cols = [c for c in schema.REQUIRED_RAW if df[c].isna().any()]
         if nan_cols:
             raise ValueError(
-                f"raw data contains NaN in column(s) {nan_cols}; clean or drop those "
-                "rows (e.g. df.dropna()) before ingestion, or pass validate=False."
+                f"raw data contains NaN in column(s) {nan_cols}. Clean or drop those "
+                "rows with df.dropna() before ingestion, or pass validate=False."
             )
         t = df[schema.COL_TIME].to_numpy()
         if t.size > 1 and np.any(np.diff(t) < 0):
             warnings.warn(
-                "time column is not monotonically non-decreasing; cycle ordering may "
+                "time column is not monotonically non-decreasing. Cycle ordering may "
                 "be affected.",
                 stacklevel=2,
             )
@@ -123,7 +123,7 @@ def from_timeseries(time, strain, force, *, metadata: TestMetadata) -> TestRun:
     f = np.asarray(force, dtype="float64")
     if not (t.shape == e.shape == f.shape):
         raise ValueError(
-            f"time, strain, force must have equal length; got {t.shape}, {e.shape}, {f.shape}"
+            f"time, strain, force must have equal length. Got {t.shape}, {e.shape}, {f.shape}"
         )
     df = pd.DataFrame(
         {schema.COL_TIME: t, schema.COL_STRAIN: e, schema.COL_FORCE: f}

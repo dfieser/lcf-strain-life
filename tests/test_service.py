@@ -1,4 +1,4 @@
-"""Tests for lcf.service — compute/save/recall orchestration."""
+"""Tests for lcf.service: compute/save/recall orchestration."""
 
 import numpy as np
 import pytest

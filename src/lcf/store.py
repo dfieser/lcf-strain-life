@@ -1,11 +1,11 @@
-"""Persistence — the compute / save / recall store (ADR-0007).
+"""Persistence: the compute / save / recall store (ADR-0007).
 
 A small content-addressed store: a **SQLite** catalog keyed by ``(key, quantity)``
-holds scalar/JSON values, an input hash, and paths to large artifacts;
-**Parquet** holds per-cycle tables; **PNG** holds plot artifacts on disk. Results
+holds scalar/JSON values, an input hash, and paths to large artifacts.
+**Parquet** holds per-cycle tables and **PNG** holds plot artifacts on disk. Results
 are recomputed only when the input hash changes.
 
-``key`` identifies a test or material (e.g. ``"SAE1137"`` or ``"specimen-3"``);
+``key`` identifies a test or material (e.g. ``"SAE1137"`` or ``"specimen-3"``).
 ``quantity`` names the stored result (e.g. ``"per_cycle"``, ``"strain_life_fit"``,
 ``"summary"``).
 """
@@ -32,8 +32,8 @@ def to_jsonable(obj: Any) -> Any:
 
     Non-finite floats (NaN, +/-Inf) are mapped to ``None`` so the result is
     *valid* JSON (RFC 8259 has no NaN/Infinity literals). This matters because
-    these values are produced by ordinary use — e.g. a 2-point regression yields
-    NaN standard errors — and bare ``NaN`` tokens break strict MCP/JSON clients.
+    these values are produced by ordinary use, e.g. a 2-point regression yields
+    NaN standard errors, and bare ``NaN`` tokens break strict MCP/JSON clients.
     """
     if obj is None or isinstance(obj, bool) or isinstance(obj, (int, str)):
         return obj
@@ -63,7 +63,7 @@ def dumps(obj: Any, **kwargs) -> str:
 
 
 def hash_inputs(*parts: Any) -> str:
-    """SHA-256 over the given parts (bytes used directly; others JSON-encoded)."""
+    """SHA-256 over the given parts. Bytes are used directly, others are JSON-encoded."""
     h = hashlib.sha256()
     for p in parts:
         if isinstance(p, (bytes, bytearray)):

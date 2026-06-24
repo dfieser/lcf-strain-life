@@ -1,4 +1,4 @@
-"""Hysteresis-loop energy — closed-loop area by the shoelace formula.
+"""Hysteresis-loop energy: closed-loop area by the shoelace formula.
 
 The plastic strain energy density dissipated per cycle is the area enclosed by
 one stress-strain loop, ``∮ σ dε``. We compute it with the **shoelace polygon

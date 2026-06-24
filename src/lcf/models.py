@@ -74,7 +74,7 @@ class AnalysisParams(BaseModel):
         "combined total-strain curve, seeded by the per-branch linear fit (ADR-0005).",
     )
     walker_gamma: float | None = Field(
-        None, description="Walker exponent γ; if None and the Walker model is used, it "
+        None, description="Walker exponent gamma. If None and the Walker model is used, it "
         "is estimated or fit from data."
     )
     min_plastic_strain: float | None = Field(

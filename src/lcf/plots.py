@@ -2,7 +2,7 @@
 
 Figures are built with :class:`matplotlib.figure.Figure` directly (no pyplot
 global state / GUI), so these work headless in the MCP server and in tests.
-Every function returns a ``Figure``; use :func:`savefig` to write a PNG.
+Every function returns a ``Figure``, use :func:`savefig` to write a PNG.
 
 Plot set follows IMPLEMENTATION_REFERENCE §9: strain-life (with elastic/plastic/
 total branches + transition), Coffin-Manson, Basquin, Ramberg-Osgood cyclic

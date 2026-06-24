@@ -1,4 +1,4 @@
-"""Tests for lcf.store — SQLite/Parquet/PNG persistence and hashing."""
+"""Tests for lcf.store: SQLite/Parquet/PNG persistence and hashing."""
 
 import json
 import math

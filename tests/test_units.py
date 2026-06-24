@@ -1,4 +1,4 @@
-"""Tests for lcf.units — engineering<->true conversions and unit helpers."""
+"""Tests for lcf.units: engineering<->true conversions and unit helpers."""
 
 import math
 

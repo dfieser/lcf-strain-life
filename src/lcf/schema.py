@@ -1,4 +1,4 @@
-"""Canonical data schema — column names for the normalized per-sample series.
+"""Canonical data schema: column names for the normalized per-sample series.
 
 The internal time-series form is a :class:`pandas.DataFrame` with the columns
 below. Raw columns (``time``, ``strain``, ``force``) come from the test machine;

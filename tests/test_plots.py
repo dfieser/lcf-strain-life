@@ -1,4 +1,4 @@
-"""Tests for lcf.plots — figures build and save headless."""
+"""Tests for lcf.plots: figures build and save headless."""
 
 import numpy as np
 import pytest

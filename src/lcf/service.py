@@ -1,4 +1,4 @@
-"""Service layer — compute/save/recall operations bound to a store.
+"""Service layer: compute/save/recall operations bound to a store.
 
 This holds the plain-Python logic that the MCP server exposes as tools. Keeping
 it MCP-free makes it directly testable and reusable. Each compute operation
@@ -43,7 +43,7 @@ class LcfService:
         failure_pct: float = 30.0,
         material: str | None = None,
     ) -> dict:
-        """Reduce one test from a time series; persist per-cycle table + summary."""
+        """Reduce one test from a time series, then persist the per-cycle table and summary."""
         meta = TestMetadata(
             name=name, area=area, E=E, R=R, already_true=already_true, material=material
         )
@@ -73,7 +73,7 @@ class LcfService:
         material: str | None = None,
         read_csv_kwargs: dict | None = None,
     ) -> dict:
-        """Reduce one test from a CSV file; persist per-cycle table + summary."""
+        """Reduce one test from a CSV file, then persist the per-cycle table and summary."""
         meta = TestMetadata(
             name=name, area=area, E=E, R=R, already_true=already_true, material=material
         )
@@ -99,7 +99,7 @@ class LcfService:
         refine_nonlinear: bool = False,
         material: str | None = None,
     ) -> dict:
-        """Fit Basquin + Coffin-Manson + Ramberg-Osgood constants; persist if named."""
+        """Fit Basquin, Coffin-Manson, and Ramberg-Osgood constants, then persist if named."""
         fit = fits.fit_strain_life(
             total_strain_amp, stress_amp, reversals, E,
             plastic_strain_amp=plastic_strain_amp,

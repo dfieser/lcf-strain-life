@@ -1,7 +1,7 @@
-# Low Cycle Fatigue (LCF) — Analysis Notes
+# Low Cycle Fatigue (LCF): Analysis Notes
 
 These notes define the **generalized analysis pipeline** our tool automates. The aim is *not* to
-reproduce any specific paper or material; it is to let any scientist feed in their own LCF test data
+reproduce any specific paper or material. It is to let any scientist feed in their own LCF test data
 and get the standard reduced quantities, fitted parameters, and plots back.
 
 > **Convention: use true stress and true strain throughout.**
@@ -10,7 +10,7 @@ and get the standard reduced quantities, fitted parameters, and plots back.
 > - True strain: `ε_true = ln(1 + ε_eng)`
 > - True stress: `σ_true = σ_eng · (1 + ε_eng)`
 >
-> (Valid up to necking / uniform deformation; for fully reversed LCF the per-cycle loops are used
+> (Valid up to necking / uniform deformation. For fully reversed LCF the per-cycle loops are used
 > directly, but the conversion still applies to any engineering-referenced input.)
 
 ---
@@ -19,31 +19,31 @@ and get the standard reduced quantities, fitted parameters, and plots back.
 
 For each LCF test, run at a given **strain amplitude** (Δε/2), the analysis needs:
 
-- **Hysteresis data** — true stress σ vs. true strain ε, sampled through each cycle (at minimum the
-  cycles needed for: first loop, peak-hardened loop, and half-life loop).
-- **Per-cycle peak stresses** — max (tension) and min (compression) stress for each cycle.
+- **Hysteresis data**: true stress σ vs. true strain ε, sampled through each cycle (at minimum the
+  cycles needed for the first loop, peak-hardened loop, and half-life loop).
+- **Per-cycle peak stresses**: max (tension) and min (compression) stress for each cycle.
 - **Reversals to failure**, `2N_f` (i.e., `2 × N_f`), for each test.
 - **Young's modulus**, `E`, for the material (or derive from the elastic slope of a loop).
 
-A complete study is several such tests at different strain amplitudes; the parameter fits (§4–6)
+A complete study is several such tests at different strain amplitudes. The parameter fits (§4 to 6)
 require **at least 2 amplitudes**, and are only meaningful with 3+.
 
 ---
 
 ## 2. Cyclic energy density (hysteresis loop area)
 
-Energy dissipated per cycle = area enclosed by one true stress–strain loop:
+Energy dissipated per cycle = area enclosed by one true stress-strain loop:
 
 $$W=\oint \sigma(\varepsilon)\,d\varepsilon$$
 
 Computed numerically as the closed-loop integral (e.g., shoelace / trapezoidal area of the ordered
 loop points).
 
-**Unit handling — must be explicit.** The result is energy density (J/m³). Report in **MJ/m³**.
+**Unit handling, must be explicit.** The result is energy density (J/m³). Report in **MJ/m³**.
 Watch the input units:
 
-- σ in **Pa**, ε **dimensionless (fraction)** → W in **J/m³** → ÷10⁶ for MJ/m³.
-- σ in **GPa**, ε in **percent** → raw product is **10× MJ/m³** (since 10⁹ Pa × 0.01 = 10⁷ J/m³),
+- σ in **Pa**, ε **dimensionless (fraction)** gives W in **J/m³**, then ÷10⁶ for MJ/m³.
+- σ in **GPa**, ε in **percent** gives a raw product of **10× MJ/m³** (since 10⁹ Pa × 0.01 = 10⁷ J/m³),
   so multiply the integral by 10 to get MJ/m³.
 
 The safe path: normalize all inputs to SI (Pa, fraction) at ingestion, integrate, then convert once.
@@ -51,7 +51,7 @@ The safe path: normalize all inputs to SI (Pa, fraction) at ingestion, integrate
 **Reported energy metrics per test:**
 - Peak-hardened energy density (max over cycles).
 - Half-life (steady-state) energy density.
-- Difference (half-life − peak-hardened), with sign indicating net softening (−) or hardening (+).
+- Difference (half-life − peak-hardened), with sign indicating net softening (negative) or hardening (positive).
 - Report mean ± std when replicate specimens exist.
 
 ---
@@ -60,15 +60,15 @@ The safe path: normalize all inputs to SI (Pa, fraction) at ingestion, integrate
 
 From per-cycle peak stresses (no fitting required):
 
-- **Hardening/softening curve** — max and min stress vs. cycle number. Shows cyclic hardening then
+- **Hardening/softening curve**: max and min stress vs. cycle number. Shows cyclic hardening then
   softening to failure.
-- **Tension/compression asymmetry ratio**, `R_TC` — `|σ_max,tension| / |σ_max,compression|` vs.
-  cycle number. LCF runs fully reversed at strain ratio `R = ε_min/ε_max = -1`; an `R_TC ≠ 1`
+- **Tension/compression asymmetry ratio**, `R_TC`: `|σ_max,tension| / |σ_max,compression|` vs.
+  cycle number. LCF runs fully reversed at strain ratio `R = ε_min/ε_max = -1`. An `R_TC ≠ 1`
   quantifies asymmetric deformation and a nonzero mean stress (see §4.1, Morrow).
 
 ---
 
-## 4. Strain–life: total, elastic, and plastic
+## 4. Strain-life: total, elastic, and plastic
 
 Total strain amplitude splits into elastic + plastic contributions (Basquin + Coffin-Manson):
 
@@ -76,7 +76,7 @@ $$\frac{\Delta\varepsilon_t}{2}=\frac{\Delta\varepsilon_e}{2}+\frac{\Delta\varep
 =\frac{\sigma'_f}{E}\,(2N_f)^{b}+\varepsilon'_f\,(2N_f)^{c}$$
 
 - `Δε_e/2` = elastic strain amplitude = (Δσ/2)/E
-- `Δε_p/2` = plastic strain amplitude = (Δε_t/2) − (Δε_e/2)  *(measured from the loop width)*
+- `Δε_p/2` = plastic strain amplitude = (Δε_t/2) − (Δε_e/2), measured from the loop width
 
 This master curve is assembled from the four fitted constants below.
 
@@ -89,7 +89,7 @@ term by shifting `σ'_f` by `σ_m`:
 $$\frac{\Delta\varepsilon_t}{2}=\frac{\sigma'_f-\sigma_m}{E}\,(2N_f)^{b}+\varepsilon'_f\,(2N_f)^{c}$$
 
 - Reduces to the base equation when `σ_m = 0`.
-- Tensile mean stress (`σ_m > 0`) shortens life; compressive (`σ_m < 0`) extends it.
+- Tensile mean stress (`σ_m > 0`) shortens life, compressive (`σ_m < 0`) extends it.
 - The plastic (Coffin-Manson) term is left unchanged, assuming mean stress relaxes in the
   high-plasticity regime and chiefly affects the longer-life elastic contribution.
 
@@ -119,9 +119,9 @@ Outputs: `σ'_f`, `b`, R².
 
 ---
 
-## 7. Ramberg–Osgood (cyclic stress–strain curve)
+## 7. Ramberg-Osgood (cyclic stress-strain curve)
 
-Describes the stabilized (half-life) stress–strain shape across amplitudes:
+Describes the stabilized (half-life) stress-strain shape across amplitudes:
 
 $$\Delta\varepsilon_t=\frac{\Delta\sigma}{E}+\left(\frac{\Delta\sigma}{K'}\right)^{1/n'}$$
 
@@ -141,7 +141,7 @@ Outputs: `K'`, `n'`, R².
 
 ## 8. Built-in consistency checks
 
-These hold when the fitted parameters are mutually consistent — good automatic validity flags:
+These hold when the fitted parameters are mutually consistent, good automatic validity flags:
 
 - `n' ≈ b / c`
 - `K' ≈ σ'_f / (ε'_f)^{(b/c)}`
@@ -155,20 +155,20 @@ disagreement beyond a tolerance.
 
 | Symbol | Meaning | Units |
 |---|---|---|
-| σ, ε | true stress, true strain | Pa, — |
-| Δε_t/2 | total strain amplitude | — |
-| Δε_e/2 | elastic strain amplitude | — |
-| Δε_p/2 | plastic strain amplitude | — |
+| σ, ε | true stress, true strain | Pa, - |
+| Δε_t/2 | total strain amplitude | - |
+| Δε_e/2 | elastic strain amplitude | - |
+| Δε_p/2 | plastic strain amplitude | - |
 | Δσ/2 | stress amplitude | Pa |
 | σ_m | mean stress (Morrow) | Pa |
-| R | strain ratio (ε_min/ε_max; −1 fully reversed) | — |
-| R_TC | tension/compression peak-stress ratio | — |
-| 2N_f | reversals to failure | — |
+| R | strain ratio (ε_min/ε_max, -1 fully reversed) | - |
+| R_TC | tension/compression peak-stress ratio | - |
+| 2N_f | reversals to failure | - |
 | E | Young's modulus | Pa |
 | W | cyclic energy density | MJ/m³ |
-| σ'_f, b | fatigue strength coefficient, exponent (Basquin) | Pa, — |
-| ε'_f, c | fatigue ductility coefficient, exponent (Coffin-Manson) | —, — |
-| K', n' | cyclic strength coefficient, strain-hardening exponent (Ramberg–Osgood) | Pa, — |
+| σ'_f, b | fatigue strength coefficient, exponent (Basquin) | Pa, - |
+| ε'_f, c | fatigue ductility coefficient, exponent (Coffin-Manson) | -, - |
+| K', n' | cyclic strength coefficient, strain-hardening exponent (Ramberg-Osgood) | Pa, - |
 
 ---
 
@@ -179,13 +179,13 @@ docstrings for signatures.
 
 | Step | Function | Inputs → Outputs |
 |---|---|---|
-| Unit/engineering→true conversion | `ingest.normalize` / `ingest.from_timeseries` | raw (t, ε, F) + meta → true σ–ε `TestRun` |
-| Loop energy (§2) | `energy.loop_area` (per-cycle via `metrics.per_cycle_metrics`) | loop σ–ε → W per cycle; peak/half-life summary |
+| Unit/engineering→true conversion | `ingest.normalize` / `ingest.from_timeseries` | raw (t, ε, F) + meta → true σ-ε `TestRun` |
+| Loop energy (§2) | `energy.loop_area` (per-cycle via `metrics.per_cycle_metrics`) | loop σ-ε → W per cycle, peak/half-life summary |
 | Cyclic response (§3) | `cycles.reduce_cycles` + `metrics.per_cycle_metrics` | per-cycle peak stresses → hardening curve, T/C ratio |
 | Coffin-Manson (§5) | `fits.fit_coffin_manson` | (Δε_p/2, 2N_f) → ε'_f, c, R² |
 | Basquin (§6) | `fits.fit_basquin` | (Δσ/2, 2N_f) → σ'_f, b, R² |
-| Strain–life (§4) | `fits.fit_strain_life` / `life.predict_reversals` | fitted params → Δε_t/2 vs. 2N_f; life at given amplitude |
-| Morrow correction (§4.1) | `meanstress.morrow_strain_life` / `meanstress.equivalent_fully_reversed_stress` | fitted params + σ_m → corrected Δε_t/2; life |
-| Ramberg–Osgood (§7) | `fits.fit_ramberg_osgood` | (Δσ/2, Δε_p/2) → K', n', R² |
+| Strain-life (§4) | `fits.fit_strain_life` / `life.predict_reversals` | fitted params → Δε_t/2 vs. 2N_f, life at given amplitude |
+| Morrow correction (§4.1) | `meanstress.morrow_strain_life` / `meanstress.equivalent_fully_reversed_stress` | fitted params + σ_m → corrected Δε_t/2, life |
+| Ramberg-Osgood (§7) | `fits.fit_ramberg_osgood` | (Δσ/2, Δε_p/2) → K', n', R² |
 | Consistency checks (§8) | `fits.check_consistency` | fitted params → `masing_ok` flag + deviations |
 | Persistence / recall | `store.LcfStore` / `service.LcfService` | compute → save → recall (SQLite + Parquet) |

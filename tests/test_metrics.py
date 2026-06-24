@@ -1,4 +1,4 @@
-"""Tests for lcf.metrics — per-cycle metrics and modulus estimation."""
+"""Tests for lcf.metrics: per-cycle metrics and modulus estimation."""
 
 import numpy as np
 import pytest

@@ -1,14 +1,12 @@
 # lcf-strain-life
 
-Material-agnostic **Low Cycle Fatigue (LCF) strain-life analysis** — a core Python library
-plus an **MCP server** so AI agents can run the full analysis conversationally.
+An **AI-agent-native toolkit for fatigue analysis of materials**. It is a Python library plus an **MCP server**, so AI agents can run the whole analysis by calling tools.
 
-Drop in your own strain-controlled fatigue test data and get the standardized reduction,
-fitted material constants, life predictions, and plots — reproducibly, with results saved
-for recall.
+Provide your own strain-controlled fatigue test data and get the standardized reduction, fitted material constants, life predictions, and plots. Results are reproducible and are saved for recall.
 
-> **Convention:** all analysis uses **true stress / true strain** (engineering input is
-> converted at ingestion). The fatigue exponents `b` and `c` are negative throughout.
+> **Why this exists:** plenty of fatigue software exists, but none is built for AI agents to drive directly. The agent-native design over MCP is the point. Every capability is reachable through tools an agent can call.
+
+> **Convention:** all analysis uses true stress and true strain. Engineering input is converted at ingestion. The fatigue exponents `b` and `c` are negative throughout.
 
 ---
 
@@ -16,16 +14,14 @@ for recall.
 
 | Stage | What happens |
 |---|---|
-| **Ingest & normalize** | raw `(time, strain, force)` + params → true stress–strain |
-| **Cycle reduction** | peak/valley per cycle, half-life cycle, cycles-to-failure `N_f` |
-| **Per-cycle metrics** | stress amplitude, plastic strain amplitude, mean stress, T/C ratio, hysteresis energy |
-| **Strain-life fits** | Basquin (σ′f, b), Coffin-Manson (ε′f, c), Ramberg-Osgood (K′, n′), transition life |
-| **Mean-stress** | Morrow, modified Morrow, SWT, Walker corrections |
-| **Save & recall** | results persisted per test/material; recalled without recomputation |
+| Ingest and normalize | raw `time, strain, force` plus parameters become true stress-strain |
+| Cycle reduction | peak and valley per cycle, half-life cycle, cycles-to-failure `N_f` |
+| Per-cycle metrics | stress amplitude, plastic strain amplitude, mean stress, T/C ratio, hysteresis energy |
+| Strain-life fits | Basquin, Coffin-Manson, Ramberg-Osgood, transition life |
+| Mean stress | Morrow, modified Morrow, SWT, Walker corrections |
+| Save and recall | results persisted per test or material, recalled without recomputation |
 
-The tool is **strain-life / per-cycle-evolution focused** — the niche that the established,
-stress-based, high-cycle Python libraries (`pyLife`, `py-fatigue`, `fatpack`) do not cover.
-It is *input-compatible* with their pandas data shapes.
+The toolkit is general purpose and material agnostic. It focuses on strain-life and per-cycle evolution, which the established stress-based high-cycle libraries such as pyLife, py-fatigue, and fatpack do not cover. It is input compatible with their pandas data shapes.
 
 ## Install
 
@@ -35,14 +31,14 @@ python -m venv .venv
 pip install -e ".[mcp,dev]"
 ```
 
-Requires Python ≥ 3.11.
+Requires Python 3.11 or newer.
 
-## Quick start (library)
+## Quick start, library
 
 ```python
 import lcf
 
-# fit strain-life constants from per-test reduced data (SAE 1137)
+# fit strain-life constants from per-test reduced data, here SAE 1137
 fit = lcf.fit_strain_life(
     total_strain_amp=[0.009, 0.007, 0.005, 0.003, 0.002, 0.00175],
     stress_amp=[553, 522, 464, 405, 350, 319],         # MPa, half-life
@@ -50,12 +46,12 @@ fit = lcf.fit_strain_life(
     E=208000,                                           # MPa
     min_plastic_strain=5e-4,   # exclude near-runout points from the plastic branch
 )
-print(fit.coffin_manson.eps_f, fit.coffin_manson.c)   # ~1.11, -0.62
-print(fit.basquin.sigma_f, fit.basquin.b)             # ~1073 MPa, -0.084
-print(fit.transition_reversals)                        # ~22,000 reversals
+print(fit.coffin_manson.eps_f, fit.coffin_manson.c)   # about 1.11, -0.62
+print(fit.basquin.sigma_f, fit.basquin.b)             # about 1073 MPa, -0.084
+print(fit.transition_reversals)                        # about 22,000 reversals
 ```
 
-## Quick start (MCP server)
+## Quick start, MCP server
 
 ```bash
 lcf-mcp                # runs the stdio MCP server
@@ -63,7 +59,7 @@ lcf-mcp                # runs the stdio MCP server
 python -m lcf
 ```
 
-Register with Claude Code / Claude Desktop (stdio):
+Register with Claude Code or Claude Desktop over stdio:
 
 ```json
 { "mcpServers": {
@@ -72,22 +68,22 @@ Register with Claude Code / Claude Desktop (stdio):
 
 ## Documentation
 
-- **[docs/reference/](docs/reference/)** — the equations, symbols, and physics (LaTeX + notes).
-- **[docs/design/WORKFLOW.md](docs/design/WORKFLOW.md)** — data flow and the compute/save/recall model.
-- **[docs/decisions/](docs/decisions/)** — Architecture Decision Records (ADRs): every major
-  design choice and its rationale.
-- **[CHANGELOG.md](CHANGELOG.md)** — chronological log of changes.
+- [docs/reference](docs/reference) holds the equations, symbols, and physics.
+- [docs/design/WORKFLOW.md](docs/design/WORKFLOW.md) describes the data flow and the compute, save, recall model.
+- [docs/decisions](docs/decisions) holds the Architecture Decision Records, one per major design choice.
+- [CHANGELOG.md](CHANGELOG.md) is the chronological log of changes.
+- [CLAUDE.md](CLAUDE.md) holds the rules and positioning for AI agents working on the repo.
 
 ## Project layout
 
 ```
-src/lcf/            core library + MCP server
-tests/              unit tests incl. golden-value validation (SAE 1137)
+src/lcf/            core library and MCP server
+tests/              unit tests including golden-value validation, SAE 1137
 docs/reference/     equations, physics, symbol tables
-docs/design/        workflow & research-derived implementation reference
-docs/decisions/     ADRs (the decision log)
+docs/design/        workflow and research-derived implementation reference
+docs/decisions/     ADRs, the decision log
 ```
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

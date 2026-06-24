@@ -1,4 +1,4 @@
-"""Tests for lcf.fits — including golden-value validation against SAE 1137.
+"""Tests for lcf.fits: including golden-value validation against SAE 1137.
 
 Golden source: Williams, Lee & Rilly, *Int. J. Fatigue* 25 (2003) 427-436
 (see tests/conftest.py and docs/design/IMPLEMENTATION_REFERENCE.md §11).
@@ -36,7 +36,7 @@ def test_power_law_too_few_points():
 def test_basquin_golden(sae1137):
     g = sae1137
     bq = fits.fit_basquin(g.stress_amp, g.reversals)
-    # elastic branch uses all points; b is a small negative for steel
+    # elastic branch uses all points, b is a small negative for steel
     assert -0.13 < bq.b < -0.06
     assert 900.0 < bq.sigma_f < 1300.0
     assert bq.r_squared > 0.95
@@ -111,7 +111,7 @@ def test_transition_requires_positive_params():
 
 
 def test_consistency_handles_degenerate_c_zero():
-    # M1: c == 0 -> undefined b/c; return masing_ok False with NaN, not raise
+    # M1: c == 0 -> undefined b/c, return masing_ok False with NaN, not raise
     bq = fits.BasquinFit(sigma_f=1000.0, b=-0.09, r_squared=1.0, n_points=5)
     cm = fits.CoffinMansonFit(eps_f=0.5, c=0.0, r_squared=1.0, n_points=5)
     ro = fits.RambergOsgoodFit(K=1200.0, n=0.15, r_squared=1.0, n_points=5)

@@ -1,22 +1,28 @@
 # Project Overview
 
-We're building an **automated, AI-agent-friendly tool for low cycle fatigue (LCF) analysis**. A scientist drops in their own test data, and the tool runs the full standard analysis automatically.
+We are building an AI-agent-native toolkit for fatigue analysis of materials. A scientist or an AI agent provides test data, and the tool runs the full analysis on its own. It ships as a Python library and as an MCP server, so AI agents can drive every step by calling tools.
 
-## The problem
+## Why it is different
 
-Low cycle fatigue is what happens when a material is repeatedly pushed hard enough to bend slightly each time, until it eventually cracks — the kind of wear seen in turbine blades, pressure vessels, and engine parts. Analyzing it is a well-established but tedious process: labs do the same calculations by hand or in one-off spreadsheets, which is slow and easy to get wrong.
+Plenty of fatigue software exists. What does not exist is a fatigue toolkit built for AI agents to use directly. That is our novelty. The whole tool is reachable over MCP, so an agent can ingest data, reduce cycles, fit models, predict life, and recall results through a conversation. The agent focus is the heart of the project, not an extra feature.
 
-## What we're building
+## What it does
 
-A tool that takes raw LCF test data and automatically:
+The toolkit takes raw fatigue test data and automatically:
 
-- Cleans and standardizes it (using true stress–strain).
-- Measures energy absorbed per loading cycle.
-- Tracks how the material hardens and softens over its life.
-- Fits the standard fatigue models (Coffin-Manson, Basquin, Ramberg–Osgood) and predicts fatigue life.
+- Cleans and standardizes it, using true stress and true strain.
+- Reduces the data cycle by cycle and tracks how the material hardens and softens.
+- Fits the standard fatigue models and predicts fatigue life.
+- Saves results so an agent or a user can recall them later without recomputing.
 
-Because it's built to be called by an AI agent, the whole analysis can be run conversationally — no re-deriving the procedure each time.
+## Who and what it is for
+
+It is general purpose and material agnostic. It is meant to serve many materials and many fatigue workflows across research and engineering, not a single alloy or industry. Today it covers low cycle fatigue strain-life analysis. It is growing toward component life under realistic loading, statistical design values, and high temperature behavior.
 
 ## Why it matters
 
-It turns a slow, error-prone manual workflow into something **any scientist can reproduce with their own data** in minutes. The tool is general-purpose and material-agnostic.
+It turns a slow, manual, error prone workflow into something an AI agent can run from start to finish, and something any scientist can reproduce with their own data in minutes.
+
+---
+
+New to the project? The plain-language and technical references live in [docs/reference](docs/reference). Design notes are in [docs/design](docs/design).

@@ -1,9 +1,9 @@
-"""Cycle reduction — segment a strain-controlled series into ordered cycles.
+"""Cycle reduction: segment a strain-controlled series into ordered cycles.
 
 For constant-amplitude, fully-reversed strain control we segment by **peak-valley
 (turning-point) detection on the strain waveform** (ADR-0003). This preserves
 cycle order, so per-cycle evolution (hardening/softening, peak/valley drift,
-energy per cycle) is retained — the tool's differentiator vs. rainflow-based,
+energy per cycle) is retained. This is the tool's differentiator vs. rainflow-based,
 order-discarding libraries.
 
 Outputs an ordered per-cycle table plus the half-life cycle and the
@@ -40,7 +40,7 @@ def find_turning_points(x, *, min_range: float = 0.0) -> np.ndarray:
     ``min_range`` applies an amplitude gate (hysteresis filter): small reversal
     pairs whose swing is below ``min_range`` are removed, so sensor noise does not
     fabricate cycles. With ``min_range=0`` no gating is applied. For noisy lab
-    data set ``min_range`` to a few times the noise amplitude (ADR-0003; H7).
+    data set ``min_range`` to a few times the noise amplitude (ADR-0003, H7).
     """
     x = np.asarray(x, dtype=np.float64)
     if x.size < 3:
@@ -65,7 +65,7 @@ def find_turning_points(x, *, min_range: float = 0.0) -> np.ndarray:
 def _gate_extrema(idx: np.ndarray, vals: np.ndarray, gate: float) -> np.ndarray:
     """Remove alternating-extrema pairs whose swing is below ``gate``.
 
-    Extrema alternate (max, min, ...); removing an adjacent pair merges the two
+    Extrema alternate (max, min, ...), so removing an adjacent pair merges the two
     same-direction runs around it, preserving alternation. Iterates until no
     sub-gate swing remains (small-cycle elimination).
     """
@@ -122,7 +122,7 @@ def find_failure_cycle(
     the rising part). A non-positive reference (e.g. an all-compressive or
     sign-flipped column) is rejected.
 
-    Returns ``(n_f, runout)`` — ``n_f`` is a 1-based cycle count; ``runout`` is
+    Returns ``(n_f, runout)``. ``n_f`` is a 1-based cycle count. ``runout`` is
     True if the threshold was never crossed (then ``n_f`` is the total cycles).
     """
     peak = np.asarray(peak_stress, dtype=np.float64)
@@ -133,8 +133,8 @@ def find_failure_cycle(
         stabilized_value = float(np.nanmax(peak))  # cyclically-hardened peak
     if not (stabilized_value > 0):
         raise ValueError(
-            f"stabilized peak tensile stress must be positive, got {stabilized_value}; "
-            "check the sign/units of the stress data (peak load should be tensile)."
+            f"stabilized peak tensile stress must be positive, got {stabilized_value}. "
+            "Check the sign and units of the stress data, peak load should be tensile."
         )
     threshold = (1.0 - pct / 100.0) * stabilized_value
     start = int(np.nanargmax(peak))  # ignore the initial hardening transient
@@ -167,13 +167,13 @@ def reduce_cycles(test: TestRun, params: AnalysisParams | None = None) -> Reduce
     tp = find_turning_points(strain, min_range=gate)
     if tp.size < 2:
         raise ValueError(
-            "could not detect at least two reversals; data does not contain a "
-            "complete cycle (or needs pre-filtering / a smaller min_strain_range)."
+            "could not detect at least two reversals. The data does not contain a "
+            "complete cycle, or it needs pre-filtering or a smaller min_strain_range."
         )
     if tp.size > strain.size // 4:
         warnings.warn(
-            f"detected {tp.size} reversals from {strain.size} samples — implausibly "
-            "dense; data may be noisy. Consider setting AnalysisParams.min_strain_range.",
+            f"detected {tp.size} reversals from {strain.size} samples, implausibly "
+            "dense. The data may be noisy. Consider setting AnalysisParams.min_strain_range.",
             stacklevel=2,
         )
 
@@ -182,10 +182,10 @@ def reduce_cycles(test: TestRun, params: AnalysisParams | None = None) -> Reduce
     peaks = tp[is_peak]
     valleys = tp[~is_peak]
 
-    # Use consecutive peaks as loop boundaries; fall back to valleys if needed.
+    # Use consecutive peaks as loop boundaries, fall back to valleys if needed.
     bounds = peaks if peaks.size >= 2 else valleys
     if bounds.size < 2:
-        raise ValueError("fewer than two same-type reversals; cannot form a cycle.")
+        raise ValueError("fewer than two same-type reversals, cannot form a cycle.")
 
     rows = []
     for k in range(bounds.size - 1):

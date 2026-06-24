@@ -25,7 +25,7 @@ analysis. This document defines the quantities the analysis tool computes. All a
 Fatigue is the progressive, localized damage a material accumulates under cyclic loading,
 leading to failure at stresses below the monotonic ultimate strength. \emph{Low cycle fatigue}
 (LCF) refers to the regime in which each cycle imposes significant plastic deformation, so
-failure occurs in a relatively small number of cycles (typically $10^{1}$--$10^{4}$). LCF is
+failure occurs in a relatively small number of cycles (typically $10^{1}$ to $10^{4}$). LCF is
 strain-controlled: a specimen is cycled between fixed strain limits, and the stress response
 is measured.
 
@@ -37,7 +37,7 @@ quantities by
   \sigma = \sigma_\text{eng}\,(1 + \varepsilon_\text{eng}).
 \end{equation}
 
-\section{Cyclic Stress--Strain Response}
+\section{Cyclic Stress-Strain Response}
 
 LCF tests are typically run under \emph{fully reversed} strain control, characterized by the
 strain ratio
@@ -45,7 +45,7 @@ strain ratio
   R = \frac{\varepsilon_{\min}}{\varepsilon_{\max}} = -1,
 \end{equation}
 i.e.\ each cycle swings symmetrically between equal tensile and compressive strains. Under this
-loading the stress--strain path traces a closed \emph{hysteresis loop} each cycle. The total
+loading the stress-strain path traces a closed \emph{hysteresis loop} each cycle. The total
 strain amplitude decomposes into elastic and plastic parts:
 \begin{equation}
   \frac{\Delta\varepsilon_t}{2}
@@ -64,7 +64,7 @@ peak stresses indicates direction-dependent deformation, quantified by the ratio
                 {\lvert \sigma_{\max,\text{compression}} \rvert}.
 \end{equation}
 Note that even under fully reversed strain control ($R=-1$), this stress ratio need not equal
-unity; $R_{TC}\neq 1$ reflects a nonzero mean stress in the cycle (see Morrow's correction,
+unity. A value of $R_{TC}\neq 1$ reflects a nonzero mean stress in the cycle (see Morrow's correction,
 \S\ref{sec:morrow}).
 
 \section{Cyclic Energy Density}
@@ -78,15 +78,15 @@ per cycle:
 It is reported at the peak-hardened state and at the half-life (stable) cycle, conventionally
 in \si{\mega\joule\per\cubic\meter}.
 
-\section{Strain--Life Relations}
+\section{Strain-Life Relations}
 
-\subsection{Total strain--life}
-Fatigue life is modeled as the sum of elastic (Basquin) and plastic (Coffin--Manson)
+\subsection{Total strain-life}
+Fatigue life is modeled as the sum of elastic (Basquin) and plastic (Coffin-Manson)
 contributions versus the reversals to failure $2N_f$:
 \begin{equation}
   \frac{\Delta\varepsilon_t}{2}
   = \underbrace{\frac{\sigma'_f}{E}\,(2N_f)^{b}}_{\text{elastic (Basquin)}}
-  + \underbrace{\varepsilon'_f\,(2N_f)^{c}}_{\text{plastic (Coffin--Manson)}}.
+  + \underbrace{\varepsilon'_f\,(2N_f)^{c}}_{\text{plastic (Coffin-Manson)}}.
 \end{equation}
 
 \subsection{Basquin (elastic branch)}
@@ -96,7 +96,7 @@ contributions versus the reversals to failure $2N_f$:
 with fatigue strength coefficient $\sigma'_f$ and exponent $b$ obtained from a linear fit on
 $\log(\Delta\sigma/2)$ versus $\log(2N_f)$.
 
-\subsection{Coffin--Manson (plastic branch)}
+\subsection{Coffin-Manson (plastic branch)}
 \begin{equation}
   \frac{\Delta\varepsilon_p}{2} = \varepsilon'_f\,(2N_f)^{c},
 \end{equation}
@@ -105,7 +105,7 @@ on $\log(\Delta\varepsilon_p/2)$ versus $\log(2N_f)$.
 
 \subsection{Morrow mean-stress correction}
 \label{sec:morrow}
-The base strain--life relation assumes a zero mean stress. When the cycle carries a nonzero
+The base strain-life relation assumes a zero mean stress. When the cycle carries a nonzero
 mean stress $\sigma_m$ (e.g.\ from the tension/compression asymmetry $R_{TC}\neq 1$, even at a
 strain ratio of $R=-1$), Morrow's relation corrects the elastic (Basquin) term by shifting the
 fatigue strength coefficient by $\sigma_m$:
@@ -119,14 +119,14 @@ where the mean stress of a cycle is
   \sigma_m = \frac{\sigma_{\max} + \sigma_{\min}}{2}.
 \end{equation}
 A tensile mean stress ($\sigma_m > 0$) reduces fatigue life, while a compressive mean stress
-($\sigma_m < 0$) extends it. The relation reduces to the base strain--life equation when
-$\sigma_m = 0$. Morrow's correction leaves the plastic (Coffin--Manson) term unchanged, on the
+($\sigma_m < 0$) extends it. The relation reduces to the base strain-life equation when
+$\sigma_m = 0$. Morrow's correction leaves the plastic (Coffin-Manson) term unchanged, on the
 assumption that mean stress relaxes in the high-plasticity regime and chiefly affects the
 elastic, longer-life contribution.
 
-\section{Cyclic Stress--Strain Curve (Ramberg--Osgood)}
+\section{Cyclic Stress-Strain Curve (Ramberg-Osgood)}
 
-The stabilized stress--strain behavior across amplitudes is described by
+The stabilized stress-strain behavior across amplitudes is described by
 \begin{equation}
   \Delta\varepsilon_t
   = \frac{\Delta\sigma}{E}
@@ -159,20 +159,20 @@ checks:
 \toprule
 Symbol & Quantity & Unit \\
 \midrule
-$\sigma,\ \varepsilon$ & true stress, true strain & \si{\pascal}, --- \\
-$\Delta\varepsilon_t/2$ & total strain amplitude & --- \\
-$\Delta\varepsilon_e/2$ & elastic strain amplitude & --- \\
-$\Delta\varepsilon_p/2$ & plastic strain amplitude & --- \\
+$\sigma,\ \varepsilon$ & true stress, true strain & \si{\pascal}, - \\
+$\Delta\varepsilon_t/2$ & total strain amplitude & - \\
+$\Delta\varepsilon_e/2$ & elastic strain amplitude & - \\
+$\Delta\varepsilon_p/2$ & plastic strain amplitude & - \\
 $\Delta\sigma/2$ & stress amplitude & \si{\pascal} \\
 $\sigma_m$ & mean stress (Morrow) & \si{\pascal} \\
-$R$ & strain ratio ($\varepsilon_{\min}/\varepsilon_{\max}$, $-1$ fully reversed) & --- \\
-$R_{TC}$ & tension/compression peak-stress ratio & --- \\
-$2N_f$ & reversals to failure & --- \\
+$R$ & strain ratio ($\varepsilon_{\min}/\varepsilon_{\max}$, $-1$ fully reversed) & - \\
+$R_{TC}$ & tension/compression peak-stress ratio & - \\
+$2N_f$ & reversals to failure & - \\
 $E$ & Young's modulus & \si{\pascal} \\
 $W$ & cyclic energy density & \si{\mega\joule\per\cubic\meter} \\
-$\sigma'_f,\ b$ & fatigue strength coefficient, exponent & \si{\pascal}, --- \\
-$\varepsilon'_f,\ c$ & fatigue ductility coefficient, exponent & ---, --- \\
-$K',\ n'$ & cyclic strength coefficient, hardening exponent & \si{\pascal}, --- \\
+$\sigma'_f,\ b$ & fatigue strength coefficient, exponent & \si{\pascal}, - \\
+$\varepsilon'_f,\ c$ & fatigue ductility coefficient, exponent & -, - \\
+$K',\ n'$ & cyclic strength coefficient, hardening exponent & \si{\pascal}, - \\
 \bottomrule
 \end{tabular}
 \end{table}

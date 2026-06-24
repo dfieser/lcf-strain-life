@@ -2,10 +2,10 @@
 
 Two kinds of fixtures:
 
-* ``synthetic_cyclic`` — a deterministic elliptical hysteresis signal with known
+* ``synthetic_cyclic``: a deterministic elliptical hysteresis signal with known
   analytic answers (peak/valley, mean, loop area), for testing ingestion, cycle
   reduction, and per-cycle metrics.
-* ``sae1137`` — published per-test reduced strain-life data (Williams, Lee &
+* ``sae1137``: published per-test reduced strain-life data (Williams, Lee &
   Rilly, *Int. J. Fatigue* 25 (2003) 427-436), for golden-value validation of
   the strain-life fits. See docs/design/IMPLEMENTATION_REFERENCE.md §11.
 """
@@ -24,7 +24,7 @@ import pytest
 @dataclass
 class SyntheticCyclic:
     time: np.ndarray
-    strain: np.ndarray          # engineering strain (== true here; small values)
+    strain: np.ndarray          # engineering strain (== true here, small values)
     force: np.ndarray           # N
     area: float                 # mm^2
     n_cycles: int
@@ -50,7 +50,7 @@ def _make_synthetic(
     n = periods * samples_per_cycle + 1
     theta = np.linspace(0.0, 2.0 * np.pi * periods, n)
     strain = eps_amp * np.sin(theta)
-    stress = stress_amp * np.sin(theta - phase_lag)  # MPa; lag opens the loop
+    stress = stress_amp * np.sin(theta - phase_lag)  # MPa, lag opens the loop
     force = stress * area  # N (since stress in MPa == N/mm^2, force = stress*area)
     time = np.linspace(0.0, float(periods), n)
     return SyntheticCyclic(

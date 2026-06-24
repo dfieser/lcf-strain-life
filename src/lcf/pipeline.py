@@ -1,4 +1,4 @@
-"""High-level orchestration — the full LCF analysis pipeline.
+"""High-level orchestration: the full LCF analysis pipeline.
 
 * :func:`analyze_test` runs one test through ingest-already-done -> cycle
   reduction -> per-cycle metrics, and summarizes the stabilized (half-life) and
@@ -102,7 +102,7 @@ def fit_from_summary(
         df = df[~df["runout"]]
 
     if len(df) < 2:
-        notes.append("fewer than 2 failed tests; cannot fit strain-life models")
+        notes.append("fewer than 2 failed tests, cannot fit strain-life models")
         return None, notes
 
     E = float(df["E"].mean())

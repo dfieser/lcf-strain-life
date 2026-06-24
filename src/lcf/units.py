@@ -9,7 +9,7 @@ Internal convention (see ADR-0002):
 A consequence worth stating explicitly: with stress in MPa and strain a fraction,
 a hysteresis-loop area ``∮ σ dε`` comes out directly in **MJ/m³**
 (``1 MPa × 1 = 1e6 J/m³ = 1 MJ/m³``). No extra factor is needed. If a caller
-instead works in GPa and percent, the raw product is 10× MJ/m³ — hence everything
+instead works in GPa and percent, the raw product is 10× MJ/m³, hence everything
 here normalizes to MPa + fraction first.
 
 All functions accept scalars or array-likes and return ``float`` or
@@ -37,7 +37,7 @@ __all__ = [
 
 
 def _as_float_array(x: ArrayLike) -> NDArray[np.float64] | np.float64:
-    """Return ``x`` as a float; preserve scalar-ness (0-d -> python float)."""
+    """Return ``x`` as a float array. A 0-d input stays 0-d, callers handle scalars."""
     arr = np.asarray(x, dtype=np.float64)
     return arr
 

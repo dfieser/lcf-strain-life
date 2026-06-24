@@ -1,4 +1,4 @@
-"""Tests for lcf.pipeline — per-test and multi-test orchestration."""
+"""Tests for lcf.pipeline: per-test and multi-test orchestration."""
 
 import numpy as np
 import pandas as pd

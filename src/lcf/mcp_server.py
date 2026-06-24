@@ -1,7 +1,7 @@
 """MCP server exposing the LCF analysis tools (ADR-0008).
 
 Thin wrappers over :class:`lcf.service.LcfService`. Tools are narrow and clearly
-named; large per-cycle data is persisted to the store (and recalled on demand)
+named. Large per-cycle data is persisted to the store and recalled on demand
 rather than returned inline. Run with ``lcf-mcp`` or ``python -m lcf``.
 
 The store directory comes from the ``LCF_STORE_DIR`` environment variable

@@ -1,8 +1,8 @@
-"""Life prediction — evaluate strain-life models and invert them for life.
+"""Life prediction: evaluate strain-life models and invert them for life.
 
 Forward model curves (strain amplitude given life) and inverse solvers (life
 given a strain amplitude or an SWT cycle). Lives are expressed in **reversals**
-``2N_f``; divide by two for cycles.
+``2N_f``, divide by two for cycles.
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ def total_strain_life(reversals, sigma_f, b, eps_f, c, E):
 def _solve_decreasing(func, target, bracket):
     """Solve ``func(x) == target`` for a strictly decreasing positive ``func``.
 
-    Raises if ``func`` is not decreasing over the bracket — which happens for a
+    Raises if ``func`` is not decreasing over the bracket, which happens for a
     degenerate fit with ``b >= 0`` or ``c >= 0`` and would otherwise return a
     silently wrong clamped life (H6).
     """
@@ -52,8 +52,8 @@ def _solve_decreasing(func, target, bracket):
     v_lo, v_hi = func(lo), func(hi)
     if not (v_lo > v_hi):
         raise ValueError(
-            "strain-life curve is not decreasing over the bracket; check that "
-            "b < 0 and c < 0 (degenerate fit cannot be inverted for life)."
+            "strain-life curve is not decreasing over the bracket. Check that "
+            "b < 0 and c < 0, a degenerate fit cannot be inverted for life."
         )
     if target >= v_lo:  # target above the curve max (life shorter than lo) -> clamp
         return lo
@@ -81,11 +81,11 @@ def predict_reversals_basquin(stress_amp, sigma_f, b) -> float:
     """Reversals from stress amplitude via inverted Basquin: ``(σa/σ'_f)^(1/b)``."""
     if not (stress_amp > 0 and sigma_f > 0):
         raise ValueError(
-            f"Basquin life requires positive stress_amp and sigma_f; "
-            f"got stress_amp={stress_amp}, sigma_f={sigma_f}"
+            f"Basquin life requires positive stress_amp and sigma_f. "
+            f"Got stress_amp={stress_amp}, sigma_f={sigma_f}"
         )
     if b == 0:
-        raise ValueError("Basquin exponent b must be nonzero (and is conventionally < 0)")
+        raise ValueError("Basquin exponent b must be nonzero, and is conventionally < 0")
     return float((stress_amp / sigma_f) ** (1.0 / b))
 
 

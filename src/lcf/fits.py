@@ -1,8 +1,8 @@
-"""Strain-life model fitting — Basquin, Coffin-Manson, Ramberg-Osgood.
+"""Strain-life model fitting: Basquin, Coffin-Manson, Ramberg-Osgood.
 
 Per-branch log-log linear least-squares is the primary fit (ADR-0005), with an
 optional nonlinear refinement of the combined total-strain curve. ``K'`` and
-``n'`` are fit independently and also derived from ``b/c``; divergence (non-Masing
+``n'`` are fit independently and also derived from ``b/c``. Divergence (non-Masing
 behavior) is flagged rather than silently forced.
 
 Sign convention: ``b`` and ``c`` are negative. Units: stress/``E`` in MPa.
@@ -132,7 +132,7 @@ def fit_coffin_manson(
     The plastic line is only physically meaningful where plastic strain is
     significant (the LCF regime). Near-runout points with plastic strain at
     measurement-noise level corrupt the fit, so pass ``min_plastic_strain`` to
-    exclude them (ASTM E739 cautions against fitting outside the valid interval;
+    exclude them (ASTM E739 cautions against fitting outside the valid interval,
     IMPLEMENTATION_REFERENCE §1-2). With no threshold, all points are used.
     """
     pa = np.asarray(plastic_strain_amp, dtype=np.float64)
@@ -141,7 +141,7 @@ def fit_coffin_manson(
     if min_plastic_strain is not None and int(m.sum()) < 2:
         raise ValueError(
             f"min_plastic_strain={min_plastic_strain} excluded all but {int(m.sum())} "
-            "point(s); lower the threshold (need >= 2 points for the plastic branch)."
+            "point(s). Lower the threshold, the plastic branch needs at least 2 points."
         )
     pl = power_law_fit(rev[m], pa[m])
     return CoffinMansonFit(
@@ -177,8 +177,8 @@ def transition_reversals(sigma_f: float, b: float, eps_f: float, c: float, E: fl
         raise ValueError("b and c must differ to compute a transition life")
     if not (sigma_f > 0 and eps_f > 0 and E > 0):
         raise ValueError(
-            f"transition life requires positive sigma_f, eps_f, E; "
-            f"got sigma_f={sigma_f}, eps_f={eps_f}, E={E}"
+            f"transition life requires positive sigma_f, eps_f, E. "
+            f"Got sigma_f={sigma_f}, eps_f={eps_f}, E={E}"
         )
     return float((eps_f * E / sigma_f) ** (1.0 / (b - c)))
 
@@ -294,7 +294,7 @@ def fit_strain_life(
         plastic_strain_amp, reversals, min_plastic_strain=min_plastic_strain
     )
 
-    # Ramberg-Osgood needs >= 2 positive plastic points; skip gracefully otherwise.
+    # Ramberg-Osgood needs >= 2 positive plastic points, skip gracefully otherwise.
     ro: RambergOsgoodFit | None
     consistency: ConsistencyCheck | None
     try:

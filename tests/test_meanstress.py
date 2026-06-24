@@ -1,4 +1,4 @@
-"""Tests for lcf.meanstress — Morrow, modified Morrow, SWT, Walker."""
+"""Tests for lcf.meanstress: Morrow, modified Morrow, SWT, Walker."""
 
 import numpy as np
 import pytest
@@ -58,7 +58,7 @@ def test_modified_morrow_has_no_equivalent_stress():
 
 
 def test_morrow_raises_when_mean_exceeds_sigma_f():
-    # H3: sigma_m >= sigma_f -> inf/negative; must raise instead
+    # H3: sigma_m >= sigma_f -> inf/negative, must raise instead
     with pytest.raises(ValueError, match="sigma_f"):
         ms.equivalent_fully_reversed_stress(100.0, 1000.0, "morrow", sigma_f=1000.0)
     with pytest.raises(ValueError, match="sigma_f"):
@@ -66,7 +66,7 @@ def test_morrow_raises_when_mean_exceeds_sigma_f():
 
 
 def test_modified_morrow_raises_when_mean_exceeds_sigma_f():
-    # H5: factor <= 0 -> complex result; must raise instead
+    # H5: factor <= 0 -> complex result, must raise instead
     with pytest.raises(ValueError, match="sigma_f"):
         ms.modified_morrow_strain_life(
             [1e3], sigma_f=1000.0, b=-0.09, eps_f=0.5, c=-0.6, E=2e5, mean_stress=1200.0

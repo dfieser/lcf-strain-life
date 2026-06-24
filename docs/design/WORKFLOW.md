@@ -1,6 +1,6 @@
 # LCF Analysis Workflow
 
-How data moves through the tool — from a scientist's raw test file to saved, recallable results.
+How data moves through the tool, from a scientist's raw test file to saved, recallable results.
 This organizes *what happens, in what order, and what gets stored*. The math for each step lives in
 [../reference/Equations_and_Labels.md](../reference/Equations_and_Labels.md) and
 [../reference/LCF_Analysis_Notes.md](../reference/LCF_Analysis_Notes.md).
@@ -9,7 +9,7 @@ This organizes *what happens, in what order, and what gets stored*. The math for
 
 ## Inputs
 
-**Raw data** — a table (xy / time-series) for one test, typically with columns:
+**Raw data**: a table (xy / time-series) for one test, typically with columns:
 
 | Column | Symbol | Notes |
 |---|---|---|
@@ -17,14 +17,14 @@ This organizes *what happens, in what order, and what gets stored*. The math for
 | strain | ε_eng | engineering strain (most common raw form) |
 | force | F | load cell reading |
 
-**Known parameters** — scalars supplied with the test:
+**Known parameters**: scalars supplied with the test:
 
 | Parameter | Symbol | Typical |
 |---|---|---|
 | cross-sectional area | A | required (to get stress from force) |
 | Young's modulus | E | given, or fit from elastic slope |
 | gauge length | L₀ | optional |
-| strain ratio | R | usually −1 (fully reversed) |
+| strain ratio | R | usually -1 (fully reversed) |
 
 > Raw data is assumed **engineering** stress/strain and is converted to **true** at ingestion.
 
@@ -40,19 +40,19 @@ minimal reshaping. Conventions to mirror:
   We do too.
 - **A `from_timeseries(time, data, …)`-style constructor**, matching py-fatigue's
   `CycleCount.from_timeseries(time, data, name, timestamp, …)`. We accept `(time, strain, force)`
-  columns; they accept `(time, signal)`.
+  columns, they accept `(time, signal)`.
 - **Reuse their hysteresis-loop column vocabulary** so a load collective drops in:
   `from` / `to` (or `range` / `mean`), with derived `amplitude`, `mean`/`meanstress`, `R`,
   `cycles` (pyLife `.load_collective` accessor names).
-- **Metadata on each dataset**: `name`, `units` (default **MPa** — the field convention in both
+- **Metadata on each dataset**: `name`, `units` (default **MPa**, the field convention in both
   tools), `timestamp`.
 - **Also accept pre-counted input** (a `from_collective` / `from_rainflow` path) for users arriving
   from those tools.
 
-**Important difference — why we can't just reuse them.** pyLife and py-fatigue are *stress-based,
+**Important difference, why we can't just reuse them.** pyLife and py-fatigue are *stress-based,
 high-cycle/durability* tools: irregular load → ASTM E1049-85 rainflow → load **collective/histogram**
 → S-N curve → Miner damage. Rainflow **collapses the signal into a histogram and discards cycle
-order.** Our strain-controlled LCF analysis needs the opposite — *per-cycle evolution* (peak/valley
+order.** Our strain-controlled LCF analysis needs the opposite, namely *per-cycle evolution* (peak/valley
 stress vs. cycle, hardening/softening, half-life loop, N_f). So we adopt their **input shapes** but
 keep an **ordered per-cycle table** as our primary internal form, and we add the strain-life fits
 (Coffin-Manson / Basquin / Ramberg-Osgood) neither library provides.
@@ -95,17 +95,17 @@ keep an **ordered per-cycle table** as our primary internal form, and we add the
 ## Stages
 
 ### 1. Ingest & normalize
-Turn the raw table into clean true stress–strain.
+Turn the raw table into clean true stress-strain.
 - `stress = force / area`
 - engineering → true: `ε = ln(1+ε_eng)`, `σ = σ_eng·(1+ε_eng)`
-- Store the normalized true σ–ε–t series as the dataset for this test.
+- Store the normalized true σ-ε-t series as the dataset for this test.
 
 ### 2. Cycle reduction
 Segment the continuous series into individual cycles and pull out the headline numbers.
-- **Number of cycles** — count strain reversals.
-- **Peak stress / valley stress** — max (tension) and min (compression) per cycle.
-- **Half-life cycle** — the cycle at N_f/2, used as the "stable" representative loop.
-- **N_f (cycles to failure)** — from a failure criterion (e.g. load/stress drop below a threshold of the stabilized value).
+- **Number of cycles**: count strain reversals.
+- **Peak stress / valley stress**: max (tension) and min (compression) per cycle.
+- **Half-life cycle**: the cycle at N_f/2, used as the "stable" representative loop.
+- **N_f (cycles to failure)**: from a failure criterion (e.g. load/stress drop below a threshold of the stabilized value).
 
 These are the quantities a user most often wants to recall directly.
 
@@ -113,7 +113,7 @@ These are the quantities a user most often wants to recall directly.
 Derived from the reduced cycles (see equations doc for formulas):
 - stress amplitude `Δσ/2`, plastic strain amplitude `Δε_p/2`
 - mean stress `σ_m = (σ_max+σ_min)/2`, tension/compression ratio `R_TC`
-- cyclic energy density `W` (hysteresis loop area) — reported at peak-hardened and half-life
+- cyclic energy density `W` (hysteresis loop area), reported at peak-hardened and half-life
 
 ### 4. Multi-test fits
 Run once several tests at different strain amplitudes exist:
@@ -142,15 +142,15 @@ recall_*   →  reads result back (recompute only if missing/stale)
 ```
 
 The persistence/recall layer (storage format, identifiers, caching/invalidation) and the concrete
-MCP tool surface are **still to be designed** — see open questions below.
+MCP tool surface are **still to be designed**. See open questions below.
 
 ---
 
 ## Open questions (to design next)
 
-- **Failure criterion** for N_f — fixed load-drop %, or user-supplied?
-- **Cycle detection** — rely on the controlled strain waveform (reversal counting) or a general
+- **Failure criterion** for N_f: fixed load-drop %, or user-supplied?
+- **Cycle detection**: rely on the controlled strain waveform (reversal counting) or a general
   rainflow method for irregular data?
-- **Storage backend** — where/how saved results live (per-test files vs a small database).
-- **Identifiers** — how tests/datasets/materials are named and grouped for recall.
-- **Result invalidation** — when inputs or parameters change, which cached results recompute.
+- **Storage backend**: where/how saved results live (per-test files vs a small database).
+- **Identifiers**: how tests/datasets/materials are named and grouped for recall.
+- **Result invalidation**: when inputs or parameters change, which cached results recompute.

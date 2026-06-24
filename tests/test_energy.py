@@ -1,4 +1,4 @@
-"""Tests for lcf.energy — shoelace loop area."""
+"""Tests for lcf.energy: shoelace loop area."""
 
 import numpy as np
 import pytest

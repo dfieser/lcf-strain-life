@@ -1,8 +1,8 @@
 # Architecture Decision Records (ADRs)
 
 This is the project's **decision log**. Each ADR records one significant decision: its context,
-the choice made, the consequences, and the source/rationale. ADRs are immutable once accepted;
-to change a decision, add a new ADR that supersedes the old one.
+the choice made, the consequences, and the source/rationale. ADRs are immutable once accepted.
+To change a decision, add a new ADR that supersedes the old one.
 
 Format: lightweight [MADR](https://adr.github.io/madr/)-style.
 

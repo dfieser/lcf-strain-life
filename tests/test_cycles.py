@@ -1,4 +1,4 @@
-"""Tests for lcf.cycles — turning-point detection and cycle reduction."""
+"""Tests for lcf.cycles: turning-point detection and cycle reduction."""
 
 import numpy as np
 import pytest
@@ -141,7 +141,7 @@ def test_find_failure_cycle_uses_max_reference():
     # default reference is the max (cyclically hardened) peak = 500
     peak = np.array([400, 450, 480, 490, 495, 500, 495, 480, 400, 340, 300.0])
     n_f, runout = cycles.find_failure_cycle(peak, pct=30.0)  # ref = max = 500
-    # threshold = 350; first below (after the peak) at index 9 (340) -> cycle 10
+    # threshold = 350, first below (after the peak) at index 9 (340) -> cycle 10
     assert n_f == 10
     assert runout is False
 
