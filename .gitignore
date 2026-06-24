@@ -28,6 +28,8 @@ htmlcov/
 
 # Local LCF result stores (runtime data)
 *.lcfstore/
+.lcfstore/
+examples/output/
 scratch/
 *.sqlite
 *.db

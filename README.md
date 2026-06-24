@@ -42,16 +42,17 @@ Requires Python ≥ 3.11.
 ```python
 import lcf
 
-# fit strain-life constants from per-test reduced data
+# fit strain-life constants from per-test reduced data (SAE 1137)
 fit = lcf.fit_strain_life(
     total_strain_amp=[0.009, 0.007, 0.005, 0.003, 0.002, 0.00175],
     stress_amp=[553, 522, 464, 405, 350, 319],         # MPa, half-life
     reversals=[4234, 7398, 14768, 77104, 437498, 3327958],
     E=208000,                                           # MPa
+    min_plastic_strain=5e-4,   # exclude near-runout points from the plastic branch
 )
-print(fit.coffin_manson.eps_f, fit.coffin_manson.c)
-print(fit.basquin.sigma_f, fit.basquin.b)
-print(fit.transition_reversals)
+print(fit.coffin_manson.eps_f, fit.coffin_manson.c)   # ~1.11, -0.62
+print(fit.basquin.sigma_f, fit.basquin.b)             # ~1073 MPa, -0.084
+print(fit.transition_reversals)                        # ~22,000 reversals
 ```
 
 ## Quick start (MCP server)
