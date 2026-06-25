@@ -68,6 +68,7 @@ Register with Claude Code or Claude Desktop over stdio:
 
 ## Documentation
 
+- [docs/index.md](docs/index.md) is the documentation home: installation, usage, theory, and API reference. Build the site with `mkdocs serve` after `pip install -e ".[docs]"`.
 - [docs/reference](docs/reference) holds the equations, symbols, and physics.
 - [docs/design/WORKFLOW.md](docs/design/WORKFLOW.md) describes the data flow and the compute, save, recall model.
 - [docs/decisions](docs/decisions) holds the Architecture Decision Records, one per major design choice.

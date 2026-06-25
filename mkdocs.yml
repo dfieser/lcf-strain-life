@@ -1,0 +1,29 @@
+site_name: lcf-strain-life
+site_description: AI-agent-native toolkit for fatigue analysis of materials
+repo_url: https://github.com/dfieser/lcf-strain-life
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Theory: theory.md
+  - API reference: api.md
+  - Agent usage: AGENT_USAGE.md
+  - Reference:
+      - Equations and labels: reference/Equations_and_Labels.md
+      - Analysis notes: reference/LCF_Analysis_Notes.md
+  - Design:
+      - Workflow: design/WORKFLOW.md
+  - Decisions: decisions/README.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - tables
