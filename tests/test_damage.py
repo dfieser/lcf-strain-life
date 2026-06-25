@@ -56,9 +56,16 @@ def test_manson_halford_phase_lives_properties():
     n1, n2 = damage.manson_halford_phase_lives(lives)
     assert np.all(n1 > 0) and np.all(n2 > 0)
     assert np.all(n1 < lives) and np.all(n2 <= lives)
-    # longest life spends the largest fraction in phase II
-    frac2 = n2 / lives
-    assert frac2[2] > frac2[0]
+    # standard Manson-Halford: longer-life levels spend a larger fraction in
+    # Phase I (the reverse of the earlier, incorrect parametric model)
+    frac1 = n1 / lives
+    assert frac1[2] > frac1[0]
+
+
+def test_manson_halford_knee_matches_nasa_value():
+    # NASA TM-87325: for N_short=1e3, N_long=1e5 the Phase I life is about 111
+    n1, _ = damage.manson_halford_phase_lives([1e3, 1e5])
+    assert n1[0] == pytest.approx(110.7, rel=1e-2)
 
 
 def test_dldr_wrapper_runs():

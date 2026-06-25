@@ -55,12 +55,17 @@ def fit_log_life(amplitude, life) -> LogLifeFit:
     """Fit ``log10(N) = A + B log10(amplitude)`` by ordinary least squares."""
     x, y = _xy(amplitude, life)
     n = x.size
+    xbar = float(np.mean(x))
+    sxx = float(np.sum((x - xbar) ** 2))
+    if sxx == 0:
+        raise ValueError(
+            "need at least 2 distinct amplitudes to fit a regression, all "
+            "amplitudes are equal (Sxx is zero)"
+        )
     res = scistats.linregress(x, y)
     yhat = res.intercept + res.slope * x
     sse = float(np.sum((y - yhat) ** 2))
     s = np.sqrt(sse / (n - 2)) if n > 2 else float("nan")
-    xbar = float(np.mean(x))
-    sxx = float(np.sum((x - xbar) ** 2))
     return LogLifeFit(
         slope=float(res.slope), intercept=float(res.intercept),
         residual_std=float(s), n_points=int(n), x_mean=xbar, sxx=sxx,
@@ -162,6 +167,8 @@ def fit_log_life_censored(amplitude, life, censored) -> LogLifeFit:
 
     res = optimize.minimize(nll, p0, method="Nelder-Mead",
                             options={"xatol": 1e-8, "fatol": 1e-8, "maxiter": 5000})
+    if not np.all(np.isfinite(res.x)) or not np.isfinite(nll(res.x)):
+        raise ValueError(f"censored MLE failed to produce a finite fit: {res.message}")
     b0, b1, log_sigma = res.x
     xbar = float(np.mean(x))
     sxx = float(np.sum((x - xbar) ** 2))

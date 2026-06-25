@@ -70,6 +70,8 @@ def reversals(series):
     x = np.asarray(series, dtype=np.float64)
     if x.size == 0:
         return
+    if not np.all(np.isfinite(x)):
+        raise ValueError("series contains NaN or inf, clean the data before counting")
     for p in _reduce_points([(i, x[i]) for i in range(x.size)]):
         yield p
 

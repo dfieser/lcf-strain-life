@@ -33,8 +33,10 @@ def frequency_modified_coefficient(eps_f_coeff: float, *, frequency: float,
                                    k: float, freq_ref: float = 1.0) -> float:
     """Frequency-modified Coffin-Manson coefficient ``C_f = C_o*(f/f_ref)**(k-1)``.
 
-    Reduces to ``C_o`` at the reference frequency. The exponent ``k`` is material
-    specific and sets the strength of the frequency effect.
+    This is the Solomon and Engelmaier coefficient form, where frequency scales
+    the ductility coefficient. It is a common variant and is not literally
+    Coffin's original form, which folds frequency inside the life term. Reduces to
+    ``C_o`` at the reference frequency. The exponent ``k`` is material specific.
     """
     return eps_f_coeff * (frequency / freq_ref) ** (k - 1.0)
 
@@ -132,6 +134,8 @@ def interpolate_constants(table, temperature: float, *, log_coeffs: bool = True)
     T = np.asarray(table["T"], dtype=np.float64)
     order = np.argsort(T)
     T = T[order]
+    if T.size >= 2 and np.any(np.diff(T) <= 0):
+        raise ValueError("table temperatures must be distinct")
     out: dict = {}
     coeff_keys = {"sigma_f", "eps_f", "K"}
     for key, values in table.items():
@@ -139,6 +143,8 @@ def interpolate_constants(table, temperature: float, *, log_coeffs: bool = True)
             continue
         v = np.asarray(values, dtype=np.float64)[order]
         if log_coeffs and key in coeff_keys:
+            if np.any(v <= 0):
+                raise ValueError(f"coefficient '{key}' must be positive for log interpolation")
             out[key] = float(10.0 ** np.interp(temperature, T, np.log10(v)))
         else:
             out[key] = float(np.interp(temperature, T, v))

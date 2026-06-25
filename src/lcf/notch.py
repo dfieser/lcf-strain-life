@@ -93,11 +93,15 @@ def kf_peterson(Kt: float, a: float, r: float) -> float:
 
     ``a`` is the Peterson material length and ``r`` the notch radius, same units.
     """
+    if r <= 0:
+        raise ValueError("notch radius r must be positive")
     return 1.0 + (Kt - 1.0) / (1.0 + a / r)
 
 
 def kf_neuber(Kt: float, beta: float, r: float) -> float:
     """Fatigue notch factor by Neuber: ``Kf = 1 + (Kt-1)/(1 + sqrt(beta/r))``."""
+    if r <= 0:
+        raise ValueError("notch radius r must be positive")
     return 1.0 + (Kt - 1.0) / (1.0 + np.sqrt(beta / r))
 
 

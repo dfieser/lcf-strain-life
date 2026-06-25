@@ -76,24 +76,25 @@ def miner(counts, lives, *, d_crit: float = 1.0) -> DamageResult:
     )
 
 
-def manson_halford_phase_lives(lives, *, exponent: float = 0.25):
+def manson_halford_phase_lives(lives, *, knee_coeff: float = 0.35, exponent: float = 0.25):
     """Split each life into Phase I and Phase II for the Double Linear Damage Rule.
 
-    This is a documented parametric knee model following Manson-Halford 1981. The
-    Phase II fraction of life grows with the life level, ``f_II = (N_f/N_ref)**
-    exponent`` referenced to the longest life in the spectrum, so the shortest
-    lives spend proportionally more of their life in Phase I. Returns
-    ``(phase1_lives, phase2_lives)``.
+    Uses the Manson-Halford knee, where the Phase I fraction of a level is
+    ``f_I = knee_coeff * (N_f/N_long)**exponent`` referenced to the longest life
+    in the spectrum, so longer-life levels spend proportionally more of their
+    life in Phase I. With the standard constants 0.35 and 0.25 the shortest level
+    in an N_short to N_long spectrum gets a Phase I life of
+    ``N_short * 0.35 * (N_short/N_long)**0.25``, which reproduces the published
+    Manson-Halford table value. Returns ``(phase1_lives, phase2_lives)``.
     """
     nf = np.asarray(lives, dtype=np.float64)
     if np.any(nf <= 0):
         raise ValueError("all lives must be positive")
-    n_ref = float(np.max(nf))
-    f_two = np.clip((nf / n_ref) ** exponent, 0.0, 1.0)
-    phase2 = nf * f_two
-    phase1 = nf - phase2
-    # guard against a zero phase-I life for the reference level
-    phase1 = np.where(phase1 <= 0, nf * 1e-9, phase1)
+    n_long = float(np.max(nf))
+    f_one = np.clip(knee_coeff * (nf / n_long) ** exponent, 1e-12, 1.0)
+    phase1 = nf * f_one
+    phase2 = nf - phase1
+    phase2 = np.where(phase2 <= 0, nf * 1e-9, phase2)
     return phase1, phase2
 
 
@@ -145,6 +146,8 @@ def corten_dolan(counts, stresses, lives, *, d: float) -> DamageResult:
     s = np.asarray(stresses, dtype=np.float64)
     if s.shape != n.shape:
         raise ValueError("stresses must match counts shape")
+    if np.any(s <= 0):
+        raise ValueError("Corten-Dolan requires positive stresses")
     k = int(np.argmax(s))
     sigma_1 = s[k]
     nf_1 = nf[k]

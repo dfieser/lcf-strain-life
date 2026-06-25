@@ -88,6 +88,8 @@ def equivalent_fully_reversed_stress(
     if model is MeanStressModel.WALKER:
         if gamma is None:
             raise ValueError("Walker correction requires gamma, use walker_gamma_steel to estimate it")
+        if not (0.0 < gamma <= 1.0):
+            raise ValueError(f"Walker gamma must be in (0, 1], got {gamma}")
         return np.clip(smax, 0.0, None) ** (1.0 - gamma) * sa**gamma
     if model is MeanStressModel.MODIFIED_MORROW:
         # modified Morrow has no single closed-form σ_ar, use its strain-life form

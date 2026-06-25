@@ -56,7 +56,7 @@ class LcfService:
         self.store.save(name, "per_cycle", {"n_cycles": ta.reduced.n_cycles},
                         dataframe=ta.metrics.table, input_hash=ihash)
         self.store.save(name, "summary", ta.summary, input_hash=ihash)
-        return ta.summary
+        return to_jsonable(ta.summary)
 
     def analyze_csv(
         self,
@@ -84,7 +84,7 @@ class LcfService:
         self.store.save(name, "per_cycle", {"n_cycles": ta.reduced.n_cycles},
                         dataframe=ta.metrics.table, input_hash=ihash)
         self.store.save(name, "summary", ta.summary, input_hash=ihash)
-        return ta.summary
+        return to_jsonable(ta.summary)
 
     def fit_strain_life(
         self,
@@ -122,8 +122,8 @@ class LcfService:
         two_nf = life.predict_reversals_from_total_strain(
             total_strain_amp, sigma_f, b, eps_f, c, E
         )
-        return {"reversals": two_nf, "cycles": two_nf / 2.0,
-                "total_strain_amp": total_strain_amp}
+        return to_jsonable({"reversals": two_nf, "cycles": two_nf / 2.0,
+                            "total_strain_amp": total_strain_amp})
 
     def mean_stress_equivalent_stress(
         self, stress_amp: float, mean_stress: float, model: str,
@@ -141,8 +141,9 @@ class LcfService:
         sar = equivalent_fully_reversed_stress(
             stress_amp, mean_stress, m, sigma_f=sigma_f, gamma=gamma
         )
-        return {"equivalent_stress_amp": float(sar), "model": m.value,
-                "gamma": gamma, "stress_amp": stress_amp, "mean_stress": mean_stress}
+        return to_jsonable({"equivalent_stress_amp": float(sar), "model": m.value,
+                            "gamma": gamma, "stress_amp": stress_amp,
+                            "mean_stress": mean_stress})
 
     # ----------------------------------------------------- phase 2: variable amp
     def count_rainflow(self, name: str, strain_history: list[float], *,

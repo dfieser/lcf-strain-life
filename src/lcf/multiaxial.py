@@ -26,12 +26,14 @@ __all__ = [
 ]
 
 
-def fatemi_socie(shear_strain_amp, sigma_n_max, *, sigma_y: float, k: float = 1.0) -> float:
+def fatemi_socie(shear_strain_amp, sigma_n_max, *, sigma_y: float, k: float = 0.3) -> float:
     """Fatemi-Socie parameter ``(dgamma_max/2)(1 + k*sigma_n_max/sigma_y)``.
 
     ``shear_strain_amp`` is the maximum shear strain amplitude on the critical
     plane, ``sigma_n_max`` the maximum normal stress on that plane. The normal
-    stress term captures extra hardening under non-proportional loading.
+    stress term captures extra hardening under non-proportional loading. The
+    material constant ``k`` defaults to 0.3, a common value for ductile metals,
+    and should be fitted when data allows.
     """
     if sigma_y <= 0:
         raise ValueError("sigma_y must be positive")
