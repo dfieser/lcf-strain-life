@@ -8,6 +8,27 @@ Major design decisions are recorded as ADRs in [docs/decisions/](docs/decisions/
 
 ## [Unreleased]
 
+### Added: Phase 2 engineering layer
+- `counting`: in-house ASTM E1049 rainflow with preserved cycle indices and a
+  repeat-history closure. Validated against the ASTM worked example.
+- `damage`: Palmgren-Miner, Double Linear Damage Rule with the Manson-Halford
+  knee, and Corten-Dolan. Validated against Golden C and D.
+- `notch`: Neuber and Glinka local-strain solvers, Kt/Kf/q, and end-to-end notch
+  life. Validated against the SAE 1005 example (Golden E).
+- `stats`: E739 log-life regression, confidence and prediction intervals, Owen
+  R-C design curves, and a right-censored maximum-likelihood fit. The Owen factor
+  matches standard tables.
+- `hightemp`: frequency-modified Coffin-Manson, time-fraction creep-fatigue with
+  a D-diagram envelope, and temperature-dependent constant interpolation.
+- `multiaxial`: critical-plane parameters and a plane-search interface, survey only.
+- `spectrum`: end-to-end variable-amplitude life, counting to mean correction to
+  damage.
+- Six new MCP tools, Phase 2 plots, optional metadata fields, and expanded public API.
+- Agent-facing docs: `AGENTS.md`, `docs/AGENT_USAGE.md`, `llms.txt`, and a
+  multi-page docs set with `mkdocs.yml`.
+- ADR-0010 through ADR-0012 (Phase 2 defaults, in-house rainflow, currency flags).
+- 217 tests passing, pyflakes clean, clean under deprecation and future warnings.
+
 ### Added: tooling & docs
 - Repository scaffolding: `pyproject.toml` (hatchling, src layout), MIT `LICENSE`,
   `README.md`, `.gitignore`, `.gitattributes`, this changelog, and the ADR decision log.
