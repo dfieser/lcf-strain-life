@@ -1,11 +1,9 @@
 """Tests for lcf.store: SQLite/Parquet/PNG persistence and hashing."""
 
 import json
-import math
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from lcf.store import LcfStore, dumps, hash_inputs, to_jsonable
 

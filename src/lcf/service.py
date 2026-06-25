@@ -10,7 +10,6 @@ compute/save/recall model (ADR-0007, ADR-0008).
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from . import counting, damage, fits, hightemp, life, notch, spectrum, stats
 from .ingest import from_timeseries, read_csv

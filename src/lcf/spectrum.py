@@ -71,7 +71,7 @@ def spectrum_life(
 
     cyc = counting.count_rainflow(strain, close_residue=close_residue)
     if len(cyc) == 0:
-        raise ValueError("no cycles counted; history has no complete reversal")
+        raise ValueError("no cycles counted, the history has no complete reversal")
 
     i0 = cyc["i_start"].to_numpy()
     i1 = cyc["i_end"].to_numpy()

@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 
 from lcf import meanstress as ms
-from lcf.models import MeanStressModel
 
 
 # --- equivalent fully-reversed stress: reductions ---------------------------

@@ -1,10 +1,9 @@
 """Tests for lcf.plots: figures build and save headless."""
 
-import numpy as np
 import pytest
 from matplotlib.figure import Figure
 
-from lcf import cycles, fits, metrics, pipeline, plots
+from lcf import cycles, fits, metrics, plots
 from lcf.ingest import from_timeseries
 from lcf.models import TestMetadata
 
@@ -60,7 +59,6 @@ def test_hysteresis_peak_valley_energy_plots(synthetic_cyclic, tmp_path):
 
 
 def test_phase2_plots(tmp_path, sae1137):
-    import numpy as np
     from lcf import counting, stats as lstats
     # design curve from a regression fit
     g = sae1137

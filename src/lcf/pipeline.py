@@ -14,7 +14,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import ClassVar
 
-import numpy as np
 import pandas as pd
 
 from . import cycles, fits, metrics

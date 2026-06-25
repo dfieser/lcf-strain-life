@@ -3,7 +3,6 @@
 See docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 4.4.
 """
 
-import numpy as np
 import pytest
 
 from lcf import hightemp as ht

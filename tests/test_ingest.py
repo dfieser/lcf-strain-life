@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from lcf import schema
-from lcf.ingest import TestRun, from_dataframe, from_timeseries, normalize, read_csv
+from lcf.ingest import TestRun, from_timeseries, normalize, read_csv
 from lcf.models import AnalysisParams, MeanStressModel, TestMetadata
 
 

@@ -18,7 +18,7 @@ from matplotlib.figure import Figure
 
 from . import schema, stats
 from .fits import StrainLifeFit
-from .life import elastic_strain_life, plastic_strain_life, total_strain_life
+from .life import elastic_strain_life, plastic_strain_life
 from .hightemp import creep_fatigue_envelope_allowable
 from .metrics import PerCycleMetrics
 from .stats import LogLifeFit
