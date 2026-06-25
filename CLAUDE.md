@@ -1,6 +1,8 @@
 # CLAUDE.md
 
-Instructions for any AI agent working in this repository. Read this before writing code or docs.
+Instructions for Claude Code working in this repository. The full, cross-tool
+contributor guidance lives in [AGENTS.md](AGENTS.md). Read it. The mandatory
+writing style below is repeated here because it is critical.
 
 ## Mandatory writing style
 

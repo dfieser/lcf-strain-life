@@ -72,7 +72,14 @@ Register with Claude Code or Claude Desktop over stdio:
 - [docs/design/WORKFLOW.md](docs/design/WORKFLOW.md) describes the data flow and the compute, save, recall model.
 - [docs/decisions](docs/decisions) holds the Architecture Decision Records, one per major design choice.
 - [CHANGELOG.md](CHANGELOG.md) is the chronological log of changes.
-- [CLAUDE.md](CLAUDE.md) holds the rules and positioning for AI agents working on the repo.
+
+## For AI agents
+
+This toolkit is built to be driven by AI agents over MCP.
+
+- [docs/AGENT_USAGE.md](docs/AGENT_USAGE.md): the MCP tools, their units, and the compute, save, recall pattern, for agents using the tool.
+- [AGENTS.md](AGENTS.md): guidance for agents working on the repository, with CLAUDE.md as the Claude Code companion.
+- [llms.txt](llms.txt): a machine-readable index of the docs.
 
 ## Project layout
 

@@ -1,0 +1,27 @@
+# lcf-strain-life
+
+> An AI-agent-native toolkit for fatigue analysis of materials. A Python library
+> plus an MCP server that reduce strain-controlled fatigue test data, fit the
+> standard strain-life models, count variable-amplitude histories, and predict
+> life, all callable by AI agents over MCP.
+
+This file indexes the project for language models. All analysis uses true stress
+and true strain. Stress is in MPa, strain is a dimensionless fraction, and the
+fatigue exponents b and c are negative.
+
+## Start here
+
+- [README](README.md): overview, install, quick start for the library and the MCP server.
+- [Agent usage guide](docs/AGENT_USAGE.md): the MCP tools, their units, and the compute, save, recall pattern.
+- [AGENTS.md](AGENTS.md): guidance for agents working on the repository.
+
+## Reference
+
+- [Equations and labels](docs/reference/Equations_and_Labels.md): each equation with its symbols, units, and code labels.
+- [Analysis notes](docs/reference/LCF_Analysis_Notes.md): the analysis pipeline in detail.
+- [Workflow](docs/design/WORKFLOW.md): how data moves from a raw file to saved results.
+
+## Design and decisions
+
+- [Decision records](docs/decisions/README.md): the ADR index, one record per major design choice.
+- [Changelog](CHANGELOG.md): the chronological log of changes.
