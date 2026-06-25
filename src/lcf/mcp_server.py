@@ -135,6 +135,122 @@ def mean_stress_equivalent_stress(
 
 
 @mcp.tool()
+def count_rainflow(name: str, strain_history: list[float], close_residue: bool = False) -> dict:
+    """Rainflow count a strain history (ASTM E1049), preserving cycle indices.
+
+    Saves the full per-cycle table under ``name`` (recall with
+    ``recall_result(name, "rainflow")``) and returns a compact summary. Set
+    ``close_residue`` to treat the history as repeating.
+    """
+    return _service.count_rainflow(name, strain_history, close_residue=close_residue)
+
+
+@mcp.tool()
+def compute_spectrum_life(
+    strain_history: list[float],
+    stress_history: list[float],
+    sigma_f: float,
+    b: float,
+    eps_f: float,
+    c: float,
+    E: float,
+    mean_stress_method: str = "swt",
+    rule: str = "miner",
+    name: str | None = None,
+) -> dict:
+    """Variable-amplitude life from aligned strain and stress histories.
+
+    Rainflow counts the strain, applies a per-cycle mean-stress correction
+    (none, morrow, swt), inverts the strain-life curve for each cycle, and sums
+    damage (miner or dldr). Returns damage per block and blocks and cycles to
+    failure. Persists the per-cycle table if ``name`` is given.
+    """
+    return _service.compute_spectrum_life(
+        strain_history, stress_history, sigma_f=sigma_f, b=b, eps_f=eps_f, c=c, E=E,
+        mean_stress_method=mean_stress_method, rule=rule, name=name,
+    )
+
+
+@mcp.tool()
+def compute_damage(counts: list[float], lives: list[float], rule: str = "miner",
+                   d_crit: float = 1.0) -> dict:
+    """Cumulative damage for a counted block of cycles (miner or dldr).
+
+    ``counts`` and ``lives`` are aligned per-cycle cycle-counts and lives to
+    failure. Returns damage, blocks to failure, and cycles to failure.
+    """
+    return _service.compute_damage(counts, lives, rule=rule, d_crit=d_crit)
+
+
+@mcp.tool()
+def compute_notch_local(
+    nominal_amp: float,
+    Kt: float,
+    E: float,
+    K: float,
+    n: float,
+    sigma_f: float,
+    b: float,
+    eps_f: float,
+    c: float,
+    method: str = "neuber",
+    name: str | None = None,
+) -> dict:
+    """Local notch stress, strain, and life from a nominal stress amplitude.
+
+    Uses Neuber (default) or Glinka on the cyclic Ramberg-Osgood curve, then the
+    strain-life solver. ``K`` and ``n`` are the cyclic strength coefficient and
+    exponent.
+    """
+    return _service.compute_notch_local(
+        nominal_amp, Kt, E=E, K=K, n=n, sigma_f=sigma_f, b=b, eps_f=eps_f, c=c,
+        method=method, name=name,
+    )
+
+
+@mcp.tool()
+def fit_design_curve(
+    amplitude: list[float],
+    life_values: list[float],
+    reliability: float = 0.90,
+    confidence: float = 0.90,
+    censored: list[bool] | None = None,
+    design_amplitude: float | None = None,
+    material: str | None = None,
+) -> dict:
+    """Fit a strain-life regression and report design (reliability-confidence) life.
+
+    Life is the dependent variable (E739 style). Right-censored runouts are
+    handled by maximum likelihood when ``censored`` flags are given. If
+    ``design_amplitude`` is set, returns the median and the R-C design life
+    there using the Owen tolerance factor.
+    """
+    return _service.fit_design_curve(
+        amplitude, life_values, reliability=reliability, confidence=confidence,
+        censored=censored, design_amplitude=design_amplitude, material=material,
+    )
+
+
+@mcp.tool()
+def compute_creep_fatigue(
+    cycle_counts: list[float],
+    fatigue_lives: list[float],
+    hold_times: list[float],
+    rupture_times: list[float],
+    envelope: float = 1.0,
+    name: str | None = None,
+) -> dict:
+    """Time-fraction creep-fatigue damage with a D-diagram envelope check.
+
+    Returns the fatigue damage, creep damage, total, and whether the point lies
+    inside the bilinear creep-fatigue interaction envelope.
+    """
+    return _service.compute_creep_fatigue(
+        cycle_counts, fatigue_lives, hold_times, rupture_times, envelope=envelope, name=name,
+    )
+
+
+@mcp.tool()
 def recall_result(key: str, quantity: str) -> dict:
     """Recall a previously computed result (e.g. a test summary or a fit).
 

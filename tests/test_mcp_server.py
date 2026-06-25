@@ -18,6 +18,9 @@ def test_expected_tools_registered():
         "analyze_test_timeseries", "analyze_test_csv", "fit_strain_life",
         "predict_life", "mean_stress_equivalent_stress", "recall_result",
         "list_results",
+        # Phase 2
+        "count_rainflow", "compute_spectrum_life", "compute_damage",
+        "compute_notch_local", "fit_design_curve", "compute_creep_fatigue",
     }
     assert expected <= names
 

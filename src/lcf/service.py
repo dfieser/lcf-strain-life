@@ -12,7 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from . import fits, life
+from . import counting, damage, fits, hightemp, life, notch, spectrum, stats
 from .ingest import from_timeseries, read_csv
 from .meanstress import equivalent_fully_reversed_stress, walker_gamma_steel
 from .models import AnalysisParams, MeanStressModel, TestMetadata
@@ -144,6 +144,117 @@ class LcfService:
         )
         return {"equivalent_stress_amp": float(sar), "model": m.value,
                 "gamma": gamma, "stress_amp": stress_amp, "mean_stress": mean_stress}
+
+    # ----------------------------------------------------- phase 2: variable amp
+    def count_rainflow(self, name: str, strain_history: list[float], *,
+                       close_residue: bool = False) -> dict:
+        """Rainflow count a strain history, persist the per-cycle table."""
+        df = counting.count_rainflow(strain_history, close_residue=close_residue)
+        ihash = hash_inputs(list(strain_history), close_residue)
+        summary = {
+            "n_cycles": int(len(df)),
+            "total_count": float(df["count"].sum()) if len(df) else 0.0,
+            "max_range": float(df["range"].max()) if len(df) else 0.0,
+        }
+        self.store.save(name, "rainflow", summary, dataframe=df, input_hash=ihash)
+        return summary
+
+    def compute_spectrum_life(
+        self, strain_history: list[float], stress_history: list[float], *,
+        sigma_f: float, b: float, eps_f: float, c: float, E: float,
+        mean_stress_method: str = "swt", rule: str = "miner", name: str | None = None,
+    ) -> dict:
+        """Variable-amplitude life from a strain and stress history."""
+        res = spectrum.spectrum_life(
+            strain_history, stress_history, sigma_f=sigma_f, b=b, eps_f=eps_f, c=c, E=E,
+            mean_stress_method=mean_stress_method, rule=rule,
+        )
+        out = {
+            "damage_per_block": res.damage_per_block,
+            "blocks_to_failure": res.blocks_to_failure,
+            "cycles_to_failure": res.cycles_to_failure,
+            "mean_stress_method": res.mean_stress_method,
+            "rule": res.rule,
+            "n_cycles": int(len(res.cycles)),
+        }
+        if name:
+            ihash = hash_inputs(list(strain_history), list(stress_history),
+                                sigma_f, b, eps_f, c, E, mean_stress_method, rule)
+            self.store.save(name, "spectrum_life", out, dataframe=res.cycles, input_hash=ihash)
+        return to_jsonable(out)
+
+    def compute_damage(self, counts: list[float], lives: list[float], *,
+                       rule: str = "miner", d_crit: float = 1.0) -> dict:
+        """Cumulative damage for a counted block (Miner or DLDR)."""
+        if rule == "miner":
+            dr = damage.miner(counts, lives, d_crit=d_crit)
+        elif rule == "dldr":
+            dr = damage.dldr(counts, lives, d_crit=d_crit)
+        else:
+            raise ValueError("rule must be miner or dldr")
+        return to_jsonable(dr)
+
+    def compute_notch_local(
+        self, nominal_amp: float, Kt: float, *,
+        E: float, K: float, n: float, sigma_f: float, b: float, eps_f: float, c: float,
+        method: str = "neuber", name: str | None = None,
+    ) -> dict:
+        """Local notch stress, strain, and life from a nominal stress amplitude."""
+        res = notch.notch_local_life(
+            nominal_amp, Kt, E=E, K=K, n=n, sigma_f=sigma_f, b=b, eps_f=eps_f, c=c,
+            method=method,
+        )
+        if name:
+            self.store.save(name, "notch_local", res,
+                            input_hash=hash_inputs(nominal_amp, Kt, E, K, n, method))
+        return to_jsonable(res)
+
+    # ----------------------------------------------------- phase 2: statistics
+    def fit_design_curve(
+        self, amplitude: list[float], life_values: list[float], *,
+        reliability: float = 0.90, confidence: float = 0.90,
+        censored: list[bool] | None = None, design_amplitude: float | None = None,
+        material: str | None = None,
+    ) -> dict:
+        """Fit a strain-life regression and report design (R-C) values."""
+        if censored is not None and any(censored):
+            fit = stats.fit_log_life_censored(amplitude, life_values, censored)
+        else:
+            fit = stats.fit_log_life(amplitude, life_values)
+        out = {
+            "slope": fit.slope, "intercept": fit.intercept,
+            "residual_std": fit.residual_std, "n_points": fit.n_points,
+            "r_squared": fit.r_squared,
+            "owen_factor": stats.owen_tolerance_factor(fit.n_points, reliability, confidence),
+        }
+        if design_amplitude is not None:
+            out["median_life"] = float(stats.predict_life(fit, design_amplitude))
+            out["design_life"] = stats.design_life(
+                fit, design_amplitude, reliability=reliability, confidence=confidence
+            )
+        if material:
+            self.store.save(material, "design_curve", out,
+                            input_hash=hash_inputs(list(amplitude), list(life_values),
+                                                   reliability, confidence))
+        return to_jsonable(out)
+
+    # ----------------------------------------------------- phase 2: high temp
+    def compute_creep_fatigue(
+        self, cycle_counts: list[float], fatigue_lives: list[float],
+        hold_times: list[float], rupture_times: list[float], *,
+        envelope: float = 1.0, knee: tuple[float, float] = (0.3, 0.3),
+        name: str | None = None,
+    ) -> dict:
+        """Time-fraction creep-fatigue damage with a D-diagram envelope check."""
+        r = hightemp.creep_fatigue_damage(
+            cycle_counts, fatigue_lives, hold_times, rupture_times, envelope=envelope
+        )
+        chk = hightemp.creep_fatigue_envelope_check(r.d_fatigue, r.d_creep, knee=knee)
+        out = {**to_jsonable(r), "envelope_check": chk}
+        if name:
+            self.store.save(name, "creep_fatigue", out,
+                            input_hash=hash_inputs(list(cycle_counts), list(hold_times)))
+        return to_jsonable(out)
 
     # --------------------------------------------------------------- recall
     def recall(self, key: str, quantity: str) -> dict | None:

@@ -60,6 +60,48 @@ from .pipeline import (
     fit_from_summary,
 )
 
+# Phase 2: variable amplitude, damage, notch, statistics, high temperature
+from .counting import count_rainflow, extract_cycles, mean_stress_per_cycle
+from .damage import (
+    DamageResult,
+    corten_dolan,
+    dldr,
+    manson_halford_phase_lives,
+    miner,
+)
+from .notch import (
+    glinka_local,
+    kf_neuber,
+    kf_peterson,
+    neuber_local,
+    notch_local_life,
+    notch_sensitivity,
+)
+from .stats import (
+    LogLifeFit,
+    confidence_interval,
+    design_life,
+    fit_log_life,
+    fit_log_life_censored,
+    owen_tolerance_factor,
+    prediction_interval,
+)
+from .hightemp import (
+    CreepFatigueResult,
+    creep_fatigue_damage,
+    creep_fatigue_envelope_check,
+    frequency_modified_plastic_strain,
+    interpolate_constants,
+)
+from .multiaxial import (
+    brown_miller,
+    critical_plane_search,
+    fatemi_socie,
+    swt_multiaxial,
+    von_mises_equivalent_strain,
+)
+from .spectrum import SpectrumResult, spectrum_life
+
 __all__ = [
     "__version__",
     # models
@@ -84,4 +126,21 @@ __all__ = [
     # pipeline
     "analyze_test", "analyze_material", "fit_from_summary",
     "TestAnalysis", "MaterialAnalysis",
+    # phase 2: counting / damage
+    "count_rainflow", "extract_cycles", "mean_stress_per_cycle",
+    "miner", "dldr", "corten_dolan", "manson_halford_phase_lives", "DamageResult",
+    # phase 2: notch
+    "neuber_local", "glinka_local", "notch_local_life",
+    "kf_peterson", "kf_neuber", "notch_sensitivity",
+    # phase 2: statistics
+    "fit_log_life", "fit_log_life_censored", "design_life", "owen_tolerance_factor",
+    "confidence_interval", "prediction_interval", "LogLifeFit",
+    # phase 2: high temperature
+    "creep_fatigue_damage", "creep_fatigue_envelope_check",
+    "frequency_modified_plastic_strain", "interpolate_constants", "CreepFatigueResult",
+    # phase 2: multiaxial survey
+    "fatemi_socie", "brown_miller", "swt_multiaxial",
+    "von_mises_equivalent_strain", "critical_plane_search",
+    # phase 2: spectrum life
+    "spectrum_life", "SpectrumResult",
 ]
