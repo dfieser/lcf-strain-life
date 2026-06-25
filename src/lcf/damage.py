@@ -1,0 +1,162 @@
+"""Cumulative damage accumulation under variable-amplitude loading.
+
+Palmgren-Miner is the default and the validated primary rule (ADR-0010). The
+Double Linear Damage Rule (Manson-Halford) and Corten-Dolan are sequence and
+load-level sensitive alternatives.
+
+Lives passed in here are per-counted-cycle reversals or cycles to failure. Apply
+any mean-stress correction upstream when computing those lives, so this module
+only sums damage (research section 2.3).
+
+Validation status, stated honestly:
+- Miner: validated against a published block example (Golden D).
+- DLDR accumulation: validated against a published two-phase example (Golden C).
+- Manson-Halford phase-life split: a documented parametric knee model, property
+  tested only. The damage answer comes from the validated accumulation.
+- Corten-Dolan: tested by its exact reduction to Miner when the exponent equals
+  the inverse S-N slope.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import numpy as np
+
+__all__ = [
+    "DamageResult",
+    "miner",
+    "manson_halford_phase_lives",
+    "dldr_from_phase_lives",
+    "dldr",
+    "corten_dolan",
+]
+
+
+@dataclass
+class DamageResult:
+    """Outcome of a damage calculation for one loading block."""
+
+    damage: float               # damage accumulated by one application of the block
+    blocks_to_failure: float    # d_crit / damage (block repetitions to failure)
+    cycles_to_failure: float    # blocks_to_failure * cycles per block
+    failed: bool                # damage >= d_crit for a single block
+    rule: str
+    d_crit: float
+
+
+def _arrays(counts, lives):
+    n = np.asarray(counts, dtype=np.float64)
+    nf = np.asarray(lives, dtype=np.float64)
+    if n.shape != nf.shape:
+        raise ValueError(f"counts and lives must have equal shape, got {n.shape}, {nf.shape}")
+    if np.any(nf <= 0):
+        raise ValueError("all lives must be positive")
+    return n, nf
+
+
+def miner(counts, lives, *, d_crit: float = 1.0) -> DamageResult:
+    """Palmgren-Miner linear damage for one loading block.
+
+    ``damage`` is the sum of cycle-count over life for the block. The block is
+    assumed to repeat, so ``blocks_to_failure`` is ``d_crit / damage``. The
+    critical sum defaults to 1.0. Codes use other values, for example 0.5 for
+    out-of-phase loading under IIW and Eurocode 3.
+    """
+    n, nf = _arrays(counts, lives)
+    damage = float(np.sum(n / nf))
+    blocks = d_crit / damage if damage > 0 else float("inf")
+    return DamageResult(
+        damage=damage,
+        blocks_to_failure=blocks,
+        cycles_to_failure=blocks * float(np.sum(n)),
+        failed=damage >= d_crit,
+        rule="miner",
+        d_crit=d_crit,
+    )
+
+
+def manson_halford_phase_lives(lives, *, exponent: float = 0.25):
+    """Split each life into Phase I and Phase II for the Double Linear Damage Rule.
+
+    This is a documented parametric knee model following Manson-Halford 1981. The
+    Phase II fraction of life grows with the life level, ``f_II = (N_f/N_ref)**
+    exponent`` referenced to the longest life in the spectrum, so the shortest
+    lives spend proportionally more of their life in Phase I. Returns
+    ``(phase1_lives, phase2_lives)``.
+    """
+    nf = np.asarray(lives, dtype=np.float64)
+    if np.any(nf <= 0):
+        raise ValueError("all lives must be positive")
+    n_ref = float(np.max(nf))
+    f_two = np.clip((nf / n_ref) ** exponent, 0.0, 1.0)
+    phase2 = nf * f_two
+    phase1 = nf - phase2
+    # guard against a zero phase-I life for the reference level
+    phase1 = np.where(phase1 <= 0, nf * 1e-9, phase1)
+    return phase1, phase2
+
+
+def dldr_from_phase_lives(counts, phase1_lives, phase2_lives, *, d_crit: float = 1.0) -> DamageResult:
+    """Double Linear Damage Rule accumulation from explicit phase lives.
+
+    Phase I runs until its linear damage sum reaches ``d_crit``, then Phase II
+    runs until its sum reaches ``d_crit``, when failure occurs. Blocks to failure
+    is the sum of the two phase contributions. This is the validated DLDR core.
+    """
+    n, n1 = _arrays(counts, phase1_lives)
+    _, n2 = _arrays(counts, phase2_lives)
+    d1 = float(np.sum(n / n1))
+    d2 = float(np.sum(n / n2))
+    if d1 <= 0 or d2 <= 0:
+        raise ValueError("phase damages must be positive")
+    blocks = d_crit / d1 + d_crit / d2
+    return DamageResult(
+        damage=1.0 / blocks if blocks > 0 else float("inf"),
+        blocks_to_failure=blocks,
+        cycles_to_failure=blocks * float(np.sum(n)),
+        failed=False,
+        rule="dldr",
+        d_crit=d_crit,
+    )
+
+
+def dldr(counts, lives, *, exponent: float = 0.25, d_crit: float = 1.0) -> DamageResult:
+    """Double Linear Damage Rule using the Manson-Halford knee split.
+
+    Convenience wrapper: split lives into phases with
+    :func:`manson_halford_phase_lives`, then accumulate with
+    :func:`dldr_from_phase_lives`.
+    """
+    n1, n2 = manson_halford_phase_lives(lives, exponent=exponent)
+    return dldr_from_phase_lives(counts, n1, n2, d_crit=d_crit)
+
+
+def corten_dolan(counts, stresses, lives, *, d: float) -> DamageResult:
+    """Corten-Dolan cumulative damage for one loading block.
+
+    Cycles to failure is ``N_f,1 / sum(alpha_i (sigma_i/sigma_1)**d)`` where
+    ``sigma_1`` is the maximum stress in the block, ``N_f,1`` its life, and
+    ``alpha_i`` the cycle fractions. The exponent ``d`` controls sequence and
+    level sensitivity. When ``d`` equals the inverse S-N slope the rule reduces
+    exactly to Miner.
+    """
+    n, nf = _arrays(counts, lives)
+    s = np.asarray(stresses, dtype=np.float64)
+    if s.shape != n.shape:
+        raise ValueError("stresses must match counts shape")
+    k = int(np.argmax(s))
+    sigma_1 = s[k]
+    nf_1 = nf[k]
+    alpha = n / np.sum(n)
+    denom = float(np.sum(alpha * (s / sigma_1) ** d))
+    cycles_to_failure = nf_1 / denom if denom > 0 else float("inf")
+    blocks = cycles_to_failure / float(np.sum(n))
+    return DamageResult(
+        damage=1.0 / blocks if blocks > 0 else float("inf"),
+        blocks_to_failure=blocks,
+        cycles_to_failure=cycles_to_failure,
+        failed=False,
+        rule="corten_dolan",
+        d_crit=1.0,
+    )
