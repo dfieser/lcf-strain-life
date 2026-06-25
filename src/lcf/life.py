@@ -20,6 +20,7 @@ __all__ = [
     "predict_reversals_from_total_strain",
     "predict_reversals_basquin",
     "predict_reversals_swt",
+    "predict_reversals_morrow",
     "predict_reversals",
 ]
 
@@ -98,6 +99,24 @@ def predict_reversals_swt(
         lambda tn: (sigma_f**2 / E) * tn ** (2 * b) + sigma_f * eps_f * tn ** (b + c),
         target, bracket,
     )
+
+
+def predict_reversals_morrow(
+    total_strain_amp, mean_stress, sigma_f, b, eps_f, c, E, *, bracket=(1.0, 1e12)
+) -> float:
+    """Reversals for a total strain amplitude under a Morrow mean-stress shift.
+
+    Solves the Morrow strain-life curve, the elastic term reduced by the mean
+    stress, for the life that gives the requested total strain amplitude.
+    """
+    from .meanstress import morrow_strain_life
+
+    def curve(tn):
+        return morrow_strain_life(
+            tn, sigma_f=sigma_f, b=b, eps_f=eps_f, c=c, E=E, mean_stress=mean_stress
+        )
+
+    return _solve_decreasing(curve, float(total_strain_amp), bracket)
 
 
 def predict_reversals(fit: StrainLifeFit, total_strain_amp: float) -> float:

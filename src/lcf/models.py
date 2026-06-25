@@ -53,6 +53,13 @@ class TestMetadata(BaseModel):
         description="True if the supplied strain/stress are already true (skip "
         "engineering→true conversion).",
     )
+    # Optional Phase 2 fields. All default to None so the Phase 1 uniaxial path
+    # is unchanged when they are omitted.
+    temperature: float | None = Field(None, description="Test temperature in degC.")
+    Kt: float | None = Field(None, gt=0, description="Elastic stress concentration factor.")
+    Kf: float | None = Field(None, gt=0, description="Fatigue notch factor.")
+    frequency: float | None = Field(None, gt=0, description="Cyclic frequency, cycles per unit time.")
+    hold_time: float | None = Field(None, ge=0, description="Hold time per cycle for creep-fatigue.")
 
 
 class AnalysisParams(BaseModel):
