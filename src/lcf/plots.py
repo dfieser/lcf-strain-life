@@ -16,10 +16,12 @@ from pathlib import Path
 import numpy as np
 from matplotlib.figure import Figure
 
-from . import schema
+from . import schema, stats
 from .fits import StrainLifeFit
 from .life import elastic_strain_life, plastic_strain_life, total_strain_life
+from .hightemp import creep_fatigue_envelope_allowable
 from .metrics import PerCycleMetrics
+from .stats import LogLifeFit
 
 __all__ = [
     "savefig",
@@ -30,6 +32,9 @@ __all__ = [
     "plot_hysteresis",
     "plot_peak_valley",
     "plot_energy",
+    "plot_design_curve",
+    "plot_creep_fatigue_diagram",
+    "plot_rainflow_histogram",
 ]
 
 
@@ -181,5 +186,69 @@ def plot_energy(metrics: PerCycleMetrics) -> Figure:
     ax.set_ylabel(r"Energy density (MJ/m$^3$)")
     ax.set_title("Cyclic energy density")
     ax.legend(fontsize=8)
+    ax.grid(True, alpha=0.3)
+    return fig
+
+
+def plot_design_curve(fit: LogLifeFit, amplitudes=None, *, reliability: float = 0.90,
+                      confidence: float = 0.90) -> Figure:
+    """Strain-life design curve: median life, prediction band, and the R-C curve."""
+    fig = Figure(figsize=(6, 4.5))
+    ax = fig.subplots()
+    if amplitudes is None:
+        lo = 10.0 ** (fit.x_mean - 1.0)
+        hi = 10.0 ** (fit.x_mean + 1.0)
+        amplitudes = np.logspace(np.log10(lo), np.log10(hi), 100)
+    amplitudes = np.asarray(amplitudes, dtype=np.float64)
+    median = stats.predict_life(fit, amplitudes)
+    plo, phi = stats.prediction_interval(fit, amplitudes, confidence)
+    design = np.array([
+        stats.design_life(fit, a, reliability=reliability, confidence=confidence)
+        for a in amplitudes
+    ])
+    ax.loglog(median, amplitudes, "-", color="black", label="median (R50)")
+    ax.loglog(plo, amplitudes, ":", color="gray", label="prediction band")
+    ax.loglog(phi, amplitudes, ":", color="gray")
+    ax.loglog(design, amplitudes, "--", color="tab:red",
+              label=f"design R{int(reliability*100)}C{int(confidence*100)}")
+    ax.set_xlabel("Life, N")
+    ax.set_ylabel(r"Strain amplitude, $\Delta\varepsilon/2$")
+    ax.set_title("Strain-life design curve")
+    ax.legend(fontsize=8)
+    ax.grid(True, which="both", alpha=0.3)
+    return fig
+
+
+def plot_creep_fatigue_diagram(d_fatigue: float, d_creep: float, *,
+                               knee: tuple[float, float] = (0.3, 0.3)) -> Figure:
+    """Creep-fatigue interaction (D-diagram): the bilinear envelope and the point."""
+    fig = Figure(figsize=(5, 5))
+    ax = fig.subplots()
+    df = np.linspace(0.0, 1.0, 200)
+    allow = np.array([creep_fatigue_envelope_allowable(x, knee[0], knee[1]) for x in df])
+    ax.plot(df, allow, "-", color="tab:blue", label="envelope")
+    ax.scatter([d_fatigue], [d_creep], color="tab:red", zorder=5, label="point")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_xlabel("Fatigue damage $D_f$")
+    ax.set_ylabel("Creep damage $D_c$")
+    ax.set_title("Creep-fatigue interaction")
+    ax.legend(fontsize=8)
+    ax.grid(True, alpha=0.3)
+    return fig
+
+
+def plot_rainflow_histogram(cycles) -> Figure:
+    """Bar chart of counted cycle range against total count from a rainflow table."""
+    fig = Figure(figsize=(6, 4.5))
+    ax = fig.subplots()
+    grouped = cycles.groupby("range")["count"].sum()
+    ranges = grouped.index.to_numpy()
+    ax.bar(ranges, grouped.to_numpy(),
+           width=0.6 * (np.ptp(ranges) / max(len(grouped), 1) + 1e-9),
+           color="tab:purple")
+    ax.set_xlabel("Range")
+    ax.set_ylabel("Cycle count")
+    ax.set_title("Rainflow range histogram")
     ax.grid(True, alpha=0.3)
     return fig

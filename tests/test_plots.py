@@ -57,3 +57,20 @@ def test_hysteresis_peak_valley_energy_plots(synthetic_cyclic, tmp_path):
     for name, f in [("hys", f1), ("pv", f2), ("en", f3)]:
         assert isinstance(f, Figure)
         assert plots.savefig(f, tmp_path / f"{name}.png").stat().st_size > 0
+
+
+def test_phase2_plots(tmp_path, sae1137):
+    import numpy as np
+    from lcf import counting, stats as lstats
+    # design curve from a regression fit
+    g = sae1137
+    fit = lstats.fit_log_life(g.total_strain_amp, g.reversals)
+    f1 = plots.plot_design_curve(fit)
+    assert plots.savefig(f1, tmp_path / "design.png").stat().st_size > 0
+    # creep-fatigue diagram
+    f2 = plots.plot_creep_fatigue_diagram(0.4, 0.3, knee=(0.3, 0.3))
+    assert plots.savefig(f2, tmp_path / "cf.png").stat().st_size > 0
+    # rainflow histogram
+    df = counting.count_rainflow([-2, 1, -3, 5, -1, 3, -4, 4, -2])
+    f3 = plots.plot_rainflow_histogram(df)
+    assert plots.savefig(f3, tmp_path / "rf.png").stat().st_size > 0
