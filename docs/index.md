@@ -11,6 +11,7 @@ fit the standard models, and predict life, all callable by AI agents.
 - [Theory](theory.md): the fatigue methods and where each is defined.
 - [API reference](api.md): the public functions, grouped by module.
 - [Agent usage guide](AGENT_USAGE.md): how an AI agent drives the MCP tools.
+- [Scientific reference and validation](SCIENTIFIC_REFERENCE.md): every equation defined and cited, for expert review.
 
 ## Reference and design
 

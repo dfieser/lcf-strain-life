@@ -33,4 +33,4 @@ The virtual environment is in .venv on Python 3.13. Run the test suite with:
 
     ./.venv/Scripts/python.exe -m pytest
 
-Validate scientific changes against the golden datasets in tests. Keep every change covered by a test. Record major decisions as an ADR in docs/decisions and add a line to CHANGELOG.md.
+Validate scientific changes against the golden datasets in tests. Keep every change covered by a test. Record major decisions as an ADR in docs/decisions and add a line to CHANGELOG.md. Any change to an equation, a default, or a citation must also update docs/SCIENTIFIC_REFERENCE.md, the maintained physics record for specialist review.

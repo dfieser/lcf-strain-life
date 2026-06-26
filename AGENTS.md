@@ -61,6 +61,9 @@ E1049 rainflow example.
   floats to null with `lcf.store.to_jsonable`.
 - Record each major decision as an ADR in `docs/decisions` and add a line to
   `CHANGELOG.md`.
+- Any change to an equation, a default, or a citation must update
+  `docs/SCIENTIFIC_REFERENCE.md` in the same change. That page is the maintained
+  physics record reviewed by a domain specialist.
 
 ## Running the MCP server
 
