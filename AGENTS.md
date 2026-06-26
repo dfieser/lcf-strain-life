@@ -62,8 +62,9 @@ E1049 rainflow example.
 - Record each major decision as an ADR in `docs/decisions` and add a line to
   `CHANGELOG.md`.
 - Any change to an equation, a default, or a citation must update
-  `docs/SCIENTIFIC_REFERENCE.md` in the same change. That page is the maintained
-  physics record reviewed by a domain specialist.
+  `docs/SCIENTIFIC_REFERENCE.md` in the same change, and regenerate the
+  reviewer PDF with `pdflatex docs/reference/PHYSICS_REVIEW.tex`. Those are the
+  physics records a domain specialist reviews.
 
 ## Running the MCP server
 

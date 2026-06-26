@@ -10,6 +10,10 @@ accepted practice, and record your verdict in the sign-off table at the end. The
 research-derived implementation references in `docs/design` carry the original
 access-dated source URLs if you want to trace a citation further.
 
+For a busy reviewer who wants only the science, send the single, science-only PDF
+at `docs/reference/PHYSICS_REVIEW.pdf`. It has the same equations and citations
+without the code and test pointers below.
+
 Document status: kept in sync with the code. Last updated 2026-06-26. When an
 equation, default, or citation changes, this page must be updated in the same
 change.

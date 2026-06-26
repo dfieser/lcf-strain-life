@@ -1,0 +1,255 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\title{Low Cycle Fatigue: Physics and Equations for Review}
+\author{lcf-strain-life}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This is a self-contained statement of the fatigue physics implemented in the
+toolkit, written for review by a materials or fatigue specialist. It contains the
+equations, the symbols and units, the conventions, and the source for each
+relation. It contains no software detail. A short sign-off table is at the end.
+\end{abstract}
+
+\section{Conventions}
+
+All analysis uses true stress and true strain. Stress and modulus are in
+\si{\mega\pascal}. Strain is a dimensionless fraction. Life is expressed in
+reversals \(2N_f\), where one cycle is two reversals. The fatigue strength
+exponent \(b\) and the fatigue ductility exponent \(c\) are negative.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+Symbol & Meaning & Unit \\
+\midrule
+\(\sigma,\ \varepsilon\) & true stress, true strain & \si{\mega\pascal}, - \\
+\(\Delta\sigma/2,\ \Delta\varepsilon/2\) & stress, total strain amplitude & \si{\mega\pascal}, - \\
+\(\Delta\varepsilon_e/2,\ \Delta\varepsilon_p/2\) & elastic, plastic strain amplitude & - \\
+\(\sigma_m,\ \sigma_{max}\) & mean stress, maximum stress & \si{\mega\pascal} \\
+\(E\) & Young's modulus & \si{\mega\pascal} \\
+\(\sigma'_f,\ b\) & fatigue strength coefficient, exponent & \si{\mega\pascal}, - \\
+\(\varepsilon'_f,\ c\) & fatigue ductility coefficient, exponent & - \\
+\(K',\ n'\) & cyclic strength coefficient, strain-hardening exponent & \si{\mega\pascal}, - \\
+\(2N_f\) & reversals to failure & - \\
+\(K_t,\ K_f,\ q\) & stress concentration, fatigue notch factor, notch sensitivity & - \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{True stress and strain}
+Engineering values \(e\) and \(\sigma_\text{eng}=F/A_0\) convert to true values by
+\begin{equation}
+\varepsilon = \ln(1+e), \qquad \sigma = \sigma_\text{eng}(1+e).
+\end{equation}
+Valid up to necking. Reference: Dowling, Mechanical Behavior of Materials, 4th ed.
+
+\section{Cyclic stress-strain, Ramberg-Osgood}
+\begin{equation}
+\varepsilon = \frac{\sigma}{E} + \left(\frac{\sigma}{K'}\right)^{1/n'},
+\qquad
+\Delta\varepsilon = \frac{\Delta\sigma}{E} + 2\left(\frac{\Delta\sigma}{2K'}\right)^{1/n'}.
+\end{equation}
+The second form is the doubled hysteresis branch. Reference: Ramberg and Osgood
+1943, NACA TN 902. Dowling 4th ed., Eq. 14.12.
+
+\section{Strain-life}
+Elastic, Basquin:
+\begin{equation}
+\frac{\Delta\sigma}{2} = \sigma'_f (2N_f)^{b},
+\qquad
+\frac{\Delta\varepsilon_e}{2} = \frac{\sigma'_f}{E}(2N_f)^{b}.
+\end{equation}
+Plastic, Coffin-Manson:
+\begin{equation}
+\frac{\Delta\varepsilon_p}{2} = \varepsilon'_f (2N_f)^{c}.
+\end{equation}
+Total strain-life and the elastic-plastic transition life:
+\begin{equation}
+\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f}{E}(2N_f)^{b} + \varepsilon'_f (2N_f)^{c},
+\qquad
+2N_t = \left(\frac{\varepsilon'_f E}{\sigma'_f}\right)^{1/(b-c)}.
+\end{equation}
+Compatibility, checked and reported but not forced:
+\begin{equation}
+n' = \frac{b}{c}, \qquad K' = \frac{\sigma'_f}{(\varepsilon'_f)^{b/c}}.
+\end{equation}
+The plastic line is fit over the low cycle regime, excluding near-runout points
+whose plastic strain is at measurement noise level. References: Basquin 1910,
+Coffin 1954, Manson 1953, Dowling 4th ed. Eq. 14.3 to 14.6.
+
+\section{Mean-stress corrections}
+Morrow, elastic term shifted by the mean stress:
+\begin{equation}
+\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f-\sigma_m}{E}(2N_f)^{b} + \varepsilon'_f (2N_f)^{c}.
+\end{equation}
+Modified Morrow, both terms shifted:
+\begin{equation}
+\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f-\sigma_m}{E}(2N_f)^{b}
++ \varepsilon'_f\left(\frac{\sigma'_f-\sigma_m}{\sigma'_f}\right)^{c/b}(2N_f)^{c}.
+\end{equation}
+Smith-Watson-Topper:
+\begin{equation}
+\sigma_{max}\,\frac{\Delta\varepsilon}{2} = \frac{(\sigma'_f)^2}{E}(2N_f)^{2b}
++ \sigma'_f \varepsilon'_f (2N_f)^{b+c},
+\qquad
+\sigma_{ar} = \sqrt{\sigma_{max}\,\sigma_a}.
+\end{equation}
+Walker, with the equivalent fully-reversed amplitude and the steel estimate of
+the exponent:
+\begin{equation}
+\sigma_{ar} = \sigma_{max}^{\,1-\gamma}\,\sigma_a^{\,\gamma},
+\qquad
+\gamma_{steel} = 0.8818 - 2.00\times10^{-4}\,\sigma_u.
+\end{equation}
+Morrow equivalent fully-reversed amplitude:
+\begin{equation}
+\sigma_{ar} = \frac{\sigma_a}{1 - \sigma_m/\sigma'_f}.
+\end{equation}
+With \(\gamma=0.5\) Walker reduces to SWT. References: Morrow 1968. Smith, Watson,
+Topper 1970, J. Materials 5(4):767. Walker 1970. Dowling, Calhoun, Arcari 2009,
+Fatigue Fract. Eng. Mater. Struct. (steel \(\gamma\)). Dowling 4th ed. Eq. 9.18 to 9.21.
+
+\section{Hysteresis energy and cyclic response}
+The plastic strain energy density per cycle is the closed loop area
+\begin{equation}
+W = \oint \sigma\,d\varepsilon.
+\end{equation}
+The tension-compression asymmetry of a cycle is
+\(R_{TC} = \lvert\sigma_{max}\rvert / \lvert\sigma_{min}\rvert\). Peak and valley
+stress versus cycle give the cyclic hardening and softening response.
+
+\section{Variable amplitude, rainflow counting}
+Irregular histories are reduced to closed cycles by the rainflow method, which
+pairs reversals into hysteresis loops while preserving their order in time.
+Reference: ASTM E1049-85(2017), Downing and Socie 1982, Matsuishi and Endo 1968.
+
+\section{Cumulative damage}
+Palmgren-Miner linear damage, failure at a critical sum, the default being one:
+\begin{equation}
+D = \sum_i \frac{n_i}{N_{f,i}}.
+\end{equation}
+Double Linear Damage Rule, Manson-Halford, with the Phase I life fraction
+referenced to the longest life in the spectrum:
+\begin{equation}
+f_I = 0.35\left(\frac{N_f}{N_{long}}\right)^{0.25},
+\qquad N_I = N_f f_I, \quad N_{II} = N_f(1-f_I).
+\end{equation}
+Phase I accumulates to one, then Phase II accumulates to one. Corten-Dolan, where
+\(\sigma_1\) is the maximum stress in the block and \(\alpha_i\) the cycle fractions:
+\begin{equation}
+N = \frac{N_{f,1}}{\sum_i \alpha_i (\sigma_i/\sigma_1)^{d}}.
+\end{equation}
+References: Palmgren 1924, Miner 1945, Manson and Halford 1981 (Int. J. Fracture
+17:169), Corten and Dolan 1956.
+
+\section{Notch local-strain approach}
+Neuber, combined with the cyclic curve, and its range form:
+\begin{equation}
+\frac{(K_t S)^2}{E} = \sigma\,\varepsilon,
+\qquad
+\frac{(K_t \Delta S)^2}{E} = \Delta\sigma\,\Delta\varepsilon.
+\end{equation}
+Glinka equivalent strain energy density:
+\begin{equation}
+\frac{(K_t S)^2}{2E} = \frac{\sigma^2}{2E} + \frac{\sigma}{n'+1}\left(\frac{\sigma}{K'}\right)^{1/n'}.
+\end{equation}
+Fatigue notch factor and notch sensitivity:
+\begin{equation}
+K_f^{\text{Peterson}} = 1 + \frac{K_t-1}{1+a/r},
+\quad
+K_f^{\text{Neuber}} = 1 + \frac{K_t-1}{1+\sqrt{\beta/r}},
+\quad
+q = \frac{K_f-1}{K_t-1}.
+\end{equation}
+Neuber tends to overestimate and Glinka to underestimate the local strain. The
+measured value usually lies between them. References: Neuber 1961, Molski and
+Glinka 1981, Peterson 1974.
+
+\section{Statistics and design curves}
+Life is the dependent variable in the linearized regression,
+\(\log_{10} N = A + B \log_{10}(\Delta\varepsilon/2)\). Confidence and prediction
+intervals use the residual standard error and the Student \(t\) quantile. A
+reliability and confidence design curve is the mean reduced by \(k\,s\), where
+\(k\) is the one-sided Owen tolerance factor. Right-censored runouts are handled
+by maximum likelihood rather than deletion. References: ASTM E739, withdrawn 2024
+and used as the de facto reference, Owen 1963, Williams, Lee and Rilly 2003 (Int.
+J. Fatigue 25:427).
+
+\section{Elevated temperature}
+Frequency-modified Coffin-Manson, coefficient form:
+\begin{equation}
+C_f = C_o\left(\frac{f}{f_{ref}}\right)^{k-1},
+\qquad
+\frac{\Delta\varepsilon_p}{2} = C_f (2N_f)^{c}.
+\end{equation}
+Linear time-fraction creep-fatigue damage, fatigue plus creep:
+\begin{equation}
+D = \sum_i \frac{n_i}{N_{f,i}} + \sum_j \frac{t_j}{t_{r,j}},
+\end{equation}
+checked against a bilinear creep-fatigue interaction envelope. References: Coffin
+1971, Robinson 1952, ASTM E2714-13(2020).
+
+\section{Multiaxial, survey only}
+Critical-plane parameters, provided for evaluation. The full plane search is not
+yet implemented.
+\begin{equation}
+P_{FS} = \frac{\Delta\gamma_{max}}{2}\left(1 + k\frac{\sigma_{n,max}}{\sigma_y}\right),
+\quad
+P_{BM} = \frac{\Delta\gamma_{max}}{2} + S\,\Delta\varepsilon_n,
+\quad
+P_{SWT} = \sigma_{n,max}\frac{\Delta\varepsilon_1}{2}.
+\end{equation}
+References: Fatemi and Socie 1988 (Fatigue Fract. Eng. Mater. Struct. 11(3):149),
+Brown and Miller 1973, Smith, Watson, Topper 1970.
+
+\section{Conventions and assumptions to confirm}
+\begin{itemize}[nosep]
+\item True stress-strain conversion assumed valid up to necking.
+\item Plastic strain amplitude taken as \(\Delta\varepsilon_t/2 - \Delta\sigma/(2E)\).
+\item Failure criterion is a percent load drop from the stabilized half-life peak load, default 30 percent.
+\item Default mean-stress model for variable amplitude is SWT, notch default is Neuber, damage default is Miner.
+\item The plastic strain-life line is fit over the low cycle regime only.
+\end{itemize}
+
+\section{Reviewer sign-off}
+Reviewer name and date, then a verdict per section. Suggested verdicts: OK, OK
+with note, or needs change.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{6.5cm} p{2.5cm} p{5cm}}
+\toprule
+Section & Verdict & Note \\
+\midrule
+True stress and strain & & \\
+Ramberg-Osgood & & \\
+Strain-life & & \\
+Mean-stress corrections & & \\
+Energy and cyclic response & & \\
+Rainflow counting & & \\
+Cumulative damage & & \\
+Notch local-strain & & \\
+Statistics and design curves & & \\
+Elevated temperature & & \\
+Multiaxial survey & & \\
+Conventions and assumptions & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
