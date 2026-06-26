@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "lcf-strain-life: an AI-agent-native toolkit for low cycle fatigue analysis"
+abstract: >-
+  A Python library and MCP server for low cycle fatigue strain-life analysis. It
+  reduces strain-controlled test data, fits Basquin, Coffin-Manson, and
+  Ramberg-Osgood models, applies mean-stress corrections, counts
+  variable-amplitude histories with rainflow, accumulates damage, computes notch
+  local-strain life, fits statistical design curves, and handles
+  elevated-temperature creep-fatigue. Material agnostic and callable by AI agents.
+type: software
+authors:
+  - family-names: Fieser
+    given-names: David
+version: 0.1.0
+date-released: "2026-06-26"
+license: MIT
+repository-code: "https://github.com/dfieser/lcf-strain-life"
+url: "https://dfieser.github.io/lcf-strain-life/"
+keywords:
+  - low cycle fatigue
+  - strain-life
+  - fatigue analysis
+  - materials science
+  - rainflow counting
+  - cumulative damage
+  - Model Context Protocol

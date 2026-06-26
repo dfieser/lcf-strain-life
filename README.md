@@ -68,7 +68,9 @@ Register with Claude Code or Claude Desktop over stdio:
 
 ## Documentation
 
-- [docs/SCIENTIFIC_REFERENCE.md](docs/SCIENTIFIC_REFERENCE.md) is the maintained physics and validation record for expert review: every equation defined and cited, with the defaults, assumptions, validation evidence, and a reviewer sign-off table.
+The full documentation site is at **https://dfieser.github.io/lcf-strain-life/**, with the Scientific reference, Usage, Theory, and API reference as tabs.
+
+- [docs/SCIENTIFIC_REFERENCE.md](docs/SCIENTIFIC_REFERENCE.md) is the maintained physics and validation record for expert review: every equation defined and cited, with the defaults, assumptions, validation evidence, and a reviewer sign-off table. It is the **Scientific reference** tab on the docs site.
 - [docs/index.md](docs/index.md) is the documentation home: installation, usage, theory, and API reference. Build the site with `mkdocs serve` after `pip install -e ".[docs]"`.
 - [docs/reference](docs/reference) holds the equations, symbols, and physics.
 - [docs/design/WORKFLOW.md](docs/design/WORKFLOW.md) describes the data flow and the compute, save, recall model.

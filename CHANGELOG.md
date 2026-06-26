@@ -8,6 +8,16 @@ Major design decisions are recorded as ADRs in [docs/decisions/](docs/decisions/
 
 ## [Unreleased]
 
+### Added: packaging and release
+- PEP 561 `py.typed` marker, expanded PyPI classifiers and project URLs, build
+  validated with `twine check`.
+- `CITATION.cff` and `.zenodo.json` for citation and a Zenodo DOI on release.
+- GitHub Actions: `tests.yml` (matrix on Python 3.11 to 3.13), `docs.yml`
+  (publishes the mkdocs site to GitHub Pages), and `publish.yml` (PyPI via
+  Trusted Publishing on a GitHub Release).
+- `RELEASING.md` with the semantic-versioning scheme and the release process.
+- Docs site navigation tabs, with the Scientific reference as a tab.
+
 ### Added: Phase 2 engineering layer
 - `counting`: in-house ASTM E1049 rainflow with preserved cycle indices and a
   repeat-history closure. Validated against the ASTM worked example.
