@@ -81,6 +81,30 @@ def test_read_csv_with_column_map(tmp_path):
     assert t.data[schema.COL_STRESS_ENG].iloc[1] == pytest.approx(500.0)
 
 
+def test_read_csv_with_machine_header_block(tmp_path):
+    # mirrors a real machine export: a metadata header block, then columns, then data
+    p = tmp_path / "machine.csv"
+    p.write_text(
+        "# Test machine export\n"
+        "# Specimen: S1, area 10 mm^2\n"
+        "# Control: axial strain\n"
+        "Time (s),Axial Strain (mm/mm),Axial Force (N)\n"
+        "0,0,0\n"
+        "1,0.02,5000\n"
+        "2,0,0\n"
+    )
+    meta = TestMetadata(name="S1", area=10.0)
+    t = read_csv(
+        p, metadata=meta,
+        column_map={"Time (s)": "time", "Axial Strain (mm/mm)": "strain",
+                    "Axial Force (N)": "force"},
+        skiprows=3,
+    )
+    assert len(t) == 3
+    assert t.data[schema.COL_STRESS_ENG].iloc[1] == pytest.approx(500.0)
+    assert t.data[schema.COL_STRESS_TRUE].iloc[1] == pytest.approx(500.0 * 1.02)
+
+
 # --- model validation -------------------------------------------------------
 def test_metadata_rejects_bad_area():
     with pytest.raises(Exception):

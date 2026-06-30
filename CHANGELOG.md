@@ -8,6 +8,17 @@ Major design decisions are recorded as ADRs in [docs/decisions/](docs/decisions/
 
 ## [Unreleased]
 
+### Added: docs site, examples, release
+- Documentation site renders math (MathJax), with a clean **Physics** page of the
+  equations and citations as the headline theory tab. The dense Scientific
+  reference moved under a Reference section.
+- `examples/csv_ingestion_demo.py` reads a machine-style CSV header block and runs
+  the full single-test analysis, with a matching test, closing the real-data path.
+- Workflows pinned to current action majors (checkout v7, setup-python v6,
+  pages artifact v5, deploy-pages v5), clearing the Node 20 deprecation warning.
+- PyPI publish triggers on a `v*` tag push via Trusted Publishing. README status
+  badges added.
+
 ### Added: packaging and release
 - PEP 561 `py.typed` marker, expanded PyPI classifiers and project URLs, build
   validated with `twine check`.

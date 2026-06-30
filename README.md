@@ -1,5 +1,10 @@
 # lcf-strain-life
 
+[![tests](https://github.com/dfieser/lcf-strain-life/actions/workflows/tests.yml/badge.svg)](https://github.com/dfieser/lcf-strain-life/actions/workflows/tests.yml)
+[![docs](https://github.com/dfieser/lcf-strain-life/actions/workflows/docs.yml/badge.svg)](https://dfieser.github.io/lcf-strain-life/)
+[![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 An **AI-agent-native toolkit for fatigue analysis of materials**. It is a Python library plus an **MCP server**, so AI agents can run the whole analysis by calling tools.
 
 Provide your own strain-controlled fatigue test data and get the standardized reduction, fitted material constants, life predictions, and plots. Results are reproducible and are saved for recall.
@@ -68,7 +73,7 @@ Register with Claude Code or Claude Desktop over stdio:
 
 ## Documentation
 
-The full documentation site is at **https://dfieser.github.io/lcf-strain-life/**, with the Scientific reference, Usage, Theory, and API reference as tabs.
+The full documentation site is at **https://dfieser.github.io/lcf-strain-life/**, with Physics, Usage, and API reference as tabs.
 
 - **[docs/reference/PHYSICS_REVIEW.pdf](docs/reference/PHYSICS_REVIEW.pdf)** is a single, science-only PDF for a domain reviewer: every equation defined and cited, with a sign-off table, and no software detail. This is the file to send a busy materials scientist.
 - [docs/SCIENTIFIC_REFERENCE.md](docs/SCIENTIFIC_REFERENCE.md) is the fuller engineering version of the same physics, with the code function and the test that checks each equation, plus the validation evidence. It is the **Scientific reference** tab on the docs site.

@@ -8,7 +8,7 @@ fit the standard models, and predict life, all callable by AI agents.
 
 - [Installation](installation.md): set up the library and the MCP server.
 - [Usage](usage.md): worked examples for every capability, library and MCP.
-- [Theory](theory.md): the fatigue methods and where each is defined.
+- [Physics and equations](physics.md): the equations and their sources, plainly stated.
 - [API reference](api.md): the public functions, grouped by module.
 - [Agent usage guide](AGENT_USAGE.md): how an AI agent drives the MCP tools.
 - [Scientific reference and validation](SCIENTIFIC_REFERENCE.md): every equation defined and cited, for expert review.

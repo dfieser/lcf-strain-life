@@ -18,11 +18,15 @@ Release 1.0.0 when the API is declared stable.
 
 These cannot be done from the repository, they need your accounts.
 
-1. PyPI Trusted Publishing. Create a PyPI account, then add a trusted publisher
-   so no token is stored. On PyPI, go to the project or the pending-publisher
-   page and add: publisher GitHub Actions, owner `dfieser`, repository
-   `lcf-strain-life`, workflow `publish.yml`, environment `pypi`. In the GitHub
-   repo, Settings, Environments, create an environment named `pypi`.
+1. PyPI Trusted Publishing. Create a PyPI account, then add a **pending**
+   trusted publisher, because the project does not exist on PyPI yet. On PyPI go
+   to Account, Publishing, and add a pending publisher with these exact fields:
+   PyPI project name `lcf-strain-life`, owner `dfieser`, repository
+   `lcf-strain-life`, workflow name `publish.yml` (the filename, not a path), and
+   environment name `pypi`. In the GitHub repo, Settings, Environments, create an
+   environment named `pypi`. On the first successful publish the pending
+   publisher converts to a normal one and the project is created. The environment
+   name in the workflow must match the one on PyPI exactly.
 2. TestPyPI, optional, for a dry run. Same trusted-publisher setup on
    test.pypi.org if you want to test the upload first.
 3. GitHub Pages. In the GitHub repo, Settings, Pages, set Build and deployment
@@ -51,18 +55,22 @@ upload.
    ./.venv/Scripts/python.exe -m twine check dist/*
    ```
 
-6. Commit, tag, and push the tag:
+6. Commit and push the version bump:
 
    ```
    git commit -am "release: vX.Y.Z"
-   git tag vX.Y.Z
-   git push origin main --tags
+   git push origin main
    ```
 
-7. Create a GitHub Release from the tag. This triggers two things:
-   - `publish.yml` builds the sdist and wheel and uploads them to PyPI through
-     trusted publishing.
+7. Create a GitHub Release with a new tag `vX.Y.Z`. Creating the release also
+   creates and pushes the tag, which triggers both of these:
+   - `publish.yml` runs on the `v*` tag push, builds the sdist and wheel, and
+     uploads them to PyPI through trusted publishing.
    - Zenodo archives the release and mints or updates the DOI.
+
+   You can also publish to PyPI without a GitHub Release by pushing a tag
+   directly with `git tag vX.Y.Z && git push origin vX.Y.Z`, but then Zenodo is
+   not triggered.
 
 8. After the first release, add the Zenodo DOI badge to `README.md` and the DOI
    to `CITATION.cff`. Zenodo gives a concept DOI that always points to the latest

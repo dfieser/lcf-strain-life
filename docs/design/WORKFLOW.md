@@ -128,7 +128,7 @@ Run once several tests at different strain amplitudes exist:
 This is the core interaction model from the working notes:
 
 - **Machine agents compute** each quantity with a dedicated function (per the
-  [pipeline → tool mapping](../reference/LCF_Analysis_Notes.md#10-pipeline--tool-mapping)).
+  [pipeline → tool mapping](../reference/LCF_Analysis_Notes.md#10-pipeline-tool-mapping)).
 - **Results are saved** keyed to the test, so they don't have to be recomputed.
 - **Users / agents recall** saved quantities on demand, e.g.:
   - "number of cycles for test A"

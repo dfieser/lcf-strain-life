@@ -14,11 +14,11 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Usage: usage.md
-  - Theory: theory.md
+  - Physics: physics.md
   - API reference: api.md
-  - Scientific reference: SCIENTIFIC_REFERENCE.md
   - Agent usage: AGENT_USAGE.md
   - Reference:
+      - Scientific reference: SCIENTIFIC_REFERENCE.md
       - Equations and labels: reference/Equations_and_Labels.md
       - Analysis notes: reference/LCF_Analysis_Notes.md
   - Design:
@@ -27,5 +27,11 @@ nav:
 
 markdown_extensions:
   - admonition
-  - pymdownx.superfences
   - tables
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
