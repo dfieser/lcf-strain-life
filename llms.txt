@@ -15,13 +15,7 @@ fatigue exponents b and c are negative.
 - [Agent usage guide](docs/AGENT_USAGE.md): the MCP tools, their units, and the compute, save, recall pattern.
 - [AGENTS.md](AGENTS.md): guidance for agents working on the repository.
 
-## Reference
+## Physics and changes
 
-- [Equations and labels](docs/reference/Equations_and_Labels.md): each equation with its symbols, units, and code labels.
-- [Analysis notes](docs/reference/LCF_Analysis_Notes.md): the analysis pipeline in detail.
-- [Workflow](docs/design/WORKFLOW.md): how data moves from a raw file to saved results.
-
-## Design and decisions
-
-- [Decision records](docs/decisions/README.md): the ADR index, one record per major design choice.
+- [Physics PDF](docs/PHYSICS_REVIEW.pdf): every equation defined and cited, for specialist review.
 - [Changelog](CHANGELOG.md): the chronological log of changes.

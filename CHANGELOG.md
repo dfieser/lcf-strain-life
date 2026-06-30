@@ -4,30 +4,28 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Major design decisions are recorded as ADRs in [docs/decisions/](docs/decisions/).
+Detailed design notes and decision records are kept in the local `dev/` folder, which is not part of the public repository.
 
 ## [Unreleased]
 
-### Added: docs site, examples, release
-- Documentation site renders math (MathJax), with a clean **Physics** page of the
-  equations and citations as the headline theory tab. The dense Scientific
-  reference moved under a Reference section.
+### Added: examples, packaging, release
 - `examples/csv_ingestion_demo.py` reads a machine-style CSV header block and runs
-  the full single-test analysis, with a matching test, closing the real-data path.
-- Workflows pinned to current action majors (checkout v7, setup-python v6,
-  pages artifact v5, deploy-pages v5), clearing the Node 20 deprecation warning.
-- PyPI publish triggers on a `v*` tag push via Trusted Publishing. README status
-  badges added.
-
-### Added: packaging and release
+  the full single-test analysis, with a matching test, exercising the real-data path.
+- `docs/PHYSICS_REVIEW.pdf`, a single science-only document with every equation
+  defined and cited, for review by a materials specialist.
 - PEP 561 `py.typed` marker, expanded PyPI classifiers and project URLs, build
   validated with `twine check`.
 - `CITATION.cff` and `.zenodo.json` for citation and a Zenodo DOI on release.
-- GitHub Actions: `tests.yml` (matrix on Python 3.11 to 3.13), `docs.yml`
-  (publishes the mkdocs site to GitHub Pages), and `publish.yml` (PyPI via
-  Trusted Publishing on a GitHub Release).
+- GitHub Actions: `tests.yml` (matrix on Python 3.11 to 3.13) and `publish.yml`
+  (PyPI via Trusted Publishing on a `v*` tag push, current action versions).
 - `RELEASING.md` with the semantic-versioning scheme and the release process.
-- Docs site navigation tabs, with the Scientific reference as a tab.
+  README status badges.
+
+### Changed: repository reorganized for a clean public repo
+- Developer and AI-process material (research references, decision records,
+  design notes, scratch) moved to a local `dev/` folder that is not committed.
+  Agent memory is no longer tracked. The public repository now contains the
+  library, tests, examples, the physics PDF, and the agent usage guide.
 
 ### Added: Phase 2 engineering layer
 - `counting`: in-house ASTM E1049 rainflow with preserved cycle indices and a
@@ -45,9 +43,7 @@ Major design decisions are recorded as ADRs in [docs/decisions/](docs/decisions/
 - `spectrum`: end-to-end variable-amplitude life, counting to mean correction to
   damage.
 - Six new MCP tools, Phase 2 plots, optional metadata fields, and expanded public API.
-- Agent-facing docs: `AGENTS.md`, `docs/AGENT_USAGE.md`, `llms.txt`, and a
-  multi-page docs set with `mkdocs.yml`.
-- ADR-0010 through ADR-0012 (Phase 2 defaults, in-house rainflow, currency flags).
+- Agent-facing docs: `AGENTS.md`, `docs/AGENT_USAGE.md`, and `llms.txt`.
 - 217 tests passing, pyflakes clean, clean under deprecation and future warnings.
 
 ### Added: tooling & docs
@@ -103,7 +99,7 @@ Major design decisions are recorded as ADRs in [docs/decisions/](docs/decisions/
 - 135 tests passing, clean under `-W error::DeprecationWarning,FutureWarning`.
 
 ### Notes
-- Pre-existing documentation in `docs/reference/` and `docs/design/`, authored during the
-  scoping phase, is retained as the analytical specification.
+- The scoping and analysis specifications authored during development are kept in the local
+  `dev/` folder, out of the public repository.
 - Finding: the Coffin-Manson plastic branch must exclude near-runout points where plastic
   strain is at noise level. This is captured via the `min_plastic_strain` parameter and a test.

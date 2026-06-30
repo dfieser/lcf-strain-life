@@ -8,7 +8,7 @@ amplitude the strain-life solver gives notch life.
 Neuber is the default and tends to overestimate local strain, so it is
 conservative. Glinka tends to underestimate, and the measured strain usually
 lies between the two (ADR-0010). Validated against the SAE 1005 worked example
-(Golden E), see docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 2a.5.
+(Golden E), see dev/docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 2a.5.
 """
 
 from __future__ import annotations

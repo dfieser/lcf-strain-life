@@ -1,7 +1,7 @@
 """Tests for lcf.fits: including golden-value validation against SAE 1137.
 
 Golden source: Williams, Lee & Rilly, *Int. J. Fatigue* 25 (2003) 427-436
-(see tests/conftest.py and docs/design/IMPLEMENTATION_REFERENCE.md §11).
+(see tests/conftest.py and dev/docs/design/IMPLEMENTATION_REFERENCE.md §11).
 """
 
 import numpy as np

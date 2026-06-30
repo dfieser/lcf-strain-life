@@ -4,7 +4,7 @@ The internal time-series form is a :class:`pandas.DataFrame` with the columns
 below. Raw columns (``time``, ``strain``, ``force``) come from the test machine;
 the ``*_true`` / ``stress_*`` columns are derived at ingestion (see
 :mod:`lcf.ingest`). Naming mirrors the pyLife / py-fatigue ecosystem where it
-overlaps (ADR-0001, docs/design/WORKFLOW.md).
+overlaps (ADR-0001, dev/docs/design/WORKFLOW.md).
 """
 
 from __future__ import annotations

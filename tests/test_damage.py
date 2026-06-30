@@ -1,6 +1,6 @@
 """Tests for lcf.damage, including Golden C (DLDR) and Golden D (Miner).
 
-See docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md sections 2.1, 2.2, 2.4.
+See dev/docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md sections 2.1, 2.2, 2.4.
 """
 
 import numpy as np

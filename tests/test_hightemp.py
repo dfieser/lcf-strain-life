@@ -1,6 +1,6 @@
 """Tests for lcf.hightemp, including Golden H and a Hastelloy X style table.
 
-See docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 4.4.
+See dev/docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 4.4.
 """
 
 import pytest

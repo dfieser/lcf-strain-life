@@ -7,7 +7,7 @@ Two kinds of fixtures:
   reduction, and per-cycle metrics.
 * ``sae1137``: published per-test reduced strain-life data (Williams, Lee &
   Rilly, *Int. J. Fatigue* 25 (2003) 427-436), for golden-value validation of
-  the strain-life fits. See docs/design/IMPLEMENTATION_REFERENCE.md §11.
+  the strain-life fits. See dev/docs/design/IMPLEMENTATION_REFERENCE.md §11.
 """
 
 from __future__ import annotations

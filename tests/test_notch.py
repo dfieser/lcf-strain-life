@@ -1,6 +1,6 @@
 """Tests for lcf.notch, including Golden E (SAE 1005 notched plate).
 
-See docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 2a.5.
+See dev/docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 2a.5.
 """
 
 import pytest

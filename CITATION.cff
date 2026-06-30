@@ -16,7 +16,7 @@ version: 0.1.0
 date-released: "2026-06-26"
 license: MIT
 repository-code: "https://github.com/dfieser/lcf-strain-life"
-url: "https://dfieser.github.io/lcf-strain-life/"
+url: "https://github.com/dfieser/lcf-strain-life"
 keywords:
   - low cycle fatigue
   - strain-life

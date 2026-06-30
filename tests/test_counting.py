@@ -3,7 +3,7 @@
 Golden A and Golden B both use the sequence [-2, 1, -3, 5, -1, 3, -4, 4, -2],
 the ASTM E1049 example. Golden B (Tom Irvine / vibrationdata) gives the exact
 path cycles and binned totals used here as the regression baseline. See
-docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 1.5.
+dev/docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 1.5.
 """
 
 from collections import Counter

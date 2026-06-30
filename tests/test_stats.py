@@ -1,6 +1,6 @@
 """Tests for lcf.stats, including Golden G (Williams, Lee, Rilly SAE 1137).
 
-See docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 3.5.
+See dev/docs/design/IMPLEMENTATION_REFERENCE_PHASE2.md section 3.5.
 """
 
 import numpy as np

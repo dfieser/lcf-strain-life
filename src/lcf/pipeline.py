@@ -6,7 +6,7 @@
 * :func:`analyze_material` runs several tests (different strain amplitudes) and
   fits the multi-test strain-life models from their half-life summaries.
 
-This mirrors docs/design/WORKFLOW.md stages 2-4.
+This mirrors dev/docs/design/WORKFLOW.md stages 2-4.
 """
 
 from __future__ import annotations

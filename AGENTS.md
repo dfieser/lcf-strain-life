@@ -59,12 +59,12 @@ E1049 rainflow example.
   reimplement the Ramberg-Osgood curve or the strain-life solver.
 - Results that cross the MCP or store boundary must be valid JSON. Map non-finite
   floats to null with `lcf.store.to_jsonable`.
-- Record each major decision as an ADR in `docs/decisions` and add a line to
-  `CHANGELOG.md`.
-- Any change to an equation, a default, or a citation must update
-  `docs/SCIENTIFIC_REFERENCE.md` in the same change, and regenerate the
-  reviewer PDF with `pdflatex docs/reference/PHYSICS_REVIEW.tex`. Those are the
-  physics records a domain specialist reviews.
+- Add a line to `CHANGELOG.md` for each notable change. Detailed decision records
+  and design notes are kept in the local `dev/` folder, which is not part of the
+  public repository.
+- Any change to an equation, a default, or a citation must regenerate the physics
+  PDF with `pdflatex docs/PHYSICS_REVIEW.tex`. That is the physics record a domain
+  specialist reviews.
 
 ## Running the MCP server
 
@@ -81,9 +81,9 @@ defaults to `.lcfstore`.
 ```
 src/lcf/            library and MCP server
 tests/              unit tests including golden-value validation
-docs/reference/     equations, physics, symbol tables
-docs/design/        workflow and the research-derived implementation references
-docs/decisions/     ADRs, the decision log
+examples/           runnable example scripts
+docs/               the physics PDF and the agent usage guide
+dev/                local-only design notes and decision records, not committed
 ```
 
 ## Commit and PR guidance

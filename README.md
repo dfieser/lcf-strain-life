@@ -1,7 +1,6 @@
 # lcf-strain-life
 
 [![tests](https://github.com/dfieser/lcf-strain-life/actions/workflows/tests.yml/badge.svg)](https://github.com/dfieser/lcf-strain-life/actions/workflows/tests.yml)
-[![docs](https://github.com/dfieser/lcf-strain-life/actions/workflows/docs.yml/badge.svg)](https://dfieser.github.io/lcf-strain-life/)
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -73,32 +72,18 @@ Register with Claude Code or Claude Desktop over stdio:
 
 ## Documentation
 
-The full documentation site is at **https://dfieser.github.io/lcf-strain-life/**, with Physics, Usage, and API reference as tabs.
-
-- **[docs/reference/PHYSICS_REVIEW.pdf](docs/reference/PHYSICS_REVIEW.pdf)** is a single, science-only PDF for a domain reviewer: every equation defined and cited, with a sign-off table, and no software detail. This is the file to send a busy materials scientist.
-- [docs/SCIENTIFIC_REFERENCE.md](docs/SCIENTIFIC_REFERENCE.md) is the fuller engineering version of the same physics, with the code function and the test that checks each equation, plus the validation evidence. It is the **Scientific reference** tab on the docs site.
-- [docs/index.md](docs/index.md) is the documentation home: installation, usage, theory, and API reference. Build the site with `mkdocs serve` after `pip install -e ".[docs]"`.
-- [docs/reference](docs/reference) holds the equations, symbols, and physics.
-- [docs/design/WORKFLOW.md](docs/design/WORKFLOW.md) describes the data flow and the compute, save, recall model.
-- [docs/decisions](docs/decisions) holds the Architecture Decision Records, one per major design choice.
+- **[docs/PHYSICS_REVIEW.pdf](docs/PHYSICS_REVIEW.pdf)** is a single, science-only PDF: every equation defined and cited, with a reviewer sign-off table and no software detail. This is the file to share with a materials scientist for review.
+- [examples/](examples) holds runnable scripts: a strain-life fit and a machine-style CSV ingestion.
+- [docs/AGENT_USAGE.md](docs/AGENT_USAGE.md) describes the MCP tools and the compute, save, recall pattern for AI agents using the toolkit.
 - [CHANGELOG.md](CHANGELOG.md) is the chronological log of changes.
-
-## For AI agents
-
-This toolkit is built to be driven by AI agents over MCP.
-
-- [docs/AGENT_USAGE.md](docs/AGENT_USAGE.md): the MCP tools, their units, and the compute, save, recall pattern, for agents using the tool.
-- [AGENTS.md](AGENTS.md): guidance for agents working on the repository, with CLAUDE.md as the Claude Code companion.
-- [llms.txt](llms.txt): a machine-readable index of the docs.
 
 ## Project layout
 
 ```
 src/lcf/            core library and MCP server
 tests/              unit tests including golden-value validation, SAE 1137
-docs/reference/     equations, physics, symbol tables
-docs/design/        workflow and research-derived implementation reference
-docs/decisions/     ADRs, the decision log
+examples/           runnable example scripts
+docs/               the physics PDF and the agent usage guide
 ```
 
 ## License

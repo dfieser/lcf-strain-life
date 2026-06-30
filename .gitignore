@@ -48,3 +48,8 @@ Thumbs.db
 
 # Claude local settings (keep project settings, ignore personal)
 .claude/settings.local.json
+
+# Local developer and AI-process material, kept off the public repo
+dev/
+memory/
+MEMORY.md

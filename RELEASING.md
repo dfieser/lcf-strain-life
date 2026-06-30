@@ -29,12 +29,9 @@ These cannot be done from the repository, they need your accounts.
    name in the workflow must match the one on PyPI exactly.
 2. TestPyPI, optional, for a dry run. Same trusted-publisher setup on
    test.pypi.org if you want to test the upload first.
-3. GitHub Pages. In the GitHub repo, Settings, Pages, set Build and deployment
-   source to GitHub Actions. The `docs.yml` workflow then publishes the site to
-   https://dfieser.github.io/lcf-strain-life/ on every push to main.
-4. Zenodo. Log in to zenodo.org with GitHub, open the GitHub settings in Zenodo,
-   and switch the toggle ON for `lcf-strain-life`. The next GitHub Release is
-   archived automatically and a DOI is minted.
+3. Zenodo, optional, for a citable DOI. Log in to zenodo.org with GitHub, open the
+   GitHub settings in Zenodo, and switch the toggle ON for `lcf-strain-life`. The
+   next GitHub Release is archived automatically and a DOI is minted.
 
 Confirm the distribution name `lcf-strain-life` is free on PyPI before the first
 upload.
@@ -45,8 +42,8 @@ upload.
 2. Update the version in `pyproject.toml` and in `CITATION.cff`, and set the
    `date-released` in `CITATION.cff`.
 3. In `CHANGELOG.md`, move the Unreleased notes into a new dated version section.
-4. If any equation, default, or citation changed, update
-   `docs/SCIENTIFIC_REFERENCE.md`.
+4. If any equation, default, or citation changed, regenerate
+   `docs/PHYSICS_REVIEW.pdf` with `pdflatex docs/PHYSICS_REVIEW.tex`.
 5. Verify locally:
 
    ```
