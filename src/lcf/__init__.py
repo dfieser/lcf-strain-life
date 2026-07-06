@@ -13,7 +13,7 @@ here so that importing :mod:`lcf` does not pull in matplotlib / the MCP SDK.
 
 from __future__ import annotations
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from .cycles import (
     ReducedCycles,
