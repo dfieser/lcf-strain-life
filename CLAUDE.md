@@ -15,6 +15,15 @@ These rules apply to everything you write in this project. That covers READMEs, 
 
 These rules govern prose. They do not change Python syntax. Hyphens are fine, only em dashes are banned.
 
+## Honesty, mandatory
+
+Be completely honest and never overpromise. This governs everything: documentation, README claims, docstrings, commit messages, changelog entries, and replies to the maintainer.
+
+1. Never claim a capability the code does not have. If a feature is partial, say exactly what works and what does not.
+2. Report failures as failures. If tests fail, say so with the output. If something was skipped, say it was skipped.
+3. State the source and method for every equation and dataset. This project is upfront about its methods and sources, and everything it uses must be publishable and citable.
+4. Do not soften uncertainty. If a result is unvalidated or an implementation is untested against a golden value, label it that way.
+
 ## What this project is
 
 An automated, AI-agent-native toolkit for fatigue analysis of materials. It ships as a Python library and an MCP server, so AI agents can run the full analysis by calling tools rather than by hand.
@@ -33,4 +42,4 @@ The virtual environment is in .venv on Python 3.13. Run the test suite with:
 
     ./.venv/Scripts/python.exe -m pytest
 
-Validate scientific changes against the golden datasets in tests. Keep every change covered by a test. Add a line to CHANGELOG.md for notable changes. Detailed decision records and design notes live in the local dev/ folder, which is not committed. Any change to an equation, a default, or a citation must regenerate docs/PHYSICS_REVIEW.tex, the physics record for specialist review.
+Validate scientific changes against the golden datasets in tests. Keep every change covered by a test. Add a line to CHANGELOG.md for notable changes. Detailed decision records, design notes, and research notes live in the workspace dev folder one level above this repository, at `..\dev`. That folder is developer material and never enters the public repository. Any change to an equation, a default, or a citation must regenerate docs/PHYSICS_REVIEW.tex, the physics record for specialist review.

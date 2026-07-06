@@ -1,0 +1,33 @@
+# Files Claude and other AI tools should not read. These are generated,
+# binary, or runtime artifacts that waste context tokens.
+
+# Virtual environments and caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build and packaging output
+build/
+dist/
+site/
+*.egg-info/
+
+# Runtime result stores
+.lcfstore/
+*.lcfstore/
+examples/output/
+
+# Binary and LaTeX build artifacts. Edit the .tex source, not the PDF.
+docs/PHYSICS_REVIEW.pdf
+*.aux
+*.out
+*.toc
+*.synctex.gz
+
+# Version control internals
+.git/

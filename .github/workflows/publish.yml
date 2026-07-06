@@ -2,7 +2,8 @@ name: publish
 
 # Publishes to PyPI when a version tag (vX.Y.Z) is pushed, using PyPI Trusted
 # Publishing (OIDC), so no API token is stored. To release: bump the version,
-# commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`. See RELEASING.md.
+# commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`. The full release
+# process is documented in the maintainer notes outside this repository.
 #
 # One-time PyPI setup is required first (a pending trusted publisher with this
 # repo, the workflow filename publish.yml, and the environment name pypi).

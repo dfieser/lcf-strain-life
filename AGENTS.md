@@ -18,6 +18,13 @@ The project exists to be used by AI agents first. Every capability must be
 reachable and useful through the MCP tools and the library API. When you add a
 feature, expose it as an MCP tool and keep its inputs and outputs agent friendly.
 
+## Honesty, mandatory
+
+Be completely honest and never overpromise, in docs, claims, commit messages,
+and replies. Never claim a capability the code does not have. Report failures
+as failures. State the source for every equation and dataset, everything used
+must be publishable and citable. Label unvalidated results as unvalidated.
+
 ## Scope, stay broad
 
 General purpose and material agnostic. Serve many materials and many fatigue
@@ -59,8 +66,9 @@ E1049 rainflow example.
   reimplement the Ramberg-Osgood curve or the strain-life solver.
 - Results that cross the MCP or store boundary must be valid JSON. Map non-finite
   floats to null with `lcf.store.to_jsonable`.
-- Add a line to `CHANGELOG.md` for each notable change. Detailed decision records
-  and design notes are kept in the local `dev/` folder, which is not part of the
+- Add a line to `CHANGELOG.md` for each notable change. Detailed decision records,
+  design notes, and research notes are kept in the workspace `dev/` folder one
+  level above this repository, at `../dev`. Developer material never enters the
   public repository.
 - Any change to an equation, a default, or a citation must regenerate the physics
   PDF with `pdflatex docs/PHYSICS_REVIEW.tex`. That is the physics record a domain
@@ -83,7 +91,7 @@ src/lcf/            library and MCP server
 tests/              unit tests including golden-value validation
 examples/           runnable example scripts
 docs/               the physics PDF and the agent usage guide
-dev/                local-only design notes and decision records, not committed
+../dev/             workspace-level design notes and decision records, outside the repo
 ```
 
 ## Commit and PR guidance
