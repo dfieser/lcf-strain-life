@@ -4,7 +4,7 @@
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/lcf-strain-life)](https://pypi.org/project/lcf-strain-life/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21222820.svg)](https://doi.org/10.5281/zenodo.21222820)
+[![DOI](https://zenodo.org/badge/1279652018.svg)](https://doi.org/10.5281/zenodo.21222820)
 
 **[Readme](README.md)** | **[Physics Review](docs/PHYSICS_REVIEW.md)** | **[Agent Usage](docs/AGENT_USAGE.md)** | **[Changelog](CHANGELOG.md)** | **[MIT License](LICENSE)**
 
