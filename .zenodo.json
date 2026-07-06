@@ -7,7 +7,8 @@
   "creators": [
     {
       "name": "Fieser, David",
-      "orcid": "0009-0007-5754-4331"
+      "orcid": "0009-0007-5754-4331",
+      "affiliation": "Department of Mechanical and Aerospace Engineering, The University of Tennessee, Knoxville"
     },
     {
       "name": "Shortt, Hugh",
@@ -15,6 +16,7 @@
       "affiliation": "Materials Science and Engineering, The University of Tennessee, Knoxville"
     }
   ],
+  "notes": "David Fieser and Hugh Shortt contributed equally to this project.",
   "keywords": [
     "low cycle fatigue",
     "strain-life",

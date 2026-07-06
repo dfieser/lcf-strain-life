@@ -19,5 +19,5 @@ fatigue exponents b and c are negative.
 
 ## Physics and changes
 
-- [Physics PDF](docs/PHYSICS_REVIEW.pdf): every equation defined and cited, for specialist review.
+- [Physics review](docs/PHYSICS_REVIEW.md): every equation defined and cited, for specialist review. The typeset version with a sign-off table is [docs/PHYSICS_REVIEW.pdf](docs/PHYSICS_REVIEW.pdf).
 - [Changelog](CHANGELOG.md): the chronological log of changes.

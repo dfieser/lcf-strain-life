@@ -1,0 +1,293 @@
+# Low Cycle Fatigue: Physics and Equations for Review
+
+David Fieser and Hugh Shortt. Both authors contributed equally.
+
+This is a self-contained statement of the fatigue physics implemented in the
+toolkit, written for review by a materials or fatigue specialist. It contains
+the equations, the symbols and units, the conventions, and the source for each
+relation. It contains no software detail. The typeset version with a reviewer
+sign-off table is [PHYSICS_REVIEW.pdf](PHYSICS_REVIEW.pdf).
+
+## Conventions
+
+All analysis uses true stress and true strain. Stress and modulus are in MPa.
+Strain is a dimensionless fraction. Life is expressed in reversals $2N_f$,
+where one cycle is two reversals. The fatigue strength exponent $b$ and the
+fatigue ductility exponent $c$ are negative.
+
+| Symbol | Meaning | Unit |
+|---|---|---|
+| $\sigma,\ \varepsilon$ | true stress, true strain | MPa, - |
+| $\Delta\sigma/2,\ \Delta\varepsilon/2$ | stress, total strain amplitude | MPa, - |
+| $\Delta\varepsilon_e/2,\ \Delta\varepsilon_p/2$ | elastic, plastic strain amplitude | - |
+| $\sigma_m,\ \sigma_{max}$ | mean stress, maximum stress | MPa |
+| $E$ | Young's modulus | MPa |
+| $\sigma'_f,\ b$ | fatigue strength coefficient, exponent | MPa, - |
+| $\varepsilon'_f,\ c$ | fatigue ductility coefficient, exponent | - |
+| $K',\ n'$ | cyclic strength coefficient, strain-hardening exponent | MPa, - |
+| $2N_f$ | reversals to failure | - |
+| $K_t,\ K_f,\ q$ | stress concentration, fatigue notch factor, notch sensitivity | - |
+
+## True stress and strain
+
+Engineering values $e$ and $\sigma_\text{eng}=F/A_0$ convert to true values by
+
+$$\varepsilon = \ln(1+e), \qquad \sigma = \sigma_\text{eng}(1+e).$$
+
+Valid up to necking. Reference: Dowling, Mechanical Behavior of Materials, 4th ed.
+
+## Cyclic stress-strain, Ramberg-Osgood
+
+$$\varepsilon = \frac{\sigma}{E} + \left(\frac{\sigma}{K'}\right)^{1/n'},
+\qquad
+\Delta\varepsilon = \frac{\Delta\sigma}{E} + 2\left(\frac{\Delta\sigma}{2K'}\right)^{1/n'}.$$
+
+The second form is the doubled hysteresis branch. Reference: Ramberg and Osgood
+1943, NACA TN 902. Dowling 4th ed., Eq. 14.12.
+
+## Strain-life
+
+Elastic, Basquin:
+
+$$\frac{\Delta\sigma}{2} = \sigma'_f (2N_f)^{b},
+\qquad
+\frac{\Delta\varepsilon_e}{2} = \frac{\sigma'_f}{E}(2N_f)^{b}.$$
+
+Plastic, Coffin-Manson:
+
+$$\frac{\Delta\varepsilon_p}{2} = \varepsilon'_f (2N_f)^{c}.$$
+
+Total strain-life and the elastic-plastic transition life:
+
+$$\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f}{E}(2N_f)^{b} + \varepsilon'_f (2N_f)^{c},
+\qquad
+2N_t = \left(\frac{\varepsilon'_f E}{\sigma'_f}\right)^{1/(b-c)}.$$
+
+Compatibility, checked and reported but not forced:
+
+$$n' = \frac{b}{c}, \qquad K' = \frac{\sigma'_f}{(\varepsilon'_f)^{b/c}}.$$
+
+The plastic line is fit over the low cycle regime, excluding near-runout points
+whose plastic strain is at measurement noise level. References: Basquin 1910,
+Coffin 1954, Manson 1953, Dowling 4th ed. Eq. 14.3 to 14.6.
+
+## Mean-stress corrections
+
+Morrow, elastic term shifted by the mean stress:
+
+$$\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f-\sigma_m}{E}(2N_f)^{b} + \varepsilon'_f (2N_f)^{c}.$$
+
+Modified Morrow, both terms shifted:
+
+$$\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f-\sigma_m}{E}(2N_f)^{b}
++ \varepsilon'_f\left(\frac{\sigma'_f-\sigma_m}{\sigma'_f}\right)^{c/b}(2N_f)^{c}.$$
+
+Smith-Watson-Topper:
+
+$$\sigma_{max}\,\frac{\Delta\varepsilon}{2} = \frac{(\sigma'_f)^2}{E}(2N_f)^{2b}
++ \sigma'_f \varepsilon'_f (2N_f)^{b+c},
+\qquad
+\sigma_{ar} = \sqrt{\sigma_{max}\,\sigma_a}.$$
+
+Walker, with the equivalent fully-reversed amplitude and the steel estimate of
+the exponent:
+
+$$\sigma_{ar} = \sigma_{max}^{\,1-\gamma}\,\sigma_a^{\,\gamma},
+\qquad
+\gamma_{steel} = 0.8818 - 2.00\times10^{-4}\,\sigma_u.$$
+
+Morrow equivalent fully-reversed amplitude:
+
+$$\sigma_{ar} = \frac{\sigma_a}{1 - \sigma_m/\sigma'_f}.$$
+
+With $\gamma=0.5$ Walker reduces to SWT. References: Morrow 1968. Smith, Watson,
+Topper 1970, J. Materials 5(4):767. Walker 1970. Dowling, Calhoun, Arcari 2009,
+Fatigue Fract. Eng. Mater. Struct. (steel $\gamma$). Dowling 4th ed. Eq. 9.18 to 9.21.
+
+## Hysteresis energy and cyclic response
+
+The plastic strain energy density per cycle is the closed loop area
+
+$$W = \oint \sigma\,d\varepsilon.$$
+
+The tension-compression asymmetry of a cycle is
+$R_{TC} = \lvert\sigma_{max}\rvert / \lvert\sigma_{min}\rvert$. Peak and valley
+stress versus cycle give the cyclic hardening and softening response.
+
+## Variable amplitude, cycle counting
+
+Irregular histories are reduced to closed cycles by the rainflow method, which
+pairs reversals into hysteresis loops while preserving their order in time.
+Reference: ASTM E1049-85(2017), Downing and Socie 1982, Matsuishi and Endo 1968.
+
+Level-crossing counting records positive-slope crossings at and above a
+reference level and negative-slope crossings below it. Peak counting records
+peaks at and above the reference and valleys below it. Both follow ASTM
+E1049-85(2017), sections 5.2 and 5.3.
+
+The racetrack (gate) filter condenses a history before counting by removing
+swings smaller than a gate while keeping the order of the large reversals.
+Reference: Fuchs, Nelson, Burke, and Toomay, SAE paper 730565, 1973.
+
+## Cumulative damage
+
+Palmgren-Miner linear damage, failure at a critical sum, the default being one:
+
+$$D = \sum_i \frac{n_i}{N_{f,i}}.$$
+
+Double Linear Damage Rule, Manson-Halford, with the Phase I life fraction
+referenced to the longest life in the spectrum:
+
+$$f_I = 0.35\left(\frac{N_f}{N_{long}}\right)^{0.25},
+\qquad N_I = N_f f_I, \quad N_{II} = N_f(1-f_I).$$
+
+Phase I accumulates to one, then Phase II accumulates to one. Corten-Dolan, where
+$\sigma_1$ is the maximum stress in the block and $\alpha_i$ the cycle fractions:
+
+$$N = \frac{N_{f,1}}{\sum_i \alpha_i (\sigma_i/\sigma_1)^{d}}.$$
+
+References: Palmgren 1924, Miner 1945, Manson and Halford 1981 (Int. J. Fracture
+17:169), Corten and Dolan 1956.
+
+For stress-based collectives the allowable life comes from a one-slope Woehler
+line with a knee at $(S_D, N_D)$:
+
+$$N = N_D \left(\frac{S_a}{S_D}\right)^{-k} \quad (S_a \ge S_D),$$
+
+and below the knee one of three treatments: infinite life (Miner original),
+the same slope $k$ continued (Miner elementary), or the flatter fictitious
+slope $2k-1$ (Haibach):
+
+$$N = N_D \left(\frac{S_a}{S_D}\right)^{-(2k-1)} \quad (S_a < S_D).$$
+
+References: Miner 1945, Haibach 1970, described in Haibach,
+Betriebsfestigkeit, 3rd ed., Springer, 2006.
+
+## Notch local-strain approach
+
+Neuber, combined with the cyclic curve, and its range form:
+
+$$\frac{(K_t S)^2}{E} = \sigma\,\varepsilon,
+\qquad
+\frac{(K_t \Delta S)^2}{E} = \Delta\sigma\,\Delta\varepsilon.$$
+
+Glinka equivalent strain energy density:
+
+$$\frac{(K_t S)^2}{2E} = \frac{\sigma^2}{2E} + \frac{\sigma}{n'+1}\left(\frac{\sigma}{K'}\right)^{1/n'}.$$
+
+Fatigue notch factor and notch sensitivity:
+
+$$K_f^{\text{Peterson}} = 1 + \frac{K_t-1}{1+a/r},
+\quad
+K_f^{\text{Neuber}} = 1 + \frac{K_t-1}{1+\sqrt{\beta/r}},
+\quad
+q = \frac{K_f-1}{K_t-1}.$$
+
+Neuber tends to overestimate and Glinka to underestimate the local strain. The
+measured value usually lies between them. References: Neuber 1961, Molski and
+Glinka 1981, Peterson 1974.
+
+## Statistics and design curves
+
+Life is the dependent variable in the linearized regression,
+$\log_{10} N = A + B \log_{10}(\Delta\varepsilon/2)$. Confidence and prediction
+intervals use the residual standard error and the Student $t$ quantile. A
+reliability and confidence design curve is the mean reduced by $k\,s$, where
+$k$ is the one-sided Owen tolerance factor. Right-censored runouts are handled
+by maximum likelihood rather than deletion. References: ASTM E739, withdrawn 2024
+and used as the de facto reference, Owen 1963, Williams, Lee and Rilly 2003 (Int.
+J. Fatigue 25:427).
+
+Outlier screening operates on the residuals of the log-life regression.
+Runouts are censored observations, not outliers, and are excluded from the
+screen. A single suspect point uses the two-sided Grubbs test, several suspect
+points use the generalized extreme studentized deviate test, whose
+approximation is intended for $n \ge 15$. Influence is reported through
+leverage, externally studentized residuals against a Bonferroni-corrected
+$t$ critical value, and Cook's distance against the $4/n$ screening
+threshold. Flagged points are reported, never deleted automatically.
+References: Grubbs 1969 (Technometrics 11:1), Rosner 1983 (Technometrics
+25:165), Cook 1977 (Technometrics 19:15), NIST/SEMATECH e-Handbook of
+Statistical Methods, sections 1.3.5.17.1 and 1.3.5.17.3.
+
+## Estimation of strain-life constants
+
+When no strain-controlled test data exists, the four constants are estimated
+from monotonic properties. $S_u$ is the ultimate tensile strength in MPa,
+$HB$ the Brinell hardness, $RA$ the reduction in area as a fraction, and
+$\tilde\varepsilon_f = \ln[1/(1-RA)]$ the true fracture ductility. Estimates
+are screening values, not substitutes for test data.
+
+Medians method, steels (recommended default) and aluminum alloys:
+
+$$\text{steel:}\quad \sigma'_f = 1.5\,S_u, \quad b=-0.09, \quad \varepsilon'_f = 0.45, \quad c=-0.59,$$
+
+$$\text{aluminum:}\quad \sigma'_f = 1.9\,S_u, \quad b=-0.11, \quad \varepsilon'_f = 0.28, \quad c=-0.66.$$
+
+Uniform Material Law, steels, with the ductility correction
+$\psi = 1$ for $S_u/E \le 0.003$, else $\psi = 1.375 - 125\,S_u/E$:
+
+$$\sigma'_f = 1.50\,S_u, \quad b=-0.087, \quad \varepsilon'_f = 0.59\,\psi,
+\quad c=-0.58, \quad K' = 1.65\,S_u, \quad n' = 0.15,$$
+
+and for aluminum and titanium alloys
+$\sigma'_f = 1.67\,S_u$, $b=-0.095$, $\varepsilon'_f = 0.35$, $c=-0.69$.
+The law loses validity as $S_u$ approaches 2.2 GPa, where $\psi$ reaches zero.
+
+Universal slopes, any metal:
+
+$$\sigma'_f = 1.9\,S_u, \quad b=-0.12, \quad
+\varepsilon'_f = 0.76\,\tilde\varepsilon_f^{\,0.6}, \quad c=-0.6.$$
+
+Modified universal slopes, steels:
+
+$$\sigma'_f = 0.623\,E\left(\frac{S_u}{E}\right)^{0.832}, \quad b=-0.09, \quad
+\varepsilon'_f = 0.0196\left(\frac{S_u}{E}\right)^{-0.53}\tilde\varepsilon_f^{\,0.155},
+\quad c=-0.56.$$
+
+Hardness method, steels with roughly 150 to 700 HB:
+
+$$\sigma'_f = 4.25\,HB + 225, \quad b=-0.09, \quad
+\varepsilon'_f = \frac{0.32\,HB^2 - 487\,HB + 191000}{E}, \quad c=-0.56.$$
+
+References: Meggiolaro and Castro 2004 (Int. J. Fatigue 26:463, also the
+comparative evaluation over 845 metals), Baeumel and Seeger 1990, Manson 1965
+(Exp. Mech. 5:193), Muralidharan and Manson 1988 (J. Eng. Mater. Technol.
+110:55), Roessle and Fatemi 2000 (Int. J. Fatigue 22:495).
+
+## Elevated temperature
+
+Frequency-modified Coffin-Manson, coefficient form:
+
+$$C_f = C_o\left(\frac{f}{f_{ref}}\right)^{k-1},
+\qquad
+\frac{\Delta\varepsilon_p}{2} = C_f (2N_f)^{c}.$$
+
+Linear time-fraction creep-fatigue damage, fatigue plus creep:
+
+$$D = \sum_i \frac{n_i}{N_{f,i}} + \sum_j \frac{t_j}{t_{r,j}},$$
+
+checked against a bilinear creep-fatigue interaction envelope. References: Coffin
+1971, Robinson 1952, ASTM E2714-13(2020).
+
+## Multiaxial, survey only
+
+Critical-plane parameters, provided for evaluation. The full plane search is not
+yet implemented.
+
+$$P_{FS} = \frac{\Delta\gamma_{max}}{2}\left(1 + k\frac{\sigma_{n,max}}{\sigma_y}\right),
+\quad
+P_{BM} = \frac{\Delta\gamma_{max}}{2} + S\,\Delta\varepsilon_n,
+\quad
+P_{SWT} = \sigma_{n,max}\frac{\Delta\varepsilon_1}{2}.$$
+
+References: Fatemi and Socie 1988 (Fatigue Fract. Eng. Mater. Struct. 11(3):149),
+Brown and Miller 1973, Smith, Watson, Topper 1970.
+
+## Conventions and assumptions to confirm
+
+- True stress-strain conversion assumed valid up to necking.
+- Plastic strain amplitude taken as $\Delta\varepsilon_t/2 - \Delta\sigma/(2E)$.
+- Failure criterion is a percent load drop from the stabilized half-life peak load, default 30 percent.
+- Default mean-stress model for variable amplitude is SWT, notch default is Neuber, damage default is Miner.
+- The plastic strain-life line is fit over the low cycle regime only.

@@ -1,5 +1,7 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+message: >-
+  If you use this software, please cite it as below. David Fieser and
+  Hugh Shortt contributed equally to this project.
 title: "lcf-strain-life: an AI-agent-native toolkit for low cycle fatigue analysis"
 abstract: >-
   A Python library and MCP server for low cycle fatigue strain-life analysis. It
@@ -13,6 +15,9 @@ authors:
   - family-names: Fieser
     given-names: David
     orcid: "https://orcid.org/0009-0007-5754-4331"
+    affiliation: >-
+      Department of Mechanical and Aerospace Engineering, The University of
+      Tennessee, Knoxville, 1512 Middle Drive, Knoxville, TN 37996, USA
   - family-names: Shortt
     given-names: Hugh
     orcid: "https://orcid.org/0000-0001-8015-3733"

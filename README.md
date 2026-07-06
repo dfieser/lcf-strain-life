@@ -4,6 +4,8 @@
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
+**[Readme](README.md)** | **[Physics Review](docs/PHYSICS_REVIEW.md)** | **[Agent Usage](docs/AGENT_USAGE.md)** | **[Changelog](CHANGELOG.md)** | **[MIT License](LICENSE)**
+
 An **AI-agent-native toolkit for fatigue analysis of materials**. It is a Python library plus an **MCP server**, so AI agents can run the whole analysis by calling tools.
 
 Provide your own strain-controlled fatigue test data and get the standardized reduction, fitted material constants, life predictions, and plots. Results are reproducible and are saved for recall.
@@ -78,7 +80,7 @@ Register with Claude Code or Claude Desktop over stdio:
 
 ## Documentation
 
-- **[docs/PHYSICS_REVIEW.pdf](docs/PHYSICS_REVIEW.pdf)** is a single, science-only PDF: every equation defined and cited, with a reviewer sign-off table and no software detail. This is the file to share with a materials scientist for review.
+- **[docs/PHYSICS_REVIEW.md](docs/PHYSICS_REVIEW.md)** is the science-only physics record: every equation defined and cited, no software detail. [docs/PHYSICS_REVIEW.pdf](docs/PHYSICS_REVIEW.pdf) is the same content typeset with a reviewer sign-off table, the file to share with a materials scientist for review.
 - [examples/](examples) holds runnable scripts: a strain-life fit and a machine-style CSV ingestion.
 - [docs/AGENT_USAGE.md](docs/AGENT_USAGE.md) describes the MCP tools and the compute, save, recall pattern for AI agents using the toolkit.
 - [CHANGELOG.md](CHANGELOG.md) is the chronological log of changes.
@@ -91,6 +93,12 @@ tests/              unit tests including golden-value validation, SAE 1137
 examples/           runnable example scripts
 docs/               the physics PDF and the agent usage guide
 ```
+
+## Authors and citation
+
+David Fieser and Hugh Shortt. Both authors contributed equally to this
+project. To cite the software, use the "Cite this repository" button on
+GitHub or [CITATION.cff](CITATION.cff).
 
 ## License
 
