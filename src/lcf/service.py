@@ -11,7 +11,22 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from . import counting, damage, fits, hightemp, life, notch, spectrum, stats
+from types import SimpleNamespace
+
+import numpy as np
+
+from . import (
+    counting,
+    damage,
+    estimate,
+    fits,
+    hightemp,
+    life,
+    multiaxial,
+    notch,
+    spectrum,
+    stats,
+)
 from .ingest import from_timeseries, read_csv
 from .meanstress import equivalent_fully_reversed_stress, walker_gamma_steel
 from .models import AnalysisParams, MeanStressModel, TestMetadata
@@ -147,17 +162,73 @@ class LcfService:
 
     # ----------------------------------------------------- phase 2: variable amp
     def count_rainflow(self, name: str, strain_history: list[float], *,
-                       close_residue: bool = False) -> dict:
-        """Rainflow count a strain history, persist the per-cycle table."""
-        df = counting.count_rainflow(strain_history, close_residue=close_residue)
-        ihash = hash_inputs(list(strain_history), close_residue)
+                       close_residue: bool = False,
+                       gate: float | None = None) -> dict:
+        """Rainflow count a strain history, persist the per-cycle table.
+
+        A non-None ``gate`` first condenses the history with the racetrack
+        filter, dropping swings smaller than the gate. Cycle indices always
+        refer to the original series.
+        """
+        if gate is not None:
+            idx, vals = counting.racetrack_filter(strain_history, gate)
+            df = counting.count_rainflow(vals, close_residue=close_residue)
+            df["i_start"] = idx[df["i_start"].to_numpy()]
+            df["i_end"] = idx[df["i_end"].to_numpy()]
+        else:
+            df = counting.count_rainflow(strain_history, close_residue=close_residue)
+        ihash = hash_inputs(list(strain_history), close_residue, gate)
         summary = {
             "n_cycles": int(len(df)),
             "total_count": float(df["count"].sum()) if len(df) else 0.0,
             "max_range": float(df["range"].max()) if len(df) else 0.0,
+            "gate": gate,
         }
         self.store.save(name, "rainflow", summary, dataframe=df, input_hash=ihash)
         return summary
+
+    def count_level_crossings(self, name: str, series: list[float], *,
+                              levels: list[float] | None = None,
+                              ref: float = 0.0) -> dict:
+        """Level-crossing count (ASTM E1049 5.2), persist the level table."""
+        df = counting.count_level_crossings(series, levels=levels, ref=ref)
+        ihash = hash_inputs(list(series), list(levels) if levels else None, ref)
+        summary = {
+            "n_levels": int(len(df)),
+            "total_crossings": int(df["count"].sum()),
+            "ref": ref,
+        }
+        self.store.save(name, "level_crossings", summary, dataframe=df,
+                        input_hash=ihash)
+        return summary
+
+    def count_peaks(self, name: str, series: list[float], *,
+                    ref: float = 0.0) -> dict:
+        """Peak and valley count (ASTM E1049 5.3), persist the table."""
+        df = counting.count_peaks(series, ref=ref)
+        ihash = hash_inputs(list(series), ref)
+        summary = {
+            "n_peaks": int((df["kind"] == "peak").sum()),
+            "n_valleys": int((df["kind"] == "valley").sum()),
+            "ref": ref,
+        }
+        self.store.save(name, "peaks", summary, dataframe=df, input_hash=ihash)
+        return summary
+
+    def compute_sn_life(self, stress_amp: list[float], *, k: float, sd: float,
+                        nd: float, variant: str = "original") -> dict:
+        """Allowable cycles per stress amplitude from a Woehler line with knee.
+
+        Infinite lives (below the knee in the original variant) serialize as
+        null in JSON.
+        """
+        lives = damage.sn_curve_life(stress_amp, k=k, sd=sd, nd=nd,
+                                     variant=variant)
+        return to_jsonable({
+            "lives": [float(v) for v in lives],
+            "variant": variant,
+            "k": k, "sd": sd, "nd": nd,
+        })
 
     def compute_spectrum_life(
         self, strain_history: list[float], stress_history: list[float], *,
@@ -184,14 +255,26 @@ class LcfService:
         return to_jsonable(out)
 
     def compute_damage(self, counts: list[float], lives: list[float], *,
-                       rule: str = "miner", d_crit: float = 1.0) -> dict:
-        """Cumulative damage for a counted block (Miner or DLDR)."""
+                       rule: str = "miner", d_crit: float = 1.0,
+                       stresses: list[float] | None = None,
+                       d_exponent: float | None = None) -> dict:
+        """Cumulative damage for a counted block (Miner, DLDR, or Corten-Dolan).
+
+        Corten-Dolan needs the per-level ``stresses`` and the material exponent
+        ``d_exponent``.
+        """
         if rule == "miner":
             dr = damage.miner(counts, lives, d_crit=d_crit)
         elif rule == "dldr":
             dr = damage.dldr(counts, lives, d_crit=d_crit)
+        elif rule == "corten_dolan":
+            if stresses is None or d_exponent is None:
+                raise ValueError(
+                    "corten_dolan requires stresses and d_exponent"
+                )
+            dr = damage.corten_dolan(counts, stresses, lives, d=d_exponent)
         else:
-            raise ValueError("rule must be miner or dldr")
+            raise ValueError("rule must be miner, dldr, or corten_dolan")
         return to_jsonable(dr)
 
     def compute_notch_local(
@@ -238,6 +321,74 @@ class LcfService:
                                                    reliability, confidence))
         return to_jsonable(out)
 
+    def flag_outliers(
+        self, amplitude: list[float], life_values: list[float], *,
+        censored: list[bool] | None = None,
+        alpha: float = 0.05,
+        max_outliers: int | None = None,
+    ) -> dict:
+        """Flag statistical outliers in strain-life data, respecting runouts.
+
+        Runouts (censored points) are suspended tests, not outliers, so they
+        are separated first and never tested. The remaining points are fitted
+        with the log-log regression, the residuals are screened with the
+        generalized ESD test (Rosner 1983, NIST recipe), and influence
+        diagnostics (Cook's distance, leverage) are reported. Indices refer to
+        the original input order.
+        """
+        n = len(amplitude)
+        if len(life_values) != n:
+            raise ValueError("amplitude and life_values must be the same length")
+        cens = list(censored) if censored is not None else [False] * n
+        if len(cens) != n:
+            raise ValueError("censored must match the data length")
+        runout_indices = [i for i in range(n) if cens[i]]
+        kept = [i for i in range(n) if not cens[i]]
+        amp = [amplitude[i] for i in kept]
+        lif = [life_values[i] for i in kept]
+
+        fit = stats.fit_log_life(amp, lif)
+        x = np.log10(np.asarray(amp, dtype=np.float64))
+        y = np.log10(np.asarray(lif, dtype=np.float64))
+        residuals = y - (fit.intercept + fit.slope * x)
+
+        warnings: list[str] = []
+        outlier_indices: list[int] = []
+        steps: list[dict] = []
+        k = max_outliers if max_outliers is not None else max(1, len(kept) // 5)
+        if len(kept) - k >= 3:
+            esd = stats.generalized_esd(residuals, max_outliers=k, alpha=alpha)
+            outlier_indices = [kept[j] for j in esd["outlier_indices"]]
+            steps = esd["steps"]
+            warnings.extend(esd["warnings"])
+        else:
+            warnings.append(
+                "too few uncensored points for the generalized ESD test, "
+                "no outlier test was run"
+            )
+
+        diag = stats.regression_diagnostics(amp, lif)
+        influential = [kept[j] for j in diag["influential_indices"]]
+        return to_jsonable({
+            "n_points": n,
+            "runout_indices": runout_indices,
+            "outlier_indices": outlier_indices,
+            "influential_indices": influential,
+            "esd_steps": steps,
+            "cooks_distance": diag["cooks_distance"],
+            "leverage": diag["leverage"],
+            "studentized_residuals": diag["studentized_residuals"],
+            "alpha": alpha,
+            "warnings": warnings,
+            "citations": [
+                "Rosner, Technometrics 25 (1983) 165-172",
+                "Grubbs, Technometrics 11 (1969) 1-21",
+                "Cook, Technometrics 19 (1977) 15-18",
+                "NIST/SEMATECH e-Handbook of Statistical Methods, "
+                "sections 1.3.5.17.1 and 1.3.5.17.3",
+            ],
+        })
+
     # ----------------------------------------------------- phase 2: high temp
     def compute_creep_fatigue(
         self, cycle_counts: list[float], fatigue_lives: list[float],
@@ -255,6 +406,207 @@ class LcfService:
             self.store.save(name, "creep_fatigue", out,
                             input_hash=hash_inputs(list(cycle_counts), list(hold_times)))
         return to_jsonable(out)
+
+    # ----------------------------------------------------- constant estimation
+    def estimate_constants(
+        self, method: str, *,
+        material_class: str = "steel",
+        Su: float | None = None,
+        E: float | None = None,
+        HB: float | None = None,
+        RA: float | None = None,
+        material: str | None = None,
+    ) -> dict:
+        """Estimate strain-life constants from monotonic properties.
+
+        Returns the constants with the citation of the source method and any
+        validity warnings. Persists under ``material`` if given.
+        """
+        est = estimate.estimate_strain_life_constants(
+            method, material_class=material_class, Su=Su, E=E, HB=HB, RA=RA
+        )
+        out = to_jsonable(est)
+        if material:
+            ihash = hash_inputs(method, material_class, Su, E, HB, RA)
+            self.store.save(material, "estimated_constants", out, input_hash=ihash)
+        return out
+
+    # ----------------------------------------------------- multiaxial parameters
+    def compute_multiaxial_parameter(
+        self, parameter: str, *,
+        shear_strain_amp: float | None = None,
+        normal_strain_amp: float | None = None,
+        sigma_n_max: float | None = None,
+        sigma_y: float | None = None,
+        k: float = 0.3,
+        S: float = 1.0,
+        eps_x: float | None = None, eps_y: float | None = None,
+        eps_z: float | None = None,
+        gamma_xy: float = 0.0, gamma_yz: float = 0.0, gamma_zx: float = 0.0,
+    ) -> dict:
+        """Evaluate one critical-plane damage parameter from known plane quantities.
+
+        ``parameter`` is one of fatemi_socie, brown_miller, swt, von_mises.
+        The plane quantities must be supplied by the caller, there is no tensor
+        rotating-plane engine yet.
+        """
+        if parameter == "fatemi_socie":
+            if shear_strain_amp is None or sigma_n_max is None or sigma_y is None:
+                raise ValueError(
+                    "fatemi_socie requires shear_strain_amp, sigma_n_max, sigma_y"
+                )
+            value = multiaxial.fatemi_socie(
+                shear_strain_amp, sigma_n_max, sigma_y=sigma_y, k=k
+            )
+        elif parameter == "brown_miller":
+            if shear_strain_amp is None or normal_strain_amp is None:
+                raise ValueError(
+                    "brown_miller requires shear_strain_amp and normal_strain_amp"
+                )
+            value = multiaxial.brown_miller(shear_strain_amp, normal_strain_amp, S=S)
+        elif parameter == "swt":
+            if sigma_n_max is None or normal_strain_amp is None:
+                raise ValueError("swt requires sigma_n_max and normal_strain_amp")
+            value = multiaxial.swt_multiaxial(sigma_n_max, normal_strain_amp)
+        elif parameter == "von_mises":
+            if eps_x is None or eps_y is None or eps_z is None:
+                raise ValueError("von_mises requires eps_x, eps_y, eps_z")
+            value = multiaxial.von_mises_equivalent_strain(
+                eps_x, eps_y, eps_z, gamma_xy, gamma_yz, gamma_zx
+            )
+        else:
+            raise ValueError(
+                "parameter must be fatemi_socie, brown_miller, swt, or von_mises"
+            )
+        return to_jsonable({"parameter": parameter, "value": float(value)})
+
+    def search_critical_plane(
+        self, parameter: str, angles: list[float],
+        shear_strain_amp: list[float] | None = None, *,
+        normal_strain_amp: list[float] | None = None,
+        sigma_n_max: list[float] | None = None,
+        sigma_y: float | None = None,
+        k: float = 0.3,
+        S: float = 1.0,
+    ) -> dict:
+        """Find the plane angle that maximizes a damage parameter.
+
+        The caller supplies per-angle plane quantities as aligned arrays, one
+        entry per candidate angle. Returns the critical angle, the maximum
+        parameter, and the per-angle values.
+        """
+        angles_arr = np.asarray(angles, dtype=np.float64)
+        n = len(angles_arr)
+
+        def _aligned(name, values):
+            if values is None:
+                raise ValueError(f"{parameter} requires {name}, one value per angle")
+            arr = np.asarray(values, dtype=np.float64)
+            if arr.shape != angles_arr.shape:
+                raise ValueError(f"{name} must have one value per angle")
+            return arr
+
+        if parameter == "fatemi_socie":
+            gam = _aligned("shear_strain_amp", shear_strain_amp)
+            sn = _aligned("sigma_n_max", sigma_n_max)
+            if sigma_y is None:
+                raise ValueError("fatemi_socie requires sigma_y")
+            values = [
+                multiaxial.fatemi_socie(gam[i], sn[i], sigma_y=sigma_y, k=k)
+                for i in range(n)
+            ]
+        elif parameter == "brown_miller":
+            gam = _aligned("shear_strain_amp", shear_strain_amp)
+            en = _aligned("normal_strain_amp", normal_strain_amp)
+            values = [
+                multiaxial.brown_miller(gam[i], en[i], S=S) for i in range(n)
+            ]
+        elif parameter == "swt":
+            sn = _aligned("sigma_n_max", sigma_n_max)
+            en = _aligned("normal_strain_amp", normal_strain_amp)
+            values = [multiaxial.swt_multiaxial(sn[i], en[i]) for i in range(n)]
+        else:
+            raise ValueError(
+                "parameter must be fatemi_socie, brown_miller, or swt"
+            )
+        res = multiaxial.critical_plane_search(
+            lambda a: values[int(np.argmin(np.abs(angles_arr - a)))],
+            angles=angles_arr,
+        )
+        return to_jsonable({
+            "parameter": parameter,
+            "critical_angle": res["critical_angle"],
+            "max_parameter": res["max_parameter"],
+            "angles": list(map(float, res["angles"])),
+            "values": list(map(float, res["values"])),
+        })
+
+    # ----------------------------------------------------- high temp, frequency
+    def compute_frequency_modified_life(
+        self, plastic_strain_amp: float, eps_f_coeff: float, c: float, *,
+        frequency: float, k: float, freq_ref: float = 1.0,
+    ) -> dict:
+        """Reversals to failure from the frequency-modified Coffin-Manson law."""
+        c_f = hightemp.frequency_modified_coefficient(
+            eps_f_coeff, frequency=frequency, k=k, freq_ref=freq_ref
+        )
+        two_nf = hightemp.frequency_modified_reversals(
+            plastic_strain_amp, eps_f_coeff, c, frequency=frequency, k=k,
+            freq_ref=freq_ref,
+        )
+        return to_jsonable({
+            "reversals": two_nf,
+            "cycles": two_nf / 2.0,
+            "modified_coefficient": c_f,
+            "plastic_strain_amp": plastic_strain_amp,
+            "frequency": frequency,
+        })
+
+    # --------------------------------------------------------------- plotting
+    def render_plot(self, key: str, kind: str) -> dict:
+        """Render a stored result as a PNG and register it in the store.
+
+        ``kind`` is one of rainflow_histogram, peak_valley, energy, strain_life.
+        The data comes from the store, so run the corresponding compute tool
+        first. Returns the PNG path.
+        """
+        from . import plots  # matplotlib import stays lazy
+
+        if kind == "rainflow_histogram":
+            df = self.store.get_dataframe(key, "rainflow")
+            if df is None:
+                raise ValueError(f"no rainflow table stored for key={key!r}")
+            fig = plots.plot_rainflow_histogram(df)
+        elif kind in ("peak_valley", "energy"):
+            df = self.store.get_dataframe(key, "per_cycle")
+            summary = self.store.recall(key, "summary")
+            if df is None or summary is None:
+                raise ValueError(f"no per-cycle result stored for key={key!r}")
+            half_life = summary["value"].get("half_life_cycle")
+            shim = SimpleNamespace(table=df, half_life_cycle=half_life)
+            fig = plots.plot_peak_valley(shim) if kind == "peak_valley" \
+                else plots.plot_energy(shim)
+        elif kind == "strain_life":
+            rec = self.store.recall(key, "strain_life_fit")
+            if rec is None:
+                raise ValueError(f"no strain-life fit stored for key={key!r}")
+            v = rec["value"]
+            shim = SimpleNamespace(
+                E=v["E"],
+                basquin=SimpleNamespace(**v["basquin"]),
+                coffin_manson=SimpleNamespace(**v["coffin_manson"]),
+                transition_reversals=v.get("transition_reversals"),
+            )
+            fig = plots.plot_strain_life(shim)
+        else:
+            raise ValueError(
+                "kind must be rainflow_histogram, peak_valley, energy, "
+                "or strain_life"
+            )
+        png_path = self.store.root / f"{key}__{kind}.png"
+        plots.savefig(fig, png_path)
+        self.store.save(key, f"plot_{kind}", {"kind": kind}, png_path=png_path)
+        return {"key": key, "kind": kind, "png_path": str(png_path)}
 
     # --------------------------------------------------------------- recall
     def recall(self, key: str, quantity: str) -> dict | None:

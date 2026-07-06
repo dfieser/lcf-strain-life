@@ -61,13 +61,21 @@ from .pipeline import (
 )
 
 # Phase 2: variable amplitude, damage, notch, statistics, high temperature
-from .counting import count_rainflow, extract_cycles, mean_stress_per_cycle
+from .counting import (
+    count_level_crossings,
+    count_peaks,
+    count_rainflow,
+    extract_cycles,
+    mean_stress_per_cycle,
+    racetrack_filter,
+)
 from .damage import (
     DamageResult,
     corten_dolan,
     dldr,
     manson_halford_phase_lives,
     miner,
+    sn_curve_life,
 )
 from .notch import (
     glinka_local,
@@ -83,8 +91,11 @@ from .stats import (
     design_life,
     fit_log_life,
     fit_log_life_censored,
+    generalized_esd,
+    grubbs_test,
     owen_tolerance_factor,
     prediction_interval,
+    regression_diagnostics,
 )
 from .hightemp import (
     CreepFatigueResult,
@@ -101,6 +112,20 @@ from .multiaxial import (
     von_mises_equivalent_strain,
 )
 from .spectrum import SpectrumResult, spectrum_life
+
+from .citations import CITATIONS, get_citations
+
+# Phase 3: estimation of strain-life constants from monotonic properties
+from .estimate import (
+    ESTIMATION_METHODS,
+    EstimatedConstants,
+    estimate_hardness_method,
+    estimate_medians,
+    estimate_modified_universal_slopes,
+    estimate_strain_life_constants,
+    estimate_uniform_material_law,
+    estimate_universal_slopes,
+)
 
 __all__ = [
     "__version__",
@@ -128,13 +153,16 @@ __all__ = [
     "TestAnalysis", "MaterialAnalysis",
     # phase 2: counting / damage
     "count_rainflow", "extract_cycles", "mean_stress_per_cycle",
+    "count_level_crossings", "count_peaks", "racetrack_filter",
     "miner", "dldr", "corten_dolan", "manson_halford_phase_lives", "DamageResult",
+    "sn_curve_life",
     # phase 2: notch
     "neuber_local", "glinka_local", "notch_local_life",
     "kf_peterson", "kf_neuber", "notch_sensitivity",
     # phase 2: statistics
     "fit_log_life", "fit_log_life_censored", "design_life", "owen_tolerance_factor",
     "confidence_interval", "prediction_interval", "LogLifeFit",
+    "grubbs_test", "generalized_esd", "regression_diagnostics",
     # phase 2: high temperature
     "creep_fatigue_damage", "creep_fatigue_envelope_check",
     "frequency_modified_plastic_strain", "interpolate_constants", "CreepFatigueResult",
@@ -143,4 +171,11 @@ __all__ = [
     "von_mises_equivalent_strain", "critical_plane_search",
     # phase 2: spectrum life
     "spectrum_life", "SpectrumResult",
+    # phase 3: constant estimation
+    "estimate_strain_life_constants", "estimate_medians",
+    "estimate_uniform_material_law", "estimate_universal_slopes",
+    "estimate_modified_universal_slopes", "estimate_hardness_method",
+    "EstimatedConstants", "ESTIMATION_METHODS",
+    # provenance
+    "CITATIONS", "get_citations",
 ]

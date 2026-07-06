@@ -23,7 +23,15 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-__all__ = ["reversals", "extract_cycles", "count_rainflow", "mean_stress_per_cycle"]
+__all__ = [
+    "reversals",
+    "extract_cycles",
+    "count_rainflow",
+    "mean_stress_per_cycle",
+    "racetrack_filter",
+    "count_level_crossings",
+    "count_peaks",
+]
 
 
 @dataclass
@@ -160,6 +168,82 @@ def count_rainflow(series, *, close_residue: bool = False) -> pd.DataFrame:
         )
     cols = ["range", "amplitude", "mean", "count", "i_start", "i_end", "peak", "valley"]
     return pd.DataFrame(rows, columns=cols)
+
+
+def racetrack_filter(series, gate: float):
+    """Condense a history to the reversals larger than a gate (racetrack filter).
+
+    The racetrack or gate filter of Fuchs, Nelson, Burke, and Toomay (SAE
+    paper 730565, 1973, also Nelson and Fuchs in Fatigue Under Complex
+    Loading, SAE, 1977) removes swings smaller than the gate while keeping
+    the sequence of the large reversals, which shortens long histories before
+    counting or testing. Returns the retained turning points as
+    ``(indices, values)`` arrays with indices into the original series.
+    Endpoints are always retained because they bound the history.
+    """
+    if gate < 0:
+        raise ValueError("gate must be non-negative")
+    pts = list(reversals(series))
+    while len(pts) > 2:
+        rngs = [abs(pts[i + 1][1] - pts[i][1]) for i in range(len(pts) - 1)]
+        i = int(np.argmin(rngs))
+        if rngs[i] >= gate:
+            break
+        if i == 0:
+            del pts[1]
+        elif i == len(pts) - 2:
+            del pts[i]
+        else:
+            del pts[i:i + 2]
+        pts = _reduce_points(pts)
+    idx = np.array([p[0] for p in pts], dtype=np.int64)
+    vals = np.array([p[1] for p in pts], dtype=np.float64)
+    return idx, vals
+
+
+def count_level_crossings(series, *, levels=None, ref: float = 0.0) -> pd.DataFrame:
+    """Level-crossing count of a history (ASTM E1049 section 5.2).
+
+    Counts positive-slope crossings at and above the reference level and
+    negative-slope crossings below it, the E1049 convention. ``levels``
+    defaults to 32 evenly spaced levels spanning the signal. Returns a tidy
+    DataFrame with columns ``level`` and ``count``.
+    """
+    x = np.asarray(series, dtype=np.float64)
+    if x.size < 2:
+        raise ValueError("need at least 2 samples to count crossings")
+    if not np.all(np.isfinite(x)):
+        raise ValueError("series contains NaN or inf, clean the data before counting")
+    if levels is None:
+        levels = np.linspace(x.min(), x.max(), 32)
+    lv = np.asarray(levels, dtype=np.float64)
+    rows = []
+    for level in lv:
+        if level >= ref:
+            n = int(np.sum((x[:-1] < level) & (x[1:] >= level)))
+        else:
+            n = int(np.sum((x[:-1] > level) & (x[1:] <= level)))
+        rows.append({"level": float(level), "count": n})
+    return pd.DataFrame(rows, columns=["level", "count"])
+
+
+def count_peaks(series, *, ref: float = 0.0) -> pd.DataFrame:
+    """Peak count of a history (ASTM E1049 section 5.3).
+
+    Counts peaks (local maxima) at and above the reference level and valleys
+    (local minima) below it, the E1049 convention. Returns a tidy DataFrame
+    with columns ``value``, ``kind`` (peak or valley), and ``index`` into the
+    original series. History endpoints are not peaks or valleys.
+    """
+    pts = list(reversals(series))
+    rows = []
+    for k in range(1, len(pts) - 1):
+        a, b, c = pts[k - 1][1], pts[k][1], pts[k + 1][1]
+        if b > a and b > c and b >= ref:
+            rows.append({"value": float(b), "kind": "peak", "index": int(pts[k][0])})
+        elif b < a and b < c and b < ref:
+            rows.append({"value": float(b), "kind": "valley", "index": int(pts[k][0])})
+    return pd.DataFrame(rows, columns=["value", "kind", "index"])
 
 
 def mean_stress_per_cycle(cycles: pd.DataFrame, stress) -> np.ndarray:

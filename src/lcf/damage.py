@@ -30,6 +30,7 @@ __all__ = [
     "dldr_from_phase_lives",
     "dldr",
     "corten_dolan",
+    "sn_curve_life",
 ]
 
 
@@ -131,6 +132,43 @@ def dldr(counts, lives, *, exponent: float = 0.25, d_crit: float = 1.0) -> Damag
     """
     n1, n2 = manson_halford_phase_lives(lives, exponent=exponent)
     return dldr_from_phase_lives(counts, n1, n2, d_crit=d_crit)
+
+
+def sn_curve_life(stress_amp, *, k: float, sd: float, nd: float,
+                  variant: str = "original"):
+    """Allowable cycles from a one-slope Woehler line with a knee at (SD, ND).
+
+    Above the knee stress ``sd`` the line is ``N = nd * (s / sd) ** -k``. Below
+    it the treatment follows the named Miner variant:
+
+    - original: infinite life below the knee (Miner, J. Appl. Mech. 12 (1945)
+      A159-A164, with the fatigue limit taken literally).
+    - elementary: the slope ``k`` continues below the knee, the conservative
+      elementary variant.
+    - haibach: the line continues with the flatter fictitious slope
+      ``2k - 1`` below the knee (Haibach, 1970, described in Haibach,
+      Betriebsfestigkeit, Springer, 3rd ed., 2006).
+
+    Returns an array of cycles to failure aligned with ``stress_amp``. These
+    lives feed :func:`miner` for spectrum damage of stress-based collectives.
+    """
+    if k <= 0 or sd <= 0 or nd <= 0:
+        raise ValueError("k, sd, and nd must be positive")
+    s = np.asarray(stress_amp, dtype=np.float64)
+    if np.any(s < 0) or not np.all(np.isfinite(s)):
+        raise ValueError("stress amplitudes must be finite and non-negative")
+    with np.errstate(divide="ignore"):
+        above = nd * (s / sd) ** -k
+        if variant == "original":
+            below = np.full_like(s, np.inf)
+        elif variant == "elementary":
+            below = nd * (s / sd) ** -k
+        elif variant == "haibach":
+            below = nd * (s / sd) ** -(2.0 * k - 1.0)
+        else:
+            raise ValueError("variant must be original, elementary, or haibach")
+    out = np.where(s >= sd, above, below)
+    return out
 
 
 def corten_dolan(counts, stresses, lives, *, d: float) -> DamageResult:

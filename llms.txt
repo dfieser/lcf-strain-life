@@ -2,8 +2,10 @@
 
 > An AI-agent-native toolkit for fatigue analysis of materials. A Python library
 > plus an MCP server that reduce strain-controlled fatigue test data, fit the
-> standard strain-life models, count variable-amplitude histories, and predict
-> life, all callable by AI agents over MCP.
+> standard strain-life models, estimate constants from monotonic properties,
+> count variable-amplitude histories, screen data for outliers, predict life,
+> and cite the published source of every method, all callable by AI agents
+> over MCP.
 
 This file indexes the project for language models. All analysis uses true stress
 and true strain. Stress is in MPa, strain is a dimensionless fraction, and the

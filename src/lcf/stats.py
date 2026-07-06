@@ -26,6 +26,9 @@ __all__ = [
     "owen_tolerance_factor",
     "design_life",
     "fit_log_life_censored",
+    "grubbs_test",
+    "generalized_esd",
+    "regression_diagnostics",
 ]
 
 
@@ -71,6 +74,124 @@ def fit_log_life(amplitude, life) -> LogLifeFit:
         residual_std=float(s), n_points=int(n), x_mean=xbar, sxx=sxx,
         r_squared=float(res.rvalue**2),
     )
+
+
+def grubbs_test(values, *, alpha: float = 0.05) -> dict:
+    """Two-sided Grubbs test for a single outlier in a normal sample.
+
+    Grubbs, Technometrics 11 (1969) 1-21, with the critical value in the form
+    given by the NIST/SEMATECH e-Handbook, section 1.3.5.17.1. Returns the
+    statistic, the critical value, the index of the most extreme point, and
+    whether it is flagged at the given significance level.
+    """
+    x = np.asarray(values, dtype=np.float64)
+    if x.size < 3:
+        raise ValueError("the Grubbs test needs at least 3 values")
+    if not np.all(np.isfinite(x)):
+        raise ValueError("values must be finite")
+    n = x.size
+    s = float(np.std(x, ddof=1))
+    if s == 0:
+        return {"statistic": 0.0, "critical": float("nan"),
+                "index": 0, "outlier": False}
+    dev = np.abs(x - float(np.mean(x)))
+    idx = int(np.argmax(dev))
+    g = float(dev[idx] / s)
+    t = scistats.t.ppf(1.0 - alpha / (2.0 * n), n - 2)
+    crit = float((n - 1) / np.sqrt(n) * np.sqrt(t**2 / (n - 2 + t**2)))
+    return {"statistic": g, "critical": crit, "index": idx,
+            "outlier": bool(g > crit)}
+
+
+def generalized_esd(values, *, max_outliers: int, alpha: float = 0.05) -> dict:
+    """Generalized extreme studentized deviate test for up to k outliers.
+
+    Rosner, Technometrics 25 (1983) 165-172, following the NIST/SEMATECH
+    e-Handbook recipe, section 1.3.5.17.3. Returns the indices of the flagged
+    outliers (possibly empty) and the per-step statistics. The approximation
+    is intended for roughly n >= 15, smaller samples get a warning entry.
+    """
+    x = np.asarray(values, dtype=np.float64)
+    if not np.all(np.isfinite(x)):
+        raise ValueError("values must be finite")
+    n = x.size
+    if max_outliers < 1:
+        raise ValueError("max_outliers must be at least 1")
+    if n - max_outliers < 3:
+        raise ValueError("too few values for the requested max_outliers")
+    warnings = []
+    if n < 15:
+        warnings.append(
+            "the generalized ESD approximation is intended for n >= 15, "
+            "interpret small-sample results with caution"
+        )
+    remaining = list(range(n))
+    steps = []
+    removed: list[int] = []
+    for i in range(1, max_outliers + 1):
+        sub = x[remaining]
+        s = float(np.std(sub, ddof=1))
+        if s == 0:
+            break
+        dev = np.abs(sub - float(np.mean(sub)))
+        j = int(np.argmax(dev))
+        r_i = float(dev[j] / s)
+        n_i = len(remaining)
+        p = 1.0 - alpha / (2.0 * n_i)
+        t = scistats.t.ppf(p, n_i - 2)
+        lam = float((n_i - 1) * t / np.sqrt((n_i - 2 + t**2) * n_i))
+        steps.append({"step": i, "statistic": r_i, "critical": lam,
+                      "index": remaining[j]})
+        removed.append(remaining[j])
+        remaining.pop(j)
+    n_out = 0
+    for st in steps:
+        if st["statistic"] > st["critical"]:
+            n_out = st["step"]
+    return {"outlier_indices": sorted(removed[:n_out]), "steps": steps,
+            "warnings": warnings}
+
+
+def regression_diagnostics(amplitude, life, *, alpha: float = 0.05) -> dict:
+    """Influence diagnostics for the log-log life regression.
+
+    Computes leverage, internally and externally studentized residuals, and
+    Cook's distance (Cook, Technometrics 19 (1977) 15-18) for each point of
+    the ``log10(N) = A + B log10(amplitude)`` fit. A point is flagged when its
+    externally studentized residual exceeds the Bonferroni-corrected t
+    critical value (the standard mean-shift outlier test in regression), or
+    when Cook's distance exceeds 4/n, a common screening threshold.
+    """
+    x, y = _xy(amplitude, life)
+    fit = fit_log_life(amplitude, life)
+    n = x.size
+    yhat = fit.intercept + fit.slope * x
+    e = y - yhat
+    h = 1.0 / n + (x - fit.x_mean) ** 2 / fit.sxx
+    s = fit.residual_std
+    with np.errstate(divide="ignore", invalid="ignore"):
+        student = e / (s * np.sqrt(1.0 - h))
+        # externally studentized (delete-one) residuals, p = 2 parameters
+        ext = student * np.sqrt(
+            np.maximum(n - 3.0, 1e-12) / np.maximum(n - 2.0 - student**2, 1e-12)
+        )
+        cooks = e**2 / (2.0 * s**2) * h / (1.0 - h) ** 2
+    cooks_thresh = 4.0 / n
+    t_crit = float(scistats.t.ppf(1.0 - alpha / (2.0 * n), max(n - 3, 1)))
+    flagged = [
+        int(i) for i in range(n)
+        if (np.isfinite(cooks[i]) and cooks[i] > cooks_thresh)
+        or (np.isfinite(ext[i]) and abs(ext[i]) > t_crit)
+    ]
+    return {
+        "leverage": [float(v) for v in h],
+        "studentized_residuals": [float(v) for v in student],
+        "external_studentized_residuals": [float(v) for v in ext],
+        "cooks_distance": [float(v) for v in cooks],
+        "cooks_threshold": cooks_thresh,
+        "t_critical": t_crit,
+        "influential_indices": flagged,
+    }
 
 
 def predict_life(fit: LogLifeFit, amplitude):

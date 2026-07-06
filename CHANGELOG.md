@@ -4,9 +4,46 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Detailed design notes and decision records are kept in the local `dev/` folder, which is not part of the public repository.
+Detailed design notes and decision records are kept in the maintainers'
+workspace outside the public repository.
 
 ## [Unreleased]
+
+### Added: Phase 3, estimation, data quality, counting parity, provenance
+- `estimate`: strain-life constant estimation from monotonic properties, five
+  published methods with validity guardrails: the Meggiolaro-Castro medians
+  method (2004, recommended default), the Baeumel-Seeger Uniform Material Law
+  (1990), Manson's universal slopes (1965), the Muralidharan-Manson modified
+  universal slopes (1988, steels only), and the Roessle-Fatemi hardness method
+  (2000, steels only). Each result carries its citation and warnings. Exposed
+  as the `estimate_strain_life_constants` MCP tool.
+- `stats`: Grubbs single-outlier test and the generalized ESD test, validated
+  against the NIST/Rosner worked example, plus regression influence
+  diagnostics (leverage, studentized residuals, Cook's distance). Exposed as
+  the `flag_outliers` MCP tool, which treats runouts as censored data, never
+  as outliers.
+- `counting`: racetrack (gate) filter for history condensation, level-crossing
+  counting (ASTM E1049 5.2), and peak counting (ASTM E1049 5.3). New
+  `count_level_crossings` and `count_peaks` MCP tools, and a `gate` option on
+  `count_rainflow`.
+- `damage`: `sn_curve_life` for Woehler lines with a knee, with original,
+  elementary, and Haibach (fictitious slope 2k-1) treatments below the knee.
+  Exposed as the `compute_sn_life` MCP tool.
+- `citations`: a machine-readable registry mapping every method in the package
+  to its published source, exposed as the `get_citations` MCP tool and the
+  `lcf://citations` resource.
+- MCP exposure for capabilities that previously had no tool: multiaxial
+  critical-plane parameters (`compute_multiaxial_parameter`,
+  `search_critical_plane`), the frequency-modified Coffin-Manson law
+  (`compute_frequency_modified_life`), Corten-Dolan through `compute_damage`,
+  and PNG rendering of stored results (`render_plot`).
+- The physics record gained sections for constant estimation, outlier
+  screening, counting extensions, and the S-N knee variants.
+
+### Changed
+- `CITATION.cff`, `.zenodo.json`, `pyproject.toml`, and `LICENSE` now credit
+  both authors, David Fieser and Hugh Shortt, with ORCIDs.
+- The release process document moved to the maintainers' workspace.
 
 ### Added: examples, packaging, release
 - `examples/csv_ingestion_demo.py` reads a machine-style CSV header block and runs

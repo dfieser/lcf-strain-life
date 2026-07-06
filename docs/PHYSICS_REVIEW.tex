@@ -132,10 +132,19 @@ The tension-compression asymmetry of a cycle is
 \(R_{TC} = \lvert\sigma_{max}\rvert / \lvert\sigma_{min}\rvert\). Peak and valley
 stress versus cycle give the cyclic hardening and softening response.
 
-\section{Variable amplitude, rainflow counting}
+\section{Variable amplitude, cycle counting}
 Irregular histories are reduced to closed cycles by the rainflow method, which
 pairs reversals into hysteresis loops while preserving their order in time.
 Reference: ASTM E1049-85(2017), Downing and Socie 1982, Matsuishi and Endo 1968.
+
+Level-crossing counting records positive-slope crossings at and above a
+reference level and negative-slope crossings below it. Peak counting records
+peaks at and above the reference and valleys below it. Both follow ASTM
+E1049-85(2017), sections 5.2 and 5.3.
+
+The racetrack (gate) filter condenses a history before counting by removing
+swings smaller than a gate while keeping the order of the large reversals.
+Reference: Fuchs, Nelson, Burke, and Toomay, SAE paper 730565, 1973.
 
 \section{Cumulative damage}
 Palmgren-Miner linear damage, failure at a critical sum, the default being one:
@@ -155,6 +164,20 @@ N = \frac{N_{f,1}}{\sum_i \alpha_i (\sigma_i/\sigma_1)^{d}}.
 \end{equation}
 References: Palmgren 1924, Miner 1945, Manson and Halford 1981 (Int. J. Fracture
 17:169), Corten and Dolan 1956.
+
+For stress-based collectives the allowable life comes from a one-slope Woehler
+line with a knee at \((S_D, N_D)\):
+\begin{equation}
+N = N_D \left(\frac{S_a}{S_D}\right)^{-k} \quad (S_a \ge S_D),
+\end{equation}
+and below the knee one of three treatments: infinite life (Miner original),
+the same slope \(k\) continued (Miner elementary), or the flatter fictitious
+slope \(2k-1\) (Haibach):
+\begin{equation}
+N = N_D \left(\frac{S_a}{S_D}\right)^{-(2k-1)} \quad (S_a < S_D).
+\end{equation}
+References: Miner 1945, Haibach 1970, described in Haibach,
+Betriebsfestigkeit, 3rd ed., Springer, 2006.
 
 \section{Notch local-strain approach}
 Neuber, combined with the cyclic curve, and its range form:
@@ -188,6 +211,64 @@ reliability and confidence design curve is the mean reduced by \(k\,s\), where
 by maximum likelihood rather than deletion. References: ASTM E739, withdrawn 2024
 and used as the de facto reference, Owen 1963, Williams, Lee and Rilly 2003 (Int.
 J. Fatigue 25:427).
+
+Outlier screening operates on the residuals of the log-life regression.
+Runouts are censored observations, not outliers, and are excluded from the
+screen. A single suspect point uses the two-sided Grubbs test, several suspect
+points use the generalized extreme studentized deviate test, whose
+approximation is intended for \(n \ge 15\). Influence is reported through
+leverage, externally studentized residuals against a Bonferroni-corrected
+\(t\) critical value, and Cook's distance against the \(4/n\) screening
+threshold. Flagged points are reported, never deleted automatically.
+References: Grubbs 1969 (Technometrics 11:1), Rosner 1983 (Technometrics
+25:165), Cook 1977 (Technometrics 19:15), NIST/SEMATECH e-Handbook of
+Statistical Methods, sections 1.3.5.17.1 and 1.3.5.17.3.
+
+\section{Estimation of strain-life constants}
+When no strain-controlled test data exists, the four constants are estimated
+from monotonic properties. \(S_u\) is the ultimate tensile strength in
+\si{\mega\pascal}, \(HB\) the Brinell hardness, \(RA\) the reduction in area
+as a fraction, and \(\tilde\varepsilon_f = \ln[1/(1-RA)]\) the true fracture
+ductility. Estimates are screening values, not substitutes for test data.
+
+Medians method, steels (recommended default) and aluminum alloys:
+\begin{equation}
+\begin{aligned}
+\text{steel:} &\quad \sigma'_f = 1.5\,S_u, \quad b=-0.09, \quad \varepsilon'_f = 0.45, \quad c=-0.59,\\
+\text{aluminum:} &\quad \sigma'_f = 1.9\,S_u, \quad b=-0.11, \quad \varepsilon'_f = 0.28, \quad c=-0.66.
+\end{aligned}
+\end{equation}
+Uniform Material Law, steels, with the ductility correction
+\(\psi = 1\) for \(S_u/E \le 0.003\), else \(\psi = 1.375 - 125\,S_u/E\):
+\begin{equation}
+\sigma'_f = 1.50\,S_u, \quad b=-0.087, \quad \varepsilon'_f = 0.59\,\psi,
+\quad c=-0.58, \quad K' = 1.65\,S_u, \quad n' = 0.15,
+\end{equation}
+and for aluminum and titanium alloys
+\(\sigma'_f = 1.67\,S_u\), \(b=-0.095\), \(\varepsilon'_f = 0.35\),
+\(c=-0.69\). The law loses validity as \(S_u\) approaches \SI{2.2}{\giga\pascal},
+where \(\psi\) reaches zero.
+
+Universal slopes, any metal:
+\begin{equation}
+\sigma'_f = 1.9\,S_u, \quad b=-0.12, \quad
+\varepsilon'_f = 0.76\,\tilde\varepsilon_f^{\,0.6}, \quad c=-0.6.
+\end{equation}
+Modified universal slopes, steels:
+\begin{equation}
+\sigma'_f = 0.623\,E\left(\frac{S_u}{E}\right)^{0.832}, \quad b=-0.09, \quad
+\varepsilon'_f = 0.0196\left(\frac{S_u}{E}\right)^{-0.53}\tilde\varepsilon_f^{\,0.155},
+\quad c=-0.56.
+\end{equation}
+Hardness method, steels with roughly 150 to 700 HB:
+\begin{equation}
+\sigma'_f = 4.25\,HB + 225, \quad b=-0.09, \quad
+\varepsilon'_f = \frac{0.32\,HB^2 - 487\,HB + 191000}{E}, \quad c=-0.56.
+\end{equation}
+References: Meggiolaro and Castro 2004 (Int. J. Fatigue 26:463, also the
+comparative evaluation over 845 metals), Baeumel and Seeger 1990, Manson 1965
+(Exp. Mech. 5:193), Muralidharan and Manson 1988 (J. Eng. Mater. Technol.
+110:55), Roessle and Fatemi 2000 (Int. J. Fatigue 22:495).
 
 \section{Elevated temperature}
 Frequency-modified Coffin-Manson, coefficient form:
@@ -241,10 +322,11 @@ Ramberg-Osgood & & \\
 Strain-life & & \\
 Mean-stress corrections & & \\
 Energy and cyclic response & & \\
-Rainflow counting & & \\
-Cumulative damage & & \\
+Cycle counting and filtering & & \\
+Cumulative damage and knee variants & & \\
 Notch local-strain & & \\
-Statistics and design curves & & \\
+Statistics, design curves, outlier screen & & \\
+Estimation of strain-life constants & & \\
 Elevated temperature & & \\
 Multiaxial survey & & \\
 Conventions and assumptions & & \\

@@ -135,14 +135,58 @@ def mean_stress_equivalent_stress(
 
 
 @mcp.tool()
-def count_rainflow(name: str, strain_history: list[float], close_residue: bool = False) -> dict:
+def count_rainflow(name: str, strain_history: list[float],
+                   close_residue: bool = False,
+                   gate: float | None = None) -> dict:
     """Rainflow count a strain history (ASTM E1049), preserving cycle indices.
 
     Saves the full per-cycle table under ``name`` (recall with
     ``recall_result(name, "rainflow")``) and returns a compact summary. Set
-    ``close_residue`` to treat the history as repeating.
+    ``close_residue`` to treat the history as repeating. A non-None ``gate``
+    first drops swings smaller than the gate with the racetrack filter, which
+    condenses long noisy histories.
     """
-    return _service.count_rainflow(name, strain_history, close_residue=close_residue)
+    return _service.count_rainflow(name, strain_history,
+                                   close_residue=close_residue, gate=gate)
+
+
+@mcp.tool()
+def count_level_crossings(name: str, series: list[float],
+                          levels: list[float] | None = None,
+                          ref: float = 0.0) -> dict:
+    """Level-crossing count of a history (ASTM E1049 section 5.2).
+
+    Counts positive-slope crossings at and above ``ref`` and negative-slope
+    crossings below it. ``levels`` defaults to 32 evenly spaced levels over
+    the signal. Saves the level table under ``name`` (quantity
+    ``level_crossings``) and returns a summary.
+    """
+    return _service.count_level_crossings(name, series, levels=levels, ref=ref)
+
+
+@mcp.tool()
+def count_peaks(name: str, series: list[float], ref: float = 0.0) -> dict:
+    """Peak and valley count of a history (ASTM E1049 section 5.3).
+
+    Counts peaks at and above ``ref`` and valleys below it. Saves the table
+    under ``name`` (quantity ``peaks``) and returns a summary.
+    """
+    return _service.count_peaks(name, series, ref=ref)
+
+
+@mcp.tool()
+def compute_sn_life(stress_amp: list[float], k: float, sd: float, nd: float,
+                    variant: str = "original") -> dict:
+    """Allowable cycles from a one-slope Woehler (S-N) line with a knee.
+
+    Above the knee (sd, nd) the line is N = nd*(s/sd)**-k. Below the knee the
+    treatment follows ``variant``: original (infinite life, serialized as
+    null), elementary (slope k continues), or haibach (fictitious slope 2k-1,
+    Haibach 1970). Feed the lives into compute_damage for spectrum damage of
+    stress-based collectives.
+    """
+    return _service.compute_sn_life(stress_amp, k=k, sd=sd, nd=nd,
+                                    variant=variant)
 
 
 @mcp.tool()
@@ -173,13 +217,17 @@ def compute_spectrum_life(
 
 @mcp.tool()
 def compute_damage(counts: list[float], lives: list[float], rule: str = "miner",
-                   d_crit: float = 1.0) -> dict:
-    """Cumulative damage for a counted block of cycles (miner or dldr).
+                   d_crit: float = 1.0, stresses: list[float] | None = None,
+                   d_exponent: float | None = None) -> dict:
+    """Cumulative damage for a counted block (miner, dldr, or corten_dolan).
 
     ``counts`` and ``lives`` are aligned per-cycle cycle-counts and lives to
-    failure. Returns damage, blocks to failure, and cycles to failure.
+    failure. Corten-Dolan additionally needs the per-level ``stresses`` and the
+    material exponent ``d_exponent``. Returns damage, blocks to failure, and
+    cycles to failure.
     """
-    return _service.compute_damage(counts, lives, rule=rule, d_crit=d_crit)
+    return _service.compute_damage(counts, lives, rule=rule, d_crit=d_crit,
+                                   stresses=stresses, d_exponent=d_exponent)
 
 
 @mcp.tool()
@@ -232,6 +280,28 @@ def fit_design_curve(
 
 
 @mcp.tool()
+def flag_outliers(
+    amplitude: list[float],
+    life_values: list[float],
+    censored: list[bool] | None = None,
+    alpha: float = 0.05,
+    max_outliers: int | None = None,
+) -> dict:
+    """Flag statistical outliers in strain-life or stress-life data.
+
+    Runouts marked in ``censored`` are suspended tests, not outliers, and are
+    excluded from testing. Residuals of the log-log life regression are
+    screened with the generalized ESD test (Rosner 1983), and Cook's distance
+    and leverage flag influential points. Use this before fitting a design
+    curve to check data quality. All indices refer to the input order.
+    """
+    return _service.flag_outliers(
+        amplitude, life_values, censored=censored, alpha=alpha,
+        max_outliers=max_outliers,
+    )
+
+
+@mcp.tool()
 def compute_creep_fatigue(
     cycle_counts: list[float],
     fatigue_lives: list[float],
@@ -251,6 +321,142 @@ def compute_creep_fatigue(
 
 
 @mcp.tool()
+def estimate_strain_life_constants(
+    method: str,
+    material_class: str = "steel",
+    Su: float | None = None,
+    E: float | None = None,
+    HB: float | None = None,
+    RA: float | None = None,
+    material: str | None = None,
+) -> dict:
+    """Estimate strain-life constants from monotonic properties, no test data.
+
+    Use this when no strain-controlled fatigue data exists. ``method`` is one
+    of medians (recommended default, Meggiolaro-Castro 2004),
+    uniform_material_law (Baeumel-Seeger 1990), universal_slopes (Manson 1965),
+    modified_universal_slopes (Muralidharan-Manson 1988, steels only), or
+    hardness (Roessle-Fatemi 2000, steels only, from Brinell hardness).
+
+    Required inputs by method: medians needs Su. uniform_material_law needs Su
+    and E (material_class steel or aluminum_titanium). universal_slopes and
+    modified_universal_slopes need Su, E, RA (reduction in area, fraction).
+    hardness needs HB and E. Units are MPa. Every result carries the citation
+    of the source and validity warnings. These are screening estimates, not a
+    substitute for test data. Saved under ``material`` if given.
+    """
+    return _service.estimate_constants(
+        method, material_class=material_class, Su=Su, E=E, HB=HB, RA=RA,
+        material=material,
+    )
+
+
+@mcp.tool()
+def compute_multiaxial_parameter(
+    parameter: str,
+    shear_strain_amp: float | None = None,
+    normal_strain_amp: float | None = None,
+    sigma_n_max: float | None = None,
+    sigma_y: float | None = None,
+    k: float = 0.3,
+    S: float = 1.0,
+    eps_x: float | None = None,
+    eps_y: float | None = None,
+    eps_z: float | None = None,
+    gamma_xy: float = 0.0,
+    gamma_yz: float = 0.0,
+    gamma_zx: float = 0.0,
+) -> dict:
+    """Evaluate a critical-plane damage parameter from known plane quantities.
+
+    ``parameter`` is one of fatemi_socie, brown_miller, swt, von_mises.
+    fatemi_socie needs shear_strain_amp, sigma_n_max, sigma_y (and optional k).
+    brown_miller needs shear_strain_amp, normal_strain_amp (and optional S).
+    swt needs sigma_n_max, normal_strain_amp. von_mises needs the strain
+    components and is valid for proportional-loading screening only. The plane
+    quantities must be known already, there is no tensor plane-search engine.
+    """
+    return _service.compute_multiaxial_parameter(
+        parameter, shear_strain_amp=shear_strain_amp,
+        normal_strain_amp=normal_strain_amp, sigma_n_max=sigma_n_max,
+        sigma_y=sigma_y, k=k, S=S, eps_x=eps_x, eps_y=eps_y, eps_z=eps_z,
+        gamma_xy=gamma_xy, gamma_yz=gamma_yz, gamma_zx=gamma_zx,
+    )
+
+
+@mcp.tool()
+def search_critical_plane(
+    parameter: str,
+    angles: list[float],
+    shear_strain_amp: list[float] | None = None,
+    normal_strain_amp: list[float] | None = None,
+    sigma_n_max: list[float] | None = None,
+    sigma_y: float | None = None,
+    k: float = 0.3,
+    S: float = 1.0,
+) -> dict:
+    """Find the candidate plane angle that maximizes a damage parameter.
+
+    Supply per-angle plane quantities as aligned arrays, one entry per angle in
+    ``angles`` (degrees). ``parameter`` is fatemi_socie, brown_miller, or swt.
+    Returns the critical angle, the maximum parameter, and per-angle values.
+    """
+    return _service.search_critical_plane(
+        parameter, angles, shear_strain_amp,
+        normal_strain_amp=normal_strain_amp, sigma_n_max=sigma_n_max,
+        sigma_y=sigma_y, k=k, S=S,
+    )
+
+
+@mcp.tool()
+def compute_frequency_modified_life(
+    plastic_strain_amp: float,
+    eps_f_coeff: float,
+    c: float,
+    frequency: float,
+    k: float,
+    freq_ref: float = 1.0,
+) -> dict:
+    """Reversals to failure from the frequency-modified Coffin-Manson law.
+
+    Uses the Solomon and Engelmaier coefficient form, where frequency scales
+    the ductility coefficient: C_f = C_o*(f/f_ref)**(k-1). Useful for
+    elevated-temperature fatigue where cycle frequency matters.
+    """
+    return _service.compute_frequency_modified_life(
+        plastic_strain_amp, eps_f_coeff, c, frequency=frequency, k=k,
+        freq_ref=freq_ref,
+    )
+
+
+@mcp.tool()
+def render_plot(key: str, kind: str) -> dict:
+    """Render a stored result as a PNG plot and return the file path.
+
+    ``kind`` is one of rainflow_histogram, peak_valley, energy, strain_life.
+    The data comes from the store, so run the corresponding compute tool first:
+    count_rainflow for rainflow_histogram, analyze_test_timeseries or
+    analyze_test_csv for peak_valley and energy, fit_strain_life (with a
+    material name) for strain_life.
+    """
+    return _service.render_plot(key, kind)
+
+
+@mcp.tool()
+def get_citations(topic: str | None = None) -> dict:
+    """The published source behind every method in this toolkit.
+
+    Returns the citation registry, optionally filtered by a topic substring
+    (for example "rainflow", "morrow", or "outlier"). Use this to cite the
+    methods behind any result, every computational method here traces to a
+    published paper or standard.
+    """
+    from .citations import get_citations as _get
+
+    return _get(topic)
+
+
+@mcp.tool()
 def recall_result(key: str, quantity: str) -> dict:
     """Recall a previously computed result (e.g. a test summary or a fit).
 
@@ -267,6 +473,14 @@ def recall_result(key: str, quantity: str) -> dict:
 def list_results(key: str | None = None) -> list[dict]:
     """List stored results (optionally filtered to one test/material key)."""
     return _service.list_results(key)
+
+
+@mcp.resource("lcf://citations")
+def citations_resource() -> str:
+    """The full citation registry as JSON."""
+    from .citations import CITATIONS
+
+    return dumps(CITATIONS, indent=2)
 
 
 @mcp.resource("lcf://results/{key}/{quantity}")

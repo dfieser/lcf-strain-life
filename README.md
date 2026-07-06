@@ -22,8 +22,14 @@ Provide your own strain-controlled fatigue test data and get the standardized re
 | Cycle reduction | peak and valley per cycle, half-life cycle, cycles-to-failure `N_f` |
 | Per-cycle metrics | stress amplitude, plastic strain amplitude, mean stress, T/C ratio, hysteresis energy |
 | Strain-life fits | Basquin, Coffin-Manson, Ramberg-Osgood, transition life |
+| Constant estimation | five published methods estimate the constants from tensile properties or hardness when no fatigue data exists |
 | Mean stress | Morrow, modified Morrow, SWT, Walker corrections |
-| Save and recall | results persisted per test or material, recalled without recomputation |
+| Variable amplitude | rainflow, level-crossing, and peak counting (ASTM E1049), racetrack filter, spectrum life |
+| Damage | Miner, DLDR, Corten-Dolan, Woehler knee variants including Haibach |
+| Notch and statistics | Neuber and Glinka local strain, design curves with runout handling, outlier screening |
+| High temperature | frequency-modified Coffin-Manson, time-fraction creep-fatigue |
+| Provenance | every method maps to its published source through the citations registry |
+| Save and recall | results persisted per test or material, recalled without recomputation, rendered as plots |
 
 The toolkit is general purpose and material agnostic. It focuses on strain-life and per-cycle evolution, which the established stress-based high-cycle libraries such as pyLife, py-fatigue, and fatpack do not cover. It is input compatible with their pandas data shapes.
 
