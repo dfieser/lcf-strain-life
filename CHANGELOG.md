@@ -9,6 +9,12 @@ workspace outside the public repository.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.1.0] - 2026-07-06
+
+First public release, on PyPI as `lcf-strain-life` and archived on Zenodo.
+
 ### Added: Phase 3, estimation, data quality, counting parity, provenance
 - `estimate`: strain-life constant estimation from monotonic properties, five
   published methods with validity guardrails: the Meggiolaro-Castro medians

@@ -25,7 +25,7 @@ authors:
       Materials Science and Engineering, The University of Tennessee,
       Knoxville, 414 Ferris Hall, 1508 Middle Drive, Knoxville, TN 37996, USA
 version: 0.1.0
-date-released: "2026-06-26"
+date-released: "2026-07-06"
 license: MIT
 repository-code: "https://github.com/dfieser/lcf-strain-life"
 url: "https://github.com/dfieser/lcf-strain-life"

@@ -1,12 +1,16 @@
 name: publish
 
-# Publishes to PyPI when a version tag (vX.Y.Z) is pushed, using PyPI Trusted
-# Publishing (OIDC), so no API token is stored. To release: bump the version,
-# commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`. The full release
-# process is documented in the maintainer notes outside this repository.
+# Publishes when a version tag (vX.Y.Z) is pushed. Two jobs run:
+# 1. build and upload to PyPI via Trusted Publishing (OIDC), no stored token.
+# 2. create the GitHub Release, which triggers the Zenodo archiver and DOI
+#    when the Zenodo GitHub integration is switched on for this repository.
+# To release: bump the version, update the changelog, commit, then
+# `git tag vX.Y.Z && git push origin vX.Y.Z`. The full release process is
+# documented in the maintainer notes outside this repository.
 #
-# One-time PyPI setup is required first (a pending trusted publisher with this
-# repo, the workflow filename publish.yml, and the environment name pypi).
+# One-time setup required first: a PyPI trusted publisher with this repo, the
+# workflow filename publish.yml, and the environment name pypi, plus the
+# Zenodo GitHub toggle for this repository.
 
 on:
   push:
@@ -31,3 +35,19 @@ jobs:
           python -m build
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    name: create GitHub release (triggers Zenodo)
+    runs-on: ubuntu-latest
+    needs: publish             # only cut a release if the PyPI upload succeeded
+    permissions:
+      contents: write          # required to create the release
+    steps:
+      - uses: actions/checkout@v7
+      - name: Create the release with generated notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
