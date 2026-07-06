@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lcf-strain-life"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Material-agnostic Low Cycle Fatigue (LCF) strain-life analysis: core library + MCP server."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -51,6 +51,12 @@ Documentation = "https://github.com/dfieser/lcf-strain-life#readme"
 Repository = "https://github.com/dfieser/lcf-strain-life"
 Changelog = "https://github.com/dfieser/lcf-strain-life/blob/main/CHANGELOG.md"
 Issues = "https://github.com/dfieser/lcf-strain-life/issues"
+
+# The version has one source of truth: __version__ in src/lcf/__init__.py.
+# The release script in the maintainers' workspace bumps it and syncs
+# CITATION.cff, and a test guards the two against drift.
+[tool.hatch.version]
+path = "src/lcf/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lcf"]
