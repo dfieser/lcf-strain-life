@@ -5,7 +5,15 @@
   "license": "MIT",
   "access_right": "open",
   "creators": [
-    { "name": "Fieser, David" }
+    {
+      "name": "Fieser, David",
+      "orcid": "0009-0007-5754-4331"
+    },
+    {
+      "name": "Shortt, Hugh",
+      "orcid": "0000-0001-8015-3733",
+      "affiliation": "Materials Science and Engineering, The University of Tennessee, Knoxville"
+    }
   ],
   "keywords": [
     "low cycle fatigue",

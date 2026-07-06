@@ -12,6 +12,13 @@ type: software
 authors:
   - family-names: Fieser
     given-names: David
+    orcid: "https://orcid.org/0009-0007-5754-4331"
+  - family-names: Shortt
+    given-names: Hugh
+    orcid: "https://orcid.org/0000-0001-8015-3733"
+    affiliation: >-
+      Materials Science and Engineering, The University of Tennessee,
+      Knoxville, 414 Ferris Hall, 1508 Middle Drive, Knoxville, TN 37996, USA
 version: 0.1.0
 date-released: "2026-06-26"
 license: MIT
