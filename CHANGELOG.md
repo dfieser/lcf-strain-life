@@ -17,6 +17,7 @@ Nothing yet.
   `src/lcf/__init__.py`. pyproject.toml reads it at build time through hatch
   dynamic versioning, and new tests fail CI if CITATION.cff or the changelog
   drift from it.
+
 ## [0.1.0] - 2026-07-06
 
 First public release, on PyPI as `lcf-strain-life` and archived on Zenodo.
