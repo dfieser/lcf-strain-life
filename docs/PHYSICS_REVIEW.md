@@ -79,13 +79,13 @@ $$\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f-\sigma_m}{E}(2N_f)^{b} + \vareps
 
 Modified Morrow, both terms shifted:
 
-$$\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f-\sigma_m}{E}(2N_f)^{b}
-+ \varepsilon'_f\left(\frac{\sigma'_f-\sigma_m}{\sigma'_f}\right)^{c/b}(2N_f)^{c}.$$
+$$\frac{\Delta\varepsilon}{2} = \frac{\sigma'_f-\sigma_m}{E}(2N_f)^{b} +
+\varepsilon'_f\left(\frac{\sigma'_f-\sigma_m}{\sigma'_f}\right)^{c/b}(2N_f)^{c}.$$
 
 Smith-Watson-Topper:
 
-$$\sigma_{max}\,\frac{\Delta\varepsilon}{2} = \frac{(\sigma'_f)^2}{E}(2N_f)^{2b}
-+ \sigma'_f \varepsilon'_f (2N_f)^{b+c},
+$$\sigma_{max}\,\frac{\Delta\varepsilon}{2} = \frac{(\sigma'_f)^2}{E}(2N_f)^{2b} +
+\sigma'_f \varepsilon'_f (2N_f)^{b+c},
 \qquad
 \sigma_{ar} = \sqrt{\sigma_{max}\,\sigma_a}.$$
 

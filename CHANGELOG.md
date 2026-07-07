@@ -9,7 +9,13 @@ workspace outside the public repository.
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+- The Modified Morrow and Smith-Watson-Topper equations in
+  `docs/PHYSICS_REVIEW.md` now render correctly on GitHub. A continuation line
+  that began with `+` was read as a Markdown list item, which broke the math
+  block and mangled the rest of the equation. The `+` now sits at the end of
+  the previous line. The math is unchanged. A new test, `test_docs_math.py`,
+  guards against the pattern returning.
 
 ## [0.1.1] - 2026-07-06
 
