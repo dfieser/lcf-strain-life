@@ -47,7 +47,8 @@ CITATIONS: dict[str, dict[str, str]] = {
         "method": "Walker mean-stress correction",
         "citation": "Walker, ASTM STP 462 (1970) 1-14. The gamma-from-"
                     "ultimate-strength estimate for steels follows Dowling, "
-                    "SAE 2004-01-0227",
+                    "SAE 2004-01-2227, and Dowling, Calhoun, and Arcari, "
+                    "Fatigue Fract. Eng. Mater. Struct. 32 (2009) 163-179",
     },
     "rainflow": {
         "method": "Three-point rainflow cycle counting",
@@ -110,7 +111,8 @@ CITATIONS: dict[str, dict[str, str]] = {
                   "prediction intervals",
         "citation": "ASTM E739 (withdrawn January 2024 with no replacement, "
                     "cited as historical practice). Modern treatment: Meeker "
-                    "et al., arXiv:2212.04550",
+                    "et al., Statistical Science 41 (2026) 1-27, also "
+                    "available as arXiv:2212.04550",
         "note": "E739 excludes runouts, use the censored maximum-likelihood "
                 "fit when runouts exist",
     },

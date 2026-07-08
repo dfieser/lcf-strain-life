@@ -9,7 +9,26 @@ workspace outside the public repository.
 
 ## [Unreleased]
 
+### Added
+- The physics record now defines the stress ratio R and the strain ratio, a
+  table of the loading configurations from fully reversed through
+  compression-compression, and the control-mode context for the mean-stress
+  corrections: mean stress relaxation under strain control, ratcheting under
+  stress control, and which correction suits which case. The record states
+  plainly that cycle-dependent relaxation and ratcheting evolution models are
+  not implemented and that the corrections apply to the stabilized cycle.
+  Integrated from collaborator notes by Hugh Shortt, background sources:
+  Morrow and Sinclair 1958, Jhansale and Topper 1973, Xia, Kujawski and
+  Ellyin 1996. Both `docs/PHYSICS_REVIEW.md` and the typeset PDF are updated.
+
 ### Fixed
+- Two citation registry corrections found while verifying every project
+  citation against publisher records. The Walker entry cited Dowling's SAE
+  paper by the wrong number, 2004-01-0227, the verified number is
+  2004-01-2227, and the 2009 Dowling, Calhoun, and Arcari paper is now named
+  alongside it. The log-life regression entry now cites the published Meeker
+  et al., Statistical Science 41 (2026) 1-27, instead of only the arXiv
+  preprint it superseded.
 - The Modified Morrow and Smith-Watson-Topper equations in
   `docs/PHYSICS_REVIEW.md` now render correctly on GitHub. A continuation line
   that began with `+` was read as a Markdown list item, which broke the math

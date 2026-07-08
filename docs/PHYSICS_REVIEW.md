@@ -21,6 +21,7 @@ fatigue ductility exponent $c$ are negative.
 | $\Delta\sigma/2,\ \Delta\varepsilon/2$ | stress, total strain amplitude | MPa, - |
 | $\Delta\varepsilon_e/2,\ \Delta\varepsilon_p/2$ | elastic, plastic strain amplitude | - |
 | $\sigma_m,\ \sigma_{max}$ | mean stress, maximum stress | MPa |
+| $R,\ R_\varepsilon$ | stress ratio, strain ratio | - |
 | $E$ | Young's modulus | MPa |
 | $\sigma'_f,\ b$ | fatigue strength coefficient, exponent | MPa, - |
 | $\varepsilon'_f,\ c$ | fatigue ductility coefficient, exponent | - |
@@ -72,6 +73,31 @@ whose plastic strain is at measurement noise level. References: Basquin 1910,
 Coffin 1954, Manson 1953, Dowling 4th ed. Eq. 14.3 to 14.6.
 
 ## Mean-stress corrections
+
+The asymmetry of a constant amplitude cycle is the stress ratio
+$R = \sigma_{min}/\sigma_{max}$, or the strain ratio
+$R_\varepsilon = \varepsilon_{min}/\varepsilon_{max}$ under strain control.
+Strain-controlled testing is the norm in the low cycle regime per ASTM E606
+and ISO 12106, stress control is the norm in the high cycle regime.
+
+| Ratio | Loading | Minimum load | Maximum load |
+|---|---|---|---|
+| $R = -1$ | fully reversed, the LCF baseline | compression | equal tension |
+| $R = 0$ | pulsating tension | zero | tension |
+| $0 < R < 1$ | tension-tension | tension | higher tension |
+| $R = \pm\infty$ | pulsating compression | compression | zero |
+| $1 < R < \infty$ | compression-compression | higher compression | compression |
+
+The control mode decides what a nonzero mean does over the life of a test.
+Under strain control the mean stress relaxes toward zero as plastic strain
+accumulates, and Morrow suits balanced or compressive means while SWT suits
+tensile means. Under stress control the specimen ratchets, accumulating
+strain in the direction of the mean stress, and the Walker fitted exponent
+captures the stress ratio sensitivity. Cycle-dependent relaxation and
+ratcheting evolution models are not implemented. The corrections below apply
+to the stabilized cycle. References: Dowling 4th ed. ch. 9, Morrow and
+Sinclair 1958 (ASTM STP 237), Jhansale and Topper 1973 (ASTM STP 519), Xia,
+Kujawski and Ellyin 1996 (Int. J. Fatigue 18:335).
 
 Morrow, elastic term shifted by the mean stress:
 
