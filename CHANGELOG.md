@@ -10,6 +10,21 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- Staircase fatigue-limit analysis and basis values (first slice of P2 of
+  the adopted build plan). New `lcf.staircase` module implements the
+  Dixon-Mood method per ISO 12107 with the published validity bound: below
+  a variability statistic of 0.3 the standard deviation falls back to the
+  approximate 0.53 step value and the result is flagged. Golden-validated
+  against the published S34MnV worked example (mean 282 MPa, standard
+  deviation 10.6 MPa). `lcf.stats` gains `basis_value` (A-basis and
+  B-basis one-sided tolerance bounds through the exact Owen factor,
+  validated against the standard table values 2.355 and 3.981 at n=10)
+  and `lack_of_fit` (the E739-style F test, available whenever the data
+  contain replicate amplitude levels, and reported in every uncensored
+  `fit_design_curve` result). Two new MCP tools, `analyze_staircase` and
+  `compute_basis_value`, and 19 new tests. The random fatigue limit model
+  is deferred until a validated reference dataset is in hand, per the
+  honesty rule.
 - Lab-export ingestion and one-call series analysis (P1 of the adopted build
   plan). A new `lcf.labio` module reads the delimited files fatigue labs
   actually produce: it auto-detects the delimiter and the header row beneath

@@ -198,6 +198,29 @@ CITATIONS: dict[str, dict[str, str]] = {
         "citation": "ASTM E606/E606M-21, Standard Test Method for "
                     "Strain-Controlled Fatigue Testing",
     },
+    "staircase_dixon_mood": {
+        "method": "Staircase (up-and-down) fatigue-limit estimation, "
+                  "Dixon-Mood method",
+        "citation": "Dixon and Mood, J. Amer. Statist. Assoc. 43 (1948) "
+                    "109-126, and ISO 12107:2012. Validated against "
+                    "Ekaputra, Dewa, Haryadi, and Kim, Open Engineering 10 "
+                    "(2020) 394-400",
+        "note": "below the 0.3 variability bound the standard deviation is "
+                "the approximate 0.53*step fallback and is flagged",
+    },
+    "basis_values": {
+        "method": "A-basis and B-basis one-sided tolerance bounds",
+        "citation": "Owen, Factors for One-Sided Tolerance Limits and for "
+                    "Variables Sampling Plans, Sandia monograph SCR-607, "
+                    "1963. Basis definitions (99/95 and 90/95) follow "
+                    "MMPDS practice",
+    },
+    "lack_of_fit_f_test": {
+        "method": "Lack-of-fit F test for the linearized life regression",
+        "citation": "ASTM E739-10(2015) (withdrawn 2024, de facto "
+                    "reference), standard partition of residual error into "
+                    "pure error and lack of fit",
+    },
 }
 
 

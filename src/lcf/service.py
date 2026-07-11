@@ -26,6 +26,7 @@ from . import (
     multiaxial,
     notch,
     spectrum,
+    staircase,
     stats,
 )
 from .ingest import from_timeseries, read_csv
@@ -405,6 +406,13 @@ class LcfService:
             "r_squared": fit.r_squared,
             "owen_factor": stats.owen_tolerance_factor(fit.n_points, reliability, confidence),
         }
+        if censored is not None and any(censored):
+            out["lack_of_fit"] = {
+                "available": False,
+                "reason": "not defined for censored (runout) fits",
+            }
+        else:
+            out["lack_of_fit"] = stats.lack_of_fit(amplitude, life_values)
         if design_amplitude is not None:
             out["median_life"] = float(stats.predict_life(fit, design_amplitude))
             out["design_life"] = stats.design_life(
@@ -415,6 +423,50 @@ class LcfService:
                             input_hash=hash_inputs(list(amplitude), list(life_values),
                                                    reliability, confidence))
         return to_jsonable(out)
+
+    def analyze_staircase(
+        self,
+        stress_levels: list[float],
+        failed: list[bool],
+        *,
+        step: float | None = None,
+        name: str | None = None,
+    ) -> dict:
+        """Dixon-Mood staircase analysis of an up-and-down test sequence."""
+        res = staircase.dixon_mood(stress_levels, failed, step=step)
+        out = to_jsonable(res)
+        if name:
+            ihash = hash_inputs(list(stress_levels), list(failed), step)
+            self.store.save(name, "staircase", out, input_hash=ihash)
+        return out
+
+    def compute_basis_value(
+        self,
+        samples: list[float] | None = None,
+        *,
+        mean: float | None = None,
+        std: float | None = None,
+        n: int | None = None,
+        basis: str = "B",
+        name: str | None = None,
+    ) -> dict:
+        """A- or B-basis value from samples, or from (mean, std, n) directly."""
+        if samples is not None:
+            arr = np.asarray(samples, dtype=np.float64)
+            if arr.size < 2:
+                raise ValueError("need at least 2 samples for a basis value")
+            mean = float(arr.mean())
+            std = float(arr.std(ddof=1))
+            n = int(arr.size)
+        elif mean is None or std is None or n is None:
+            raise ValueError(
+                "pass samples, or all three of mean, std, and n"
+            )
+        out = stats.basis_value(mean=mean, std=std, n=n, basis=basis)
+        if name:
+            ihash = hash_inputs(mean, std, n, basis)
+            self.store.save(name, "basis_value", out, input_hash=ihash)
+        return out
 
     def flag_outliers(
         self, amplitude: list[float], life_values: list[float], *,

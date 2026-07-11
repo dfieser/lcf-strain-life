@@ -318,11 +318,58 @@ def fit_design_curve(
     Life is the dependent variable (E739 style). Right-censored runouts are
     handled by maximum likelihood when ``censored`` flags are given. If
     ``design_amplitude`` is set, returns the median and the R-C design life
-    there using the Owen tolerance factor.
+    there using the Owen tolerance factor. When the data contain replicate
+    amplitude levels, the result includes the E739 lack-of-fit F test under
+    ``lack_of_fit`` (a significant F means the straight line does not
+    represent the data, whatever r squared says).
     """
     return _service.fit_design_curve(
         amplitude, life_values, reliability=reliability, confidence=confidence,
         censored=censored, design_amplitude=design_amplitude, material=material,
+    )
+
+
+@mcp.tool()
+def analyze_staircase(
+    stress_levels: list[float],
+    failed: list[bool],
+    step: float | None = None,
+    name: str | None = None,
+) -> dict:
+    """Estimate the fatigue limit from a staircase (up-and-down) test.
+
+    Dixon-Mood method per ISO 12107. Give each specimen's stress level in
+    test order and whether it failed before the target life. Returns the mean
+    and standard deviation of the fatigue strength, the counts per level, and
+    plain-language notes. The step is inferred from the sequence unless
+    given. When the Dixon-Mood variability statistic is below 0.3 the
+    standard deviation is the approximate 0.53*step fallback and the result
+    says so. Saved under ``name`` for recall when given.
+    """
+    return _service.analyze_staircase(
+        stress_levels, failed, step=step, name=name,
+    )
+
+
+@mcp.tool()
+def compute_basis_value(
+    samples: list[float] | None = None,
+    mean: float | None = None,
+    std: float | None = None,
+    n: int | None = None,
+    basis: str = "B",
+    name: str | None = None,
+) -> dict:
+    """A- or B-basis value: the one-sided lower tolerance bound mean - k*std.
+
+    B-basis is the 95 percent confidence bound on the 10th percentile,
+    A-basis on the 1st percentile, following MMPDS practice, with the exact
+    Owen k factor. Pass raw ``samples``, or ``mean``, ``std`` (sample, ddof
+    1), and ``n`` directly. Assumes normality in the analyzed units. Saved
+    under ``name`` for recall when given.
+    """
+    return _service.compute_basis_value(
+        samples, mean=mean, std=std, n=n, basis=basis, name=name,
     )
 
 

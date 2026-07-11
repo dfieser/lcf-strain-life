@@ -124,6 +124,20 @@ Local notch stress, strain, and life from a `nominal_amp` in MPa and `Kt`.
 Inputs include `E`, cyclic `K` and `n`, and the four strain-life constants.
 `method` is neuber (default) or glinka.
 
+### analyze_staircase
+Estimate the fatigue limit from a staircase (up-and-down) test, Dixon-Mood
+method per ISO 12107. Inputs: `stress_levels` in test order, `failed` flags,
+optional `step` (inferred from the sequence when omitted). Returns the mean
+and standard deviation of the fatigue strength, per-level counts, and notes.
+When the Dixon-Mood variability statistic is below 0.3 the standard deviation
+is the approximate 0.53 step fallback and the result says so.
+
+### compute_basis_value
+A- or B-basis value, the one-sided lower tolerance bound mean minus k times
+std with the exact Owen factor. B-basis is 90 percent reliability at 95
+percent confidence, A-basis is 99/95, following MMPDS practice. Pass raw
+`samples` or `mean`, `std`, and `n`. Assumes normality in the analyzed units.
+
 ### fit_design_curve
 Fit a strain-life regression, life is the dependent variable. Inputs:
 `amplitude` and `life_values` lists, `reliability`, `confidence`, optional

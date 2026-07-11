@@ -224,6 +224,30 @@ by maximum likelihood rather than deletion. References: ASTM E739, withdrawn 202
 and used as the de facto reference, Owen 1963, Williams, Lee and Rilly 2003 (Int.
 J. Fatigue 25:427).
 
+The fatigue limit from a staircase (up-and-down) test is estimated by the
+Dixon-Mood method. With $n_i$ the counts of the less frequent event on the
+level grid, $A=\sum i\,n_i$, $B=\sum i^2 n_i$, $N=\sum n_i$, step $d$, and
+$X_0$ the lowest level where that event occurred,
+
+$$\hat\mu = X_0 + d\left(\frac{A}{N} \mp \frac{1}{2}\right), \qquad
+\hat\sigma = 1.62\,d\left(\frac{NB-A^2}{N^2} + 0.029\right)
+\quad\text{for}\quad \frac{NB-A^2}{N^2} \ge 0.3,$$
+
+with the minus sign when the analysis uses failures and the plus sign for
+survivals. Below the 0.3 variability bound the standard deviation is the
+approximate fallback $\hat\sigma = 0.53\,d$ and is flagged. A-basis and
+B-basis values are the one-sided lower tolerance bounds $\bar x - k\,s$
+with the Owen factor at 99 percent reliability, 95 percent confidence and
+90/95 respectively. When the data contain replicate amplitude levels the
+linear fit is checked by the lack-of-fit F test,
+
+$$F = \frac{SS_{LOF}/(m-2)}{SS_{PE}/(n-m)},$$
+
+where $m$ is the number of distinct levels. References: Dixon and Mood 1948
+(J. Amer. Statist. Assoc. 43:109), ISO 12107:2012, Owen 1963 (Sandia
+SCR-607), ASTM E739. Validated against the S34MnV staircase example of
+Ekaputra et al. 2020 (Open Engineering 10:394).
+
 Outlier screening operates on the residuals of the log-life regression.
 Runouts are censored observations, not outliers, and are excluded from the
 screen. A single suspect point uses the two-sided Grubbs test, several suspect

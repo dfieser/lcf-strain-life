@@ -24,12 +24,17 @@ __all__ = [
     "confidence_interval",
     "prediction_interval",
     "owen_tolerance_factor",
+    "basis_value",
     "design_life",
+    "lack_of_fit",
     "fit_log_life_censored",
     "grubbs_test",
     "generalized_esd",
     "regression_diagnostics",
 ]
+
+#: Reliability/confidence pairs for the MMPDS-style basis values.
+BASIS_LEVELS = {"A": (0.99, 0.95), "B": (0.90, 0.95)}
 
 
 @dataclass
@@ -233,6 +238,85 @@ def owen_tolerance_factor(n: int, reliability: float = 0.90, confidence: float =
     z_p = scistats.norm.ppf(reliability)
     nc = z_p * np.sqrt(n)
     return float(scistats.nct.ppf(confidence, df=n - 1, nc=nc) / np.sqrt(n))
+
+
+def basis_value(*, mean: float, std: float, n: int, basis: str = "B") -> dict:
+    """A- or B-basis value: the one-sided lower tolerance bound ``mean - k*std``.
+
+    Following MMPDS practice, the B-basis is the 95 percent confidence lower
+    bound on the 10th percentile (90 percent reliability) and the A-basis on
+    the 1st percentile (99 percent reliability). ``k`` is the exact Owen
+    one-sided tolerance factor from the noncentral t. Assumes the property is
+    normally distributed in the analyzed units, fit and check the sample
+    before relying on the bound.
+    """
+    key = str(basis).strip().upper()
+    if key not in BASIS_LEVELS:
+        raise ValueError(
+            f"unknown basis {basis!r}. Use 'A' (99% reliability, 95% "
+            "confidence) or 'B' (90% reliability, 95% confidence), or call "
+            "owen_tolerance_factor directly for other levels."
+        )
+    if n < 2:
+        raise ValueError("need n >= 2 samples for a basis value")
+    reliability, confidence = BASIS_LEVELS[key]
+    k = owen_tolerance_factor(int(n), reliability, confidence)
+    return {
+        "basis": key,
+        "reliability": reliability,
+        "confidence": confidence,
+        "n": int(n),
+        "mean": float(mean),
+        "std": float(std),
+        "k": k,
+        "value": float(mean) - k * float(std),
+    }
+
+
+def lack_of_fit(amplitude, life) -> dict:
+    """ASTM E739-style lack-of-fit F test for the linearized life regression.
+
+    Requires replicate tests: at least one amplitude level tested more than
+    once, and at least three distinct levels. Partitions the residual sum of
+    squares into pure error (within replicate levels) and lack of fit
+    (between the level means and the regression line), in log10 space with
+    life as the dependent variable. A significant F says the straight line
+    does not represent the data, whatever the r squared says.
+    """
+    x, y = _xy(amplitude, life)
+    levels, inverse = np.unique(x, return_inverse=True)
+    m = int(levels.size)
+    n = int(x.size)
+    if m < 3:
+        return {"available": False,
+                "reason": "need at least 3 distinct amplitude levels"}
+    if n <= m:
+        return {"available": False,
+                "reason": "need replicate tests (a repeated amplitude level) "
+                          "to separate pure error from lack of fit"}
+
+    fit = fit_log_life(10.0 ** x, 10.0 ** y)
+    y_hat = fit.intercept + fit.slope * x
+    level_means = np.array([y[inverse == j].mean() for j in range(m)])
+    ss_pure = float(np.sum((y - level_means[inverse]) ** 2))
+    ss_lof = float(np.sum((level_means[inverse] - y_hat) ** 2))
+    df_lof = m - 2
+    df_pure = n - m
+    if ss_pure <= 0.0:
+        return {"available": False,
+                "reason": "replicates are identical, pure error is zero"}
+    f_stat = (ss_lof / df_lof) / (ss_pure / df_pure)
+    p = float(scistats.f.sf(f_stat, df_lof, df_pure))
+    return {
+        "available": True,
+        "f_statistic": float(f_stat),
+        "df_lack_of_fit": int(df_lof),
+        "df_pure_error": int(df_pure),
+        "ss_lack_of_fit": ss_lof,
+        "ss_pure_error": ss_pure,
+        "p_value": p,
+        "linear_ok_at_5pct": bool(p >= 0.05),
+    }
 
 
 def design_life(
