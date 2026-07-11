@@ -155,7 +155,7 @@ The racetrack (gate) filter condenses a history before counting by removing
 swings smaller than a gate while keeping the order of the large reversals.
 Reference: Fuchs, Nelson, Burke, and Toomay, SAE paper 730565, 1973.
 
-## Variable-amplitude local strain simulation, experimental
+## Variable-amplitude local strain simulation
 
 A repeating strain history block is rotated to its global maximum and its
 stress response simulated: the initial loading follows the cyclic
@@ -172,10 +172,15 @@ mean stress of its position.
 Assumptions, stated plainly: stabilized cyclic properties throughout,
 no cycle-dependent mean stress relaxation, no ratcheting. The simulation is
 consistent with the constant-amplitude solvers and with rainflow counting
-by construction and by test, and it is experimental until validated against
-a published variable-amplitude dataset. References: Masing 1926 (Proc. 2nd
-Int. Congress for Applied Mechanics, Zurich), Dowling 4th ed. ch. 14,
-ASTM E1049-85(2017).
+by construction and by test. Validation against the published SAE
+smooth-specimen dataset of Conle (MSc thesis, University of Waterloo, 1974,
+data distributed by the SAE FD and E committee): predictions fall within a
+factor of two of experiment for the transmission and bracket histories and
+about a factor of three, non-conservative, for the suspension history, all
+three leaning non-conservative, consistent with the documented scatter of
+linear-damage local-strain predictions on this program. References: Masing
+1926 (Proc. 2nd Int. Congress for Applied Mechanics, Zurich), Dowling 4th
+ed. ch. 14, ASTM E1049-85(2017), Conle 1974 via fde.uwaterloo.ca.
 
 ## Cumulative damage
 

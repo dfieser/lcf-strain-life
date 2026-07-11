@@ -132,9 +132,11 @@ stress model (`swt` default, `morrow`, or `none`), and Miner-sums the damage.
 Inputs: `strain_history` (raw series or turning points), `E`, `K_prime`,
 `n_prime`, and the four strain-life constants. Returns the loop table sorted
 by damage, damage per block, and blocks to failure. Assumes stabilized cyclic
-properties, mean stress relaxation and ratcheting are not modeled.
-Experimental: internally consistent with the constant-amplitude solvers, not
-yet validated against a published variable-amplitude dataset.
+properties, mean stress relaxation and ratcheting are not modeled. Validation
+against the published Conle SAE smooth-specimen dataset: within 2x of
+experiment on two of three service histories, about 3x non-conservative on
+the third, all leaning non-conservative. Reproduce it with
+`examples/validate_sae_conle.py` and verify against your own data.
 
 ### analyze_staircase
 Estimate the fatigue limit from a staircase (up-and-down) test, Dixon-Mood

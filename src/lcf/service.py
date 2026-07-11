@@ -452,9 +452,12 @@ class LcfService:
             mean_stress_model=mean_stress_model,
         )
         out["notes"].append(
-            "experimental: not yet validated against a published "
-            "variable-amplitude dataset, verify against test data before "
-            "relying on the life."
+            "validation status: compared against the Conle SAE "
+            "smooth-specimen dataset (see examples/validate_sae_conle.py), "
+            "transmission and bracket histories predict within 2x of "
+            "experiment, suspension about 3x non-conservative, all leaning "
+            "non-conservative, consistent with documented linear-damage "
+            "scatter. Verify against your own test data."
         )
         if name:
             ihash = hash_inputs(

@@ -10,6 +10,27 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- Published-case validation of the variable-amplitude engine against the
+  Conle SAE smooth-specimen dataset (MSc thesis, University of Waterloo,
+  1974, GPL data distributed by the SAE FD and E committee at
+  fde.uwaterloo.ca): strain-controlled tests of SAE10B20 steel under the
+  full transmission, bracket, and suspension histories at 0.010 peak
+  strain. Predictions land within a factor of two of experiment for the
+  transmission and bracket histories and about a factor of three,
+  non-conservative, for suspension, all three leaning non-conservative,
+  consistent with the documented scatter of linear-damage local-strain
+  predictions on this program. The engine's blanket experimental label is
+  replaced by this concrete evidence statement everywhere it appears.
+  Reproducible with `examples/validate_sae_conle.py`, regression-guarded
+  by prediction-band tests gated on `LCF_FDE_DATA_DIR`.
+
+### Fixed
+- The Ramberg-Osgood branch solver could fail on tiny strain ranges for
+  materials with very low cyclic hardening (the plastic term underflows
+  and the elastic bracket bound rounds below the target). The bracket now
+  carries a one-part-per-billion margin. Found running the real SAE
+  suspension history with the Conle SAE10B20 constants, covered by a
+  regression test.
 - `examples/variable_amplitude_sae.py`: runs the variable-amplitude engine
   on a real SAE Fatigue Design and Evaluation committee service load
   history (transmission, bracket, or suspension). The histories are GPL

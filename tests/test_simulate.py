@@ -115,6 +115,17 @@ def test_simulation_refusals():
                                      n_prime=N_PRIME)
 
 
+def test_tiny_ranges_on_stiff_material_do_not_break_the_solver():
+    # Regression: with a very low n' the plastic term underflows for tiny
+    # strain ranges and the elastic-line bracket needs its safety margin.
+    # These constants are the Conle SAE10B20 f512 values (in MPa).
+    history = [0.010, -0.010, 1.0e-5, -1.0e-5, 0.010, -0.010]
+    sim = simulate.simulate_hysteresis(
+        history, E=206843.0, K_prime=813.6, n_prime=0.0586
+    )
+    assert len(sim.loops) >= 2
+
+
 # --------------------------------------------------------------------------- #
 # variable-amplitude life
 # --------------------------------------------------------------------------- #
@@ -202,5 +213,48 @@ def test_service_simulate_variable_amplitude(tmp_path):
     )
     assert out["n_loops"] == 2
     assert out["blocks_to_failure"] > 0
-    assert any("experimental" in n for n in out["notes"])
+    assert any("validation status" in n for n in out["notes"])
     assert svc.recall("VA-demo", "va_life") is not None
+
+
+# --------------------------------------------------------------------------- #
+# published-case validation, gated on locally downloaded FD&E data
+# --------------------------------------------------------------------------- #
+import os
+
+FDE_DIR = os.environ.get("LCF_FDE_DATA_DIR")
+
+
+@pytest.mark.skipif(
+    not FDE_DIR,
+    reason="set LCF_FDE_DATA_DIR to a folder holding the FD&E histories "
+    "(transmission.txt, bracket.txt, suspension.txt from "
+    "fde.uwaterloo.ca, GPL) to run the Conle dataset validation",
+)
+@pytest.mark.parametrize("name,exp,lo,hi", [
+    # experimental blocks from Conle's thesis Table 2 (faconle2.html) and
+    # the prediction ratio band measured 2026-07-11. The upper bounds guard
+    # against silent regression toward MORE non-conservative predictions.
+    ("transmission", [50.0, 38.0], 0.5, 2.0),
+    ("bracket", [4.39, 4.63], 0.5, 2.0),
+    ("suspension", [50.3, 73.8, 83.8], 0.5, 4.0),
+])
+def test_conle_sae_dataset_prediction_band(name, exp, lo, hi):
+    import math
+    from pathlib import Path
+
+    ksi = 6.894757
+    vals = []
+    for line in (Path(FDE_DIR) / f"{name}.txt").read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#"):
+            vals.append(float(line.split(":")[0]))
+    scale = 0.010 / max(abs(v) for v in vals)
+    out = simulate.variable_amplitude_life(
+        [v * scale for v in vals],
+        E=30000.0 * ksi, K_prime=118.0 * ksi, n_prime=0.0586,
+        sigma_f=123.2 * ksi, b=-0.0437, eps_f=2.0907, c=-0.7450,
+    )
+    geo_mean = math.exp(sum(math.log(v) for v in exp) / len(exp))
+    ratio = out["blocks_to_failure"] / geo_mean
+    assert lo <= ratio <= hi

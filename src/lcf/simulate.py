@@ -75,7 +75,9 @@ def _cyclic_stress(strain: float, E: float, K: float, n: float) -> float:
     if strain == 0.0:
         return 0.0
     mag = abs(strain)
-    upper = E * mag  # elastic line bounds the stress from above
+    # The elastic line bounds the stress from above. The small margin keeps
+    # the bracket valid when the plastic term underflows at tiny strains.
+    upper = E * mag * (1.0 + 1e-9)
     s = optimize.brentq(
         lambda x: x / E + (x / K) ** (1.0 / n) - mag, 0.0, upper
     )
@@ -86,7 +88,7 @@ def _branch_stress_range(strain_range: float, E: float, K: float, n: float) -> f
     """Invert the doubled (Masing) branch for a strain range."""
     if strain_range == 0.0:
         return 0.0
-    upper = E * strain_range
+    upper = E * strain_range * (1.0 + 1e-9)
     return float(optimize.brentq(
         lambda x: x / E + 2.0 * (x / (2.0 * K)) ** (1.0 / n) - strain_range,
         0.0, upper,

@@ -228,9 +228,11 @@ CITATIONS: dict[str, dict[str, str]] = {
                     "Zurich, 1926 (doubled branch). Dowling, Mechanical "
                     "Behavior of Materials, Pearson, 4th ed., 2013, ch. 14 "
                     "(local strain approach). ASTM E1049-85 (memory rule)",
-        "note": "experimental: internally consistent with the "
-                "constant-amplitude solvers and rainflow counting, not yet "
-                "validated against a published variable-amplitude dataset. "
+        "note": "internally consistent with the constant-amplitude solvers "
+                "and rainflow counting. Compared against the Conle SAE "
+                "smooth-specimen dataset (Conle, MSc thesis, U. Waterloo, "
+                "1974, data via fde.uwaterloo.ca): within 2x on two of "
+                "three histories, about 3x non-conservative on the third. "
                 "Mean stress relaxation and ratcheting are not modeled",
     },
 }
