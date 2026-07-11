@@ -10,6 +10,14 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- `examples/variable_amplitude_sae.py`: runs the variable-amplitude engine
+  on a real SAE Fatigue Design and Evaluation committee service load
+  history (transmission, bracket, or suspension). The histories are GPL
+  licensed by the FD&E committee and are downloaded from their public
+  archive at run time rather than bundled. The example prints the loop
+  table, damage per block, blocks to failure, and the engine's honesty
+  notes. All three histories, up to 5936 points, simulate in under half a
+  second.
 - Variable-amplitude strain-life, experimental (first slice of P3 of the
   adopted build plan). New `lcf.simulate` module walks a repeating strain
   history block through the cyclic stress response: Ramberg-Osgood initial
