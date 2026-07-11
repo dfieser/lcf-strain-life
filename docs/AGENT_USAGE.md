@@ -176,6 +176,12 @@ Reversals to failure from the frequency-modified Coffin-Manson law in the
 coefficient form. Inputs: `plastic_strain_amp`, `eps_f_coeff`, `c`,
 `frequency`, `k`, optional `freq_ref`.
 
+### compute_roughness_factor
+FKM surface roughness factor K_R from Rz (micrometres) and Rm (MPa) for the
+seven FKM material groups. Multiply a stress-based fatigue strength by K_R.
+Capped at 1.0 for polished surfaces. Strain-life constants are not corrected
+directly by this factor.
+
 ### search_critical_plane_tensor
 Find the critical plane from strain (and stress) tensor component histories
 sampled over one cycle. Scans plane normals over a hemisphere grid, resolves
