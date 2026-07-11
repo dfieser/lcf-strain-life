@@ -59,6 +59,23 @@ Reduce one test from a `(time, strain, force)` series or a CSV file. Inputs
 include `area` in mm squared and optional `E`. Returns the half-life summary and
 saves the per-cycle table under `name`.
 
+### analyze_test_series
+Analyze a whole directory of lab exports in one call. The reader auto-detects
+the delimiter, the header row beneath machine preamble blocks, the column
+names through a synonym table (MTS TestSuite and Instron style delimited
+exports among others), and unit suffixes in the headers: percent strain, kN
+force, ksi stress. Each test is reduced and saved under its file stem, then
+the strain-life constants are fitted across the series and saved under
+`material`. Unreadable files are reported in `errors` without stopping the
+rest. A strain column with no unit marking whose values look like percent is
+refused with instructions, pass `strain_unit` to decide. Dedicated parsers
+for proprietary vendor formats are not implemented, delimited exports only.
+
+### preview_lab_file
+Report how a lab export would be read before committing to an analysis: the
+detected header row, delimiter, resolved columns, units, conversion factors,
+row count, and notes.
+
 ### predict_life
 Reversals and cycles to failure for a `total_strain_amp`, given the four
 strain-life constants and `E`.

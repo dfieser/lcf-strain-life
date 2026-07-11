@@ -55,6 +55,11 @@ def analyze_test(test: TestRun, params: AnalysisParams | None = None) -> TestAna
     summary = {
         "name": test.metadata.name,
         "material": test.metadata.material,
+        "R": test.metadata.R,
+        "specimen": (
+            test.metadata.specimen.model_dump(exclude_none=True)
+            if test.metadata.specimen is not None else None
+        ),
         "E": pcm.E,
         "n_cycles": reduced.n_cycles,
         "n_f": reduced.n_f,

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 
+from . import labio
 from .service import LcfService
 from .store import dumps
 
@@ -77,6 +78,52 @@ def analyze_test_csv(
         name, csv_path, area, column_map=column_map, E=E, R=R,
         already_true=already_true, failure_pct=failure_pct, material=material,
     )
+
+
+@mcp.tool()
+def analyze_test_series(
+    directory: str,
+    area: float | None = None,
+    pattern: str = "*.csv",
+    E: float | None = None,
+    R: float = -1.0,
+    already_true: bool = False,
+    failure_pct: float = 30.0,
+    material: str | None = None,
+    strain_unit: str | None = None,
+    force_unit: str | None = None,
+    stress_unit: str | None = None,
+    min_plastic_strain: float | None = None,
+) -> dict:
+    """Analyze a directory of lab exports as one strain-life test series.
+
+    One call: reads every file matching ``pattern`` (auto-detecting delimiter,
+    header row, column names, and unit suffixes such as percent strain or kN
+    force), reduces each test, persists each summary under its file stem, and
+    fits the strain-life constants across the series under ``material``.
+    Returns per-test summaries, the fit, notes, and per-file errors. Files
+    that cannot be read are reported in ``errors`` without stopping the rest.
+    Run ``preview_lab_file`` first if unsure how a file will be interpreted.
+    """
+    return _service.analyze_series(
+        directory, area, pattern=pattern, E=E, R=R, already_true=already_true,
+        failure_pct=failure_pct, material=material, strain_unit=strain_unit,
+        force_unit=force_unit, stress_unit=stress_unit,
+        min_plastic_strain=min_plastic_strain,
+    )
+
+
+@mcp.tool()
+def preview_lab_file(path: str, delimiter: str | None = None) -> dict:
+    """Report how a lab export file would be read, without analyzing it.
+
+    Returns the detected header row, delimiter, the resolved time/strain/
+    force/stress columns with their units and conversion factors, the row
+    count, and notes (for example a strain column that looks like percent).
+    Use this before ``analyze_test_csv`` or ``analyze_test_series`` when the
+    file layout is uncertain.
+    """
+    return labio.preview_lab_file(path, delimiter=delimiter)
 
 
 @mcp.tool()

@@ -192,6 +192,12 @@ CITATIONS: dict[str, dict[str, str]] = {
         "method": "Hardness-based strain-life constant estimation for steels",
         "citation": "Roessle and Fatemi, Int. J. Fatigue 22 (2000) 495-511",
     },
+    "e606_reporting": {
+        "method": "Strain-controlled test specimen and reporting metadata "
+                  "schema (SpecimenMetadata)",
+        "citation": "ASTM E606/E606M-21, Standard Test Method for "
+                    "Strain-Controlled Fatigue Testing",
+    },
 }
 
 

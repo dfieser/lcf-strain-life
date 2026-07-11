@@ -49,7 +49,8 @@ class TestRun:
 def normalize(df: pd.DataFrame, metadata: TestMetadata, *, validate: bool = True) -> pd.DataFrame:
     """Return a copy of ``df`` with derived stress/strain columns added.
 
-    Required raw columns: ``time``, ``strain``, ``force`` (see :mod:`lcf.schema`).
+    Required raw columns: ``time``, ``strain``, and ``force`` or ``stress_eng``
+    (see :mod:`lcf.schema`).
 
     Stress precedence: if a ``stress_eng`` column is present it is used as-is and
     ``area`` is not required. Otherwise stress is derived as ``force / area``.
@@ -59,15 +60,20 @@ def normalize(df: pd.DataFrame, metadata: TestMetadata, *, validate: bool = True
     With ``validate=True`` (default), NaN values in the required columns raise, and
     non-monotonic ``time`` emits a warning.
     """
-    missing = [c for c in schema.REQUIRED_RAW if c not in df.columns]
+    has_stress = schema.COL_STRESS_ENG in df.columns
+    missing = [c for c in (schema.COL_TIME, schema.COL_STRAIN) if c not in df.columns]
+    if schema.COL_FORCE not in df.columns and not has_stress:
+        missing.append(f"{schema.COL_FORCE} (or {schema.COL_STRESS_ENG})")
     if missing:
         raise ValueError(
             f"raw data missing required column(s): {missing}. "
-            f"Expected {schema.REQUIRED_RAW}."
+            f"Expected {schema.REQUIRED_RAW} or stress_eng in place of force."
         )
 
+    required_present = [schema.COL_TIME, schema.COL_STRAIN,
+                        schema.COL_STRESS_ENG if has_stress else schema.COL_FORCE]
     if validate:
-        nan_cols = [c for c in schema.REQUIRED_RAW if df[c].isna().any()]
+        nan_cols = [c for c in required_present if df[c].isna().any()]
         if nan_cols:
             raise ValueError(
                 f"raw data contains NaN in column(s) {nan_cols}. Clean or drop those "

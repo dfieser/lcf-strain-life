@@ -21,6 +21,7 @@ from . import (
     estimate,
     fits,
     hightemp,
+    labio,
     life,
     multiaxial,
     notch,
@@ -30,7 +31,7 @@ from . import (
 from .ingest import from_timeseries, read_csv
 from .meanstress import equivalent_fully_reversed_stress, walker_gamma_steel
 from .models import AnalysisParams, MeanStressModel, TestMetadata
-from .pipeline import analyze_test
+from .pipeline import analyze_test, build_summary_table, fit_from_summary
 from .store import LcfStore, hash_inputs, to_jsonable
 
 __all__ = ["LcfService"]
@@ -100,6 +101,100 @@ class LcfService:
                         dataframe=ta.metrics.table, input_hash=ihash)
         self.store.save(name, "summary", ta.summary, input_hash=ihash)
         return to_jsonable(ta.summary)
+
+    def analyze_series(
+        self,
+        directory: str | None = None,
+        area: float | None = None,
+        *,
+        files: list[str] | None = None,
+        pattern: str = "*.csv",
+        E: float | None = None,
+        R: float = -1.0,
+        already_true: bool = False,
+        failure_pct: float = 30.0,
+        material: str | None = None,
+        column_map: dict[str, str] | None = None,
+        strain_unit: str | None = None,
+        force_unit: str | None = None,
+        stress_unit: str | None = None,
+        min_plastic_strain: float | None = None,
+        refine_nonlinear: bool = False,
+    ) -> dict:
+        """Analyze a full test series of lab exports in one call (ADR-0014, P1).
+
+        Reads every matching file (name = file stem), reduces each test,
+        persists each per-cycle table and summary, then fits the strain-life
+        models across the series and persists the fit. Per-file failures are
+        collected in ``errors`` and do not stop the rest of the series.
+        """
+        si = labio.read_series(
+            directory, files=files, pattern=pattern,
+            metadata_defaults={
+                "area": area, "E": E, "R": R, "already_true": already_true,
+                "material": material,
+            },
+            column_map=column_map, strain_unit=strain_unit,
+            force_unit=force_unit, stress_unit=stress_unit,
+        )
+        params = AnalysisParams(
+            failure_criterion_pct=failure_pct,
+            min_plastic_strain=min_plastic_strain,
+            refine_nonlinear=refine_nonlinear,
+        )
+
+        analyses = []
+        kept: list[str] = []
+        errors = list(si.errors)
+        for path, run in zip(si.paths, si.runs):
+            try:
+                ta = analyze_test(run, params)
+            except Exception as exc:  # noqa: BLE001 - reported per file
+                errors.append({"file": path, "error": str(exc)})
+                continue
+            ihash = hash_inputs(
+                Path(path).read_bytes(), area, E, R, already_true, failure_pct
+            )
+            self.store.save(ta.name, "per_cycle", {"n_cycles": ta.reduced.n_cycles},
+                            dataframe=ta.metrics.table, input_hash=ihash)
+            self.store.save(ta.name, "summary", ta.summary, input_hash=ihash)
+            analyses.append(ta)
+            kept.append(path)
+
+        if analyses:
+            fit, notes = fit_from_summary(build_summary_table(analyses), params)
+        else:
+            fit, notes = None, ["no test in the series could be analyzed"]
+        fit_json = to_jsonable(fit) if fit is not None else None
+
+        key = material
+        if key is None:
+            key = Path(directory).name if directory else (
+                analyses[0].name if analyses else "series"
+            )
+        series_hash = hash_inputs(
+            [Path(p).name for p in kept], area, E, R, already_true, failure_pct,
+            min_plastic_strain, refine_nonlinear,
+        )
+        if fit_json is not None:
+            self.store.save(key, "strain_life_fit", fit_json, input_hash=series_hash)
+        result = {
+            "material": material,
+            "series_key": key,
+            "files": kept,
+            "n_tests": len(analyses),
+            "tests": [a.summary for a in analyses],
+            "fit": fit_json,
+            "notes": notes,
+            "errors": errors,
+            "resolutions": si.resolutions,
+        }
+        self.store.save(
+            key, "series_summary",
+            {k: result[k] for k in ("material", "files", "n_tests", "notes", "errors")},
+            input_hash=series_hash,
+        )
+        return to_jsonable(result)
 
     def fit_strain_life(
         self,

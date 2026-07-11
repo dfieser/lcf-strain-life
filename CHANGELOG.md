@@ -10,6 +10,26 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- Lab-export ingestion and one-call series analysis (P1 of the adopted build
+  plan). A new `lcf.labio` module reads the delimited files fatigue labs
+  actually produce: it auto-detects the delimiter and the header row beneath
+  machine preamble blocks, resolves column names through a synonym table
+  (MTS TestSuite and Instron style exports among others), converts unit
+  suffixes (percent strain, kN force, ksi stress), tolerates a units row
+  under the header and decimal-comma files, and refuses ambiguous or
+  unmarked-percent input with actionable messages instead of guessing. A
+  `stress_eng` column now satisfies ingestion without a force column.
+  Exposed as two new MCP tools: `analyze_test_series` (directory in,
+  per-test summaries plus a fitted strain-life curve out, per-file errors
+  collected without stopping the series) and `preview_lab_file` (how a file
+  would be read, before analyzing it). 18 new tests cover the readers, the
+  refusal guards, and the batch path.
+- ASTM E606 specimen and test-condition metadata. `TestMetadata` gains an
+  optional nested `SpecimenMetadata` (specimen geometry, control mode,
+  strain rate, environment, machine, extensometer, standard, and so on, all
+  optional). It is carried into stored summaries and recorded in the
+  citation registry as `e606_reporting`. Test summaries now also carry the
+  strain ratio `R`.
 - The physics record now defines the stress ratio R and the strain ratio, a
   table of the loading configurations from fully reversed through
   compression-compression, and the control-mode context for the mean-stress
