@@ -330,6 +330,38 @@ def fit_design_curve(
 
 
 @mcp.tool()
+def simulate_variable_amplitude(
+    strain_history: list[float],
+    E: float,
+    K_prime: float,
+    n_prime: float,
+    sigma_f: float,
+    b: float,
+    eps_f: float,
+    c: float,
+    mean_stress_model: str = "swt",
+    name: str | None = None,
+) -> dict:
+    """Life for a repeating variable-amplitude strain history block.
+
+    Simulates the cyclic stress response with material memory (Masing
+    branches, rainflow-consistent loop closure), computes each closed loop's
+    life with the chosen mean-stress model (swt from the loop's peak stress,
+    morrow from its mean, none for the uncorrected curve), and Miner-sums
+    the damage. Returns the loop table sorted by damage, damage per block,
+    and blocks to failure. Assumes stabilized cyclic properties, mean stress
+    relaxation and ratcheting are not modeled. Experimental: internally
+    consistent with the constant-amplitude solvers, not yet validated
+    against a published variable-amplitude dataset.
+    """
+    return _service.simulate_variable_amplitude(
+        strain_history, E=E, K_prime=K_prime, n_prime=n_prime,
+        sigma_f=sigma_f, b=b, eps_f=eps_f, c=c,
+        mean_stress_model=mean_stress_model, name=name,
+    )
+
+
+@mcp.tool()
 def analyze_staircase(
     stress_levels: list[float],
     failed: list[bool],

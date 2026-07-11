@@ -25,6 +25,7 @@ from . import (
     life,
     multiaxial,
     notch,
+    simulate,
     spectrum,
     staircase,
     stats,
@@ -422,6 +423,53 @@ class LcfService:
             self.store.save(material, "design_curve", out,
                             input_hash=hash_inputs(list(amplitude), list(life_values),
                                                    reliability, confidence))
+        return to_jsonable(out)
+
+    def simulate_variable_amplitude(
+        self,
+        strain_history: list[float],
+        *,
+        E: float,
+        K_prime: float,
+        n_prime: float,
+        sigma_f: float,
+        b: float,
+        eps_f: float,
+        c: float,
+        mean_stress_model: str = "swt",
+        name: str | None = None,
+        max_loops_returned: int = 50,
+    ) -> dict:
+        """Variable-amplitude strain-life for a repeating history block.
+
+        Experimental: internally consistent with the constant-amplitude
+        solvers and rainflow counting, not yet validated against a published
+        variable-amplitude dataset (ADR-0016).
+        """
+        out = simulate.variable_amplitude_life(
+            strain_history, E=E, K_prime=K_prime, n_prime=n_prime,
+            sigma_f=sigma_f, b=b, eps_f=eps_f, c=c,
+            mean_stress_model=mean_stress_model,
+        )
+        out["notes"].append(
+            "experimental: not yet validated against a published "
+            "variable-amplitude dataset, verify against test data before "
+            "relying on the life."
+        )
+        if name:
+            ihash = hash_inputs(
+                list(strain_history), E, K_prime, n_prime, sigma_f, b, eps_f,
+                c, mean_stress_model,
+            )
+            self.store.save(name, "va_life", to_jsonable(out), input_hash=ihash)
+        if len(out["loops"]) > max_loops_returned:
+            n_total = len(out["loops"])
+            out["loops"] = out["loops"][:max_loops_returned]
+            out["notes"].append(
+                f"loop table truncated to the {max_loops_returned} most "
+                f"damaging of {n_total} unique loops"
+                + (", the full table is saved for recall" if name else "")
+            )
         return to_jsonable(out)
 
     def analyze_staircase(

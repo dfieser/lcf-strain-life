@@ -181,6 +181,27 @@ The racetrack (gate) filter condenses a history before counting by removing
 swings smaller than a gate while keeping the order of the large reversals.
 Reference: Fuchs, Nelson, Burke, and Toomay, SAE paper 730565, 1973.
 
+\section{Variable-amplitude local strain simulation, experimental}
+A repeating strain history block is rotated to its global maximum and its
+stress response simulated: the initial loading follows the cyclic
+Ramberg-Osgood curve, every subsequent branch follows the doubled hysteresis
+form given above from its reversal origin, and material memory follows the
+rainflow closure rule, so a closed interior loop leaves the outer branch
+exactly where it would have been without the interruption. Each closed loop
+carries its strain amplitude and its simulated peak and mean stress, its
+life comes from the SWT, Morrow, or uncorrected strain-life relation above,
+and the damage is Miner-summed to blocks to failure. Sequence effects enter
+through the loop means: a small cycle riding on a large branch carries the
+mean stress of its position.
+
+Assumptions, stated plainly: stabilized cyclic properties throughout, no
+cycle-dependent mean stress relaxation, no ratcheting. The simulation is
+consistent with the constant-amplitude solvers and with rainflow counting by
+construction and by test, and it is experimental until validated against a
+published variable-amplitude dataset. References: Masing 1926 (Proc.\ 2nd
+Int.\ Congress for Applied Mechanics, Zurich), Dowling 4th ed.\ ch.~14,
+ASTM E1049-85(2017).
+
 \section{Cumulative damage}
 Palmgren-Miner linear damage, failure at a critical sum, the default being one:
 \begin{equation}
@@ -383,6 +404,7 @@ Strain-life & & \\
 Mean-stress corrections & & \\
 Energy and cyclic response & & \\
 Cycle counting and filtering & & \\
+Variable-amplitude simulation (experimental) & & \\
 Cumulative damage and knee variants & & \\
 Notch local-strain & & \\
 Statistics, design curves, outlier screen & & \\

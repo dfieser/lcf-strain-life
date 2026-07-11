@@ -221,6 +221,18 @@ CITATIONS: dict[str, dict[str, str]] = {
                     "reference), standard partition of residual error into "
                     "pure error and lack of fit",
     },
+    "va_local_strain_simulation": {
+        "method": "Variable-amplitude local strain simulation with material "
+                  "memory (Masing branches, rainflow-consistent closure)",
+        "citation": "Masing, Proc. 2nd Int. Congress for Applied Mechanics, "
+                    "Zurich, 1926 (doubled branch). Dowling, Mechanical "
+                    "Behavior of Materials, Pearson, 4th ed., 2013, ch. 14 "
+                    "(local strain approach). ASTM E1049-85 (memory rule)",
+        "note": "experimental: internally consistent with the "
+                "constant-amplitude solvers and rainflow counting, not yet "
+                "validated against a published variable-amplitude dataset. "
+                "Mean stress relaxation and ratcheting are not modeled",
+    },
 }
 
 

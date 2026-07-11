@@ -10,6 +10,21 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- Variable-amplitude strain-life, experimental (first slice of P3 of the
+  adopted build plan). New `lcf.simulate` module walks a repeating strain
+  history block through the cyclic stress response: Ramberg-Osgood initial
+  loading, doubled Masing branches, and material memory by the rainflow
+  closure rule, so sequence effects enter through the simulated loop mean
+  stresses. Per-loop life reuses the existing SWT, Morrow, and uncorrected
+  solvers, Miner-summed to blocks to failure. Exposed as the
+  `simulate_variable_amplitude` MCP tool. Validated for internal
+  consistency: constant amplitude reproduces the closed-form solvers, the
+  closed loops match rainflow counting, and an interrupting cycle leaves
+  the outer branch exactly where it would have been. Labeled experimental
+  everywhere it appears until it reproduces a published variable-amplitude
+  dataset, and the model limits are stated in every result: stabilized
+  cyclic properties, no mean stress relaxation, no ratcheting. 14 new
+  tests.
 - Staircase fatigue-limit analysis and basis values (first slice of P2 of
   the adopted build plan). New `lcf.staircase` module implements the
   Dixon-Mood method per ISO 12107 with the published validity bound: below

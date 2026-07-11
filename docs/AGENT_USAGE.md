@@ -124,6 +124,18 @@ Local notch stress, strain, and life from a `nominal_amp` in MPa and `Kt`.
 Inputs include `E`, cyclic `K` and `n`, and the four strain-life constants.
 `method` is neuber (default) or glinka.
 
+### simulate_variable_amplitude
+Life for a repeating variable-amplitude strain history block. Simulates the
+cyclic stress response with material memory (Masing branches, rainflow
+consistent closure), computes each closed loop's life with the chosen mean
+stress model (`swt` default, `morrow`, or `none`), and Miner-sums the damage.
+Inputs: `strain_history` (raw series or turning points), `E`, `K_prime`,
+`n_prime`, and the four strain-life constants. Returns the loop table sorted
+by damage, damage per block, and blocks to failure. Assumes stabilized cyclic
+properties, mean stress relaxation and ratcheting are not modeled.
+Experimental: internally consistent with the constant-amplitude solvers, not
+yet validated against a published variable-amplitude dataset.
+
 ### analyze_staircase
 Estimate the fatigue limit from a staircase (up-and-down) test, Dixon-Mood
 method per ISO 12107. Inputs: `stress_levels` in test order, `failed` flags,
