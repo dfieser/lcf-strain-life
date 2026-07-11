@@ -66,14 +66,6 @@ workspace outside the public repository.
   replaced by this concrete evidence statement everywhere it appears.
   Reproducible with `examples/validate_sae_conle.py`, regression-guarded
   by prediction-band tests gated on `LCF_FDE_DATA_DIR`.
-
-### Fixed
-- The Ramberg-Osgood branch solver could fail on tiny strain ranges for
-  materials with very low cyclic hardening (the plastic term underflows
-  and the elastic bracket bound rounds below the target). The bracket now
-  carries a one-part-per-billion margin. Found running the real SAE
-  suspension history with the Conle SAE10B20 constants, covered by a
-  regression test.
 - `examples/variable_amplitude_sae.py`: runs the variable-amplitude engine
   on a real SAE Fatigue Design and Evaluation committee service load
   history (transmission, bracket, or suspension). The histories are GPL
@@ -144,6 +136,12 @@ workspace outside the public repository.
   Ellyin 1996. Both `docs/PHYSICS_REVIEW.md` and the typeset PDF are updated.
 
 ### Fixed
+- The Ramberg-Osgood branch solver could fail on tiny strain ranges for
+  materials with very low cyclic hardening (the plastic term underflows
+  and the elastic bracket bound rounds below the target). The bracket now
+  carries a one-part-per-billion margin. Found running the real SAE
+  suspension history with the Conle SAE10B20 constants, covered by a
+  regression test.
 - Two citation registry corrections found while verifying every project
   citation against publisher records. The Walker entry cited Dowling's SAE
   paper by the wrong number, 2004-01-0227, the verified number is
