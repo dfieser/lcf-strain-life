@@ -347,10 +347,9 @@ $$D = \sum_i \frac{n_i}{N_{f,i}} + \sum_j \frac{t_j}{t_{r,j}},$$
 checked against a bilinear creep-fatigue interaction envelope. References: Coffin
 1971, Robinson 1952, ASTM E2714-13(2020).
 
-## Multiaxial, survey only
+## Multiaxial critical plane
 
-Critical-plane parameters, provided for evaluation. The full plane search is not
-yet implemented.
+Critical-plane parameters:
 
 $$P_{FS} = \frac{\Delta\gamma_{max}}{2}\left(1 + k\frac{\sigma_{n,max}}{\sigma_y}\right),
 \quad
@@ -358,8 +357,21 @@ P_{BM} = \frac{\Delta\gamma_{max}}{2} + S\,\Delta\varepsilon_n,
 \quad
 P_{SWT} = \sigma_{n,max}\frac{\Delta\varepsilon_1}{2}.$$
 
+The plane search takes strain and stress tensor component histories sampled
+over one cycle and scans plane normals over a hemisphere grid. Per plane,
+the normal strain history is $n\cdot\varepsilon\cdot n$ with amplitude half
+its range, the shear amplitude is half the longest chord of the in-plane
+shear-vector path, which stays meaningful for non-proportional paths, and
+the maximum normal stress is the maximum of $n\cdot\sigma\cdot n$ over the
+cycle. Scope, stated plainly: amplitudes come from the given cycle's path,
+per-plane rainflow counting of long multiaxial histories is not
+implemented. Validated against the closed forms for uniaxial loading with
+Poisson contraction (45 degree plane, engineering shear amplitude
+$(1+\nu)\,\varepsilon_a$) and pure torsion.
+
 References: Fatemi and Socie 1988 (Fatigue Fract. Eng. Mater. Struct. 11(3):149),
-Brown and Miller 1973, Smith, Watson, Topper 1970.
+Brown and Miller 1973, Smith, Watson, Topper 1970, Socie and Marquis,
+Multiaxial Fatigue, SAE, 2000.
 
 ## Conventions and assumptions to confirm
 

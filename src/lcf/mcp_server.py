@@ -362,6 +362,98 @@ def simulate_variable_amplitude(
 
 
 @mcp.tool()
+def search_critical_plane_tensor(
+    parameter: str,
+    eps_xx: list[float],
+    eps_yy: list[float],
+    eps_zz: list[float],
+    gamma_xy: list[float],
+    gamma_yz: list[float],
+    gamma_zx: list[float],
+    sig_xx: list[float] | None = None,
+    sig_yy: list[float] | None = None,
+    sig_zz: list[float] | None = None,
+    tau_xy: list[float] | None = None,
+    tau_yz: list[float] | None = None,
+    tau_zx: list[float] | None = None,
+    sigma_y: float | None = None,
+    k: float = 0.3,
+    S: float = 1.0,
+    grid_deg: float = 10.0,
+    name: str | None = None,
+) -> dict:
+    """Find the critical plane from strain (and stress) tensor histories.
+
+    Give component histories sampled over one cycle: normal strains, and
+    ENGINEERING shear strains (gamma). The tool scans plane normals over a
+    hemisphere grid, resolves each plane's shear amplitude (longest chord,
+    valid for non-proportional paths), normal strain amplitude, and maximum
+    normal stress, and returns the plane maximizing the chosen parameter:
+    fatemi_socie (needs the stress history and sigma_y), brown_miller
+    (strains only), or swt (needs the stress history). Amplitudes come from
+    the given cycle's path, per-plane rainflow of long histories is not
+    implemented. Saved under ``name`` for recall when given.
+    """
+    return _service.search_critical_plane_tensor(
+        parameter, eps_xx=eps_xx, eps_yy=eps_yy, eps_zz=eps_zz,
+        gamma_xy=gamma_xy, gamma_yz=gamma_yz, gamma_zx=gamma_zx,
+        sig_xx=sig_xx, sig_yy=sig_yy, sig_zz=sig_zz,
+        tau_xy=tau_xy, tau_yz=tau_yz, tau_zx=tau_zx,
+        sigma_y=sigma_y, k=k, S=S, grid_deg=grid_deg, name=name,
+    )
+
+
+@mcp.tool()
+def generate_report(key: str) -> dict:
+    """One-call markdown fatigue report of everything stored under a key.
+
+    Assembles summaries, fits, design curves, staircase, basis values, and
+    variable-amplitude results with their provenance hashes and the source
+    citations for every method that appears. Returns the markdown, stores
+    it for recall, and writes ``<store>/reports/<key>.md``.
+    """
+    return _service.generate_report(key)
+
+
+@mcp.tool()
+def export_material(
+    name: str,
+    E: float,
+    sigma_f: float,
+    b: float,
+    eps_f: float,
+    c: float,
+    K_prime: float | None = None,
+    n_prime: float | None = None,
+    source: str | None = None,
+    fmt: str = "lcf",
+    nd_cycles: float = 1.0e6,
+) -> dict:
+    """Export strain-life constants as an interchange document.
+
+    ``fmt='lcf'`` gives the versioned lcf-strain-life/material@1 JSON
+    document (MPa, strain fraction, reversals, with provenance).
+    ``fmt='pylife'`` expresses the Basquin line in pyLife WoehlerCurve
+    conventions (k_1, ND, SD, TN, TS), shape-compatible with pyLife's
+    documented pandas form, knee ND is a representation choice.
+    """
+    return _service.export_material(
+        name, E, sigma_f, b, eps_f, c, K_prime=K_prime, n_prime=n_prime,
+        source=source, fmt=fmt, nd_cycles=nd_cycles,
+    )
+
+
+@mcp.tool()
+def import_material(doc: dict) -> dict:
+    """Validate an lcf-strain-life material document and return the constants.
+
+    Refuses unknown schemas, versions, and unit systems with the reason,
+    rather than guessing.
+    """
+    return _service.import_material(doc)
+
+
+@mcp.tool()
 def analyze_staircase(
     stress_levels: list[float],
     failed: list[bool],

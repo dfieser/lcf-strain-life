@@ -10,6 +10,30 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- Tensor critical-plane search (P5 of the adopted build plan). New
+  `lcf.criticalplane` module takes strain and stress tensor component
+  histories over one cycle, scans plane normals over a hemisphere grid,
+  resolves each plane's engineering shear amplitude by the longest-chord
+  rule (meaningful for non-proportional paths), normal strain amplitude,
+  and peak normal stress, and maximizes Fatemi-Socie, Brown-Miller, or
+  SWT through the existing survey functions. Validated against exact
+  closed forms for uniaxial loading with Poisson contraction and pure
+  torsion. Exposed as the `search_critical_plane_tensor` MCP tool. The
+  multiaxial module is no longer survey-only and its registry notes say
+  what the search does and does not cover.
+- Report generation and material interchange (P4 of the adopted build
+  plan). `generate_report` assembles everything stored under a key into a
+  markdown lab report with provenance hashes and the source citation for
+  every method that appears, returned, recallable, and written to
+  `<store>/reports/`. `lcf.interchange` defines the versioned
+  `lcf-strain-life/material@1` JSON document for strain-life constants
+  (there is no de facto standard for this exchange), with
+  `export_material` and `import_material` MCP tools that refuse unknown
+  versions and unit systems, plus a pyLife WoehlerCurve adapter
+  (shape-compatible with pyLife's documented conventions and exactly
+  round-tripping, not integration-tested against an installed pyLife).
+  The py-fatigue and VMAP adapters are deferred until real round-trips
+  can be verified. 13 new tests.
 - Published-case validation of the variable-amplitude engine against the
   Conle SAE smooth-specimen dataset (MSc thesis, University of Waterloo,
   1974, GPL data distributed by the SAE FD and E committee at

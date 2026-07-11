@@ -176,6 +176,28 @@ Reversals to failure from the frequency-modified Coffin-Manson law in the
 coefficient form. Inputs: `plastic_strain_amp`, `eps_f_coeff`, `c`,
 `frequency`, `k`, optional `freq_ref`.
 
+### search_critical_plane_tensor
+Find the critical plane from strain (and stress) tensor component histories
+sampled over one cycle. Scans plane normals over a hemisphere grid, resolves
+each plane's engineering shear amplitude (longest chord, valid for
+non-proportional paths), normal strain amplitude, and maximum normal stress,
+and returns the plane maximizing `fatemi_socie`, `brown_miller`, or `swt`.
+Fatemi-Socie and SWT need the stress history. Amplitudes come from the given
+cycle's path, per-plane rainflow of long histories is not implemented.
+
+### generate_report
+One-call markdown fatigue report of everything stored under a key, with
+provenance hashes and the source citation for every method that appears.
+Also written to `<store>/reports/<key>.md`.
+
+### export_material and import_material
+Exchange strain-life constants. `export_material` emits the versioned
+`lcf-strain-life/material@1` JSON document (MPa, strain fraction, reversals,
+provenance block), or with `fmt="pylife"` the Basquin line in pyLife
+WoehlerCurve conventions (shape-compatible, the knee is a representation
+choice). `import_material` validates a document and refuses unknown
+versions and unit systems with the reason.
+
 ### compute_multiaxial_parameter and search_critical_plane
 Evaluate a critical-plane damage parameter (fatemi_socie, brown_miller, swt,
 von_mises) from known plane quantities, or search supplied per-angle arrays

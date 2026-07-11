@@ -17,14 +17,17 @@ import numpy as np
 
 from . import (
     counting,
+    criticalplane,
     damage,
     estimate,
     fits,
     hightemp,
+    interchange,
     labio,
     life,
     multiaxial,
     notch,
+    report,
     simulate,
     spectrum,
     staircase,
@@ -518,6 +521,92 @@ class LcfService:
             ihash = hash_inputs(mean, std, n, basis)
             self.store.save(name, "basis_value", out, input_hash=ihash)
         return out
+
+    def generate_report(self, key: str) -> dict:
+        """One-call markdown report of everything stored under ``key``.
+
+        Returns the markdown, persists it for recall, and writes
+        ``<store>/reports/<key>.md``.
+        """
+        kinds = ("summary", "series_summary", "strain_life_fit",
+                 "design_curve", "staircase", "basis_value", "va_life")
+        records = {}
+        for kind in kinds:
+            rec = self.store.recall(key, kind)
+            if rec is not None:
+                records[kind] = rec
+        md = report.build_markdown(key, records)
+        path = None
+        if records:
+            ihash = hash_inputs(key, sorted(records),
+                                [records[k].get("input_hash") for k in sorted(records)])
+            self.store.save(key, "report", {"markdown": md}, input_hash=ihash)
+            reports_dir = self.store.root / "reports"
+            reports_dir.mkdir(parents=True, exist_ok=True)
+            out_path = reports_dir / f"{key}.md"
+            out_path.write_text(md, encoding="utf-8")
+            path = str(out_path)
+        return {"key": key, "kinds": sorted(records), "markdown": md,
+                "path": path}
+
+    def export_material(
+        self,
+        name: str,
+        E: float,
+        sigma_f: float,
+        b: float,
+        eps_f: float,
+        c: float,
+        *,
+        K_prime: float | None = None,
+        n_prime: float | None = None,
+        source: str | None = None,
+        fmt: str = "lcf",
+        nd_cycles: float = 1.0e6,
+    ) -> dict:
+        """Export material constants, as the versioned document or pyLife shape."""
+        if fmt == "lcf":
+            return interchange.export_material(
+                name=name, E=E, sigma_f=sigma_f, b=b, eps_f=eps_f, c=c,
+                K_prime=K_prime, n_prime=n_prime, source=source,
+            )
+        if fmt == "pylife":
+            return interchange.to_pylife_woehler(sigma_f, b, nd_cycles=nd_cycles)
+        raise ValueError(f"unknown format {fmt!r}, use 'lcf' or 'pylife'")
+
+    def import_material(self, doc: dict) -> dict:
+        """Validate and flatten a lcf-strain-life material document."""
+        return interchange.import_material(doc)
+
+    def search_critical_plane_tensor(
+        self,
+        parameter: str,
+        *,
+        eps_xx: list[float], eps_yy: list[float], eps_zz: list[float],
+        gamma_xy: list[float], gamma_yz: list[float], gamma_zx: list[float],
+        sig_xx: list[float] | None = None, sig_yy: list[float] | None = None,
+        sig_zz: list[float] | None = None, tau_xy: list[float] | None = None,
+        tau_yz: list[float] | None = None, tau_zx: list[float] | None = None,
+        sigma_y: float | None = None,
+        k: float = 0.3,
+        S: float = 1.0,
+        grid_deg: float = 10.0,
+        name: str | None = None,
+    ) -> dict:
+        """Tensor critical-plane search over a hemisphere grid (ADR-0018)."""
+        out = criticalplane.search_critical_plane_tensor(
+            parameter=parameter, eps_xx=eps_xx, eps_yy=eps_yy, eps_zz=eps_zz,
+            gamma_xy=gamma_xy, gamma_yz=gamma_yz, gamma_zx=gamma_zx,
+            sig_xx=sig_xx, sig_yy=sig_yy, sig_zz=sig_zz,
+            tau_xy=tau_xy, tau_yz=tau_yz, tau_zx=tau_zx,
+            sigma_y=sigma_y, k=k, S=S, grid_deg=grid_deg,
+        )
+        if name:
+            ihash = hash_inputs(parameter, list(eps_xx), list(gamma_xy),
+                                sigma_y, k, S, grid_deg)
+            self.store.save(name, "critical_plane", to_jsonable(out),
+                            input_hash=ihash)
+        return to_jsonable(out)
 
     def flag_outliers(
         self, amplitude: list[float], life_values: list[float], *,

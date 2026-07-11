@@ -160,14 +160,18 @@ CITATIONS: dict[str, dict[str, str]] = {
         "method": "Fatemi-Socie critical-plane parameter",
         "citation": "Fatemi and Socie, Fatigue Fract. Eng. Mater. Struct. "
                     "11 (1988) 149-165",
-        "note": "survey-level, plane quantities must be supplied by the "
-                "caller, there is no tensor plane-search engine yet",
+        "note": "evaluated either from caller-supplied plane quantities or "
+                "through the tensor plane search (lcf.criticalplane), which "
+                "resolves one cycle's path, per-plane rainflow of long "
+                "histories is not implemented",
     },
     "brown_miller": {
         "method": "Brown-Miller critical-plane parameter",
         "citation": "Brown and Miller, Proc. IMechE 187 (1973) 745-755",
-        "note": "survey-level, plane quantities must be supplied by the "
-                "caller, there is no tensor plane-search engine yet",
+        "note": "evaluated either from caller-supplied plane quantities or "
+                "through the tensor plane search (lcf.criticalplane), which "
+                "resolves one cycle's path, per-plane rainflow of long "
+                "histories is not implemented",
     },
     "estimate_medians": {
         "method": "Medians method for strain-life constant estimation",
