@@ -28,6 +28,7 @@ from . import (
     multiaxial,
     notch,
     report,
+    rfl,
     simulate,
     spectrum,
     staircase,
@@ -521,6 +522,23 @@ class LcfService:
         if name:
             ihash = hash_inputs(mean, std, n, basis)
             self.store.save(name, "basis_value", out, input_hash=ihash)
+        return out
+
+    def fit_random_fatigue_limit(
+        self,
+        stress: list[float],
+        life: list[float],
+        censored: list[bool] | None = None,
+        *,
+        name: str | None = None,
+    ) -> dict:
+        """Fit the Pascual-Meeker random fatigue limit model (5-parameter MLE)."""
+        fit = rfl.fit_rfl(stress, life, censored)
+        out = to_jsonable(fit)
+        if name:
+            ihash = hash_inputs(list(stress), list(life),
+                                list(censored) if censored else None)
+            self.store.save(name, "rfl_fit", out, input_hash=ihash)
         return out
 
     def compute_roughness_factor(

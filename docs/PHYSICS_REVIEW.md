@@ -275,6 +275,24 @@ where $m$ is the number of distinct levels. References: Dixon and Mood 1948
 SCR-607), ASTM E739. Validated against the S34MnV staircase example of
 Ekaputra et al. 2020 (Open Engineering 10:394).
 
+The random fatigue limit model treats each specimen's fatigue limit
+$\gamma$ as unit-to-unit random, $V = \log\gamma \sim
+N(\mu_\gamma,\sigma_\gamma)$, with log life conditionally normal,
+
+$$W = \log N \mid V \sim N\big(\beta_0 + \beta_1 \log(s-\gamma),\ \sigma\big),
+\qquad s > \gamma,$$
+
+so the S-N curve flattens naturally near the limit and runouts enter the
+likelihood as censored observations, including the probability that the
+limit sits above the test stress. The five parameters are fit by maximum
+likelihood with the marginal integral over $V$ evaluated by quadrature.
+Validation status, stated plainly: the implementation is verified against
+brute-force integration and by recovering known parameters from data
+simulated at the published laminate-panel design, it is not yet benchmarked
+against the published fit itself because those raw datasets are not openly
+published. Reference: Pascual and Meeker 1999 (Technometrics 41:277),
+Meeker et al. 2026 (Statistical Science 41:1).
+
 Outlier screening operates on the residuals of the log-life regression.
 Runouts are censored observations, not outliers, and are excluded from the
 screen. A single suspect point uses the two-sided Grubbs test, several suspect

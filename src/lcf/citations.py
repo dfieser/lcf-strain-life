@@ -225,6 +225,18 @@ CITATIONS: dict[str, dict[str, str]] = {
                     "reference), standard partition of residual error into "
                     "pure error and lack of fit",
     },
+    "random_fatigue_limit": {
+        "method": "Random fatigue limit model, normal-normal form, "
+                  "maximum likelihood with runouts",
+        "citation": "Pascual and Meeker, Estimating Fatigue Curves With "
+                    "the Random Fatigue-Limit Model, Technometrics 41 "
+                    "(1999) 277-290. Modern context: Meeker et al., "
+                    "Statistical Science 41 (2026) 1-27",
+        "note": "implementation validated by likelihood cross-check and "
+                "simulated parameter recovery, not yet benchmarked against "
+                "the published laminate-panel fit, its raw data are not "
+                "openly published",
+    },
     "fkm_roughness": {
         "method": "FKM surface roughness factor K_R",
         "citation": "FKM guideline, Rechnerischer Festigkeitsnachweis fuer "

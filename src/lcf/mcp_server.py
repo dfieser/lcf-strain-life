@@ -404,6 +404,31 @@ def search_critical_plane_tensor(
 
 
 @mcp.tool()
+def fit_random_fatigue_limit(
+    stress: list[float],
+    life: list[float],
+    censored: list[bool] | None = None,
+    name: str | None = None,
+) -> dict:
+    """Fit the random fatigue limit model to S-N data with runouts.
+
+    Pascual-Meeker normal-normal form: each specimen's fatigue limit varies
+    unit to unit, so the S-N curve flattens naturally near the limit and
+    runouts carry real information. Give stress amplitudes, lives (be
+    consistent, cycles or reversals), and runout flags. Returns the five ML
+    estimates (beta0, beta1, sigma, mu_gamma, sigma_gamma of the log
+    fatigue limit), the log likelihood, and a convergence flag. Needs at
+    least 10 observations and 6 failures. Validation status is in the
+    notes: implementation-validated (likelihood cross-check, simulated
+    parameter recovery), not yet benchmarked against the published
+    laminate-panel fit, its raw data are not openly published.
+    """
+    return _service.fit_random_fatigue_limit(
+        stress, life, censored, name=name
+    )
+
+
+@mcp.tool()
 def compute_roughness_factor(
     Rz: float, Rm: float, material_group: str = "steel"
 ) -> dict:

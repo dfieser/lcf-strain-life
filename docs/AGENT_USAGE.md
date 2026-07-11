@@ -176,6 +176,14 @@ Reversals to failure from the frequency-modified Coffin-Manson law in the
 coefficient form. Inputs: `plastic_strain_amp`, `eps_f_coeff`, `c`,
 `frequency`, `k`, optional `freq_ref`.
 
+### fit_random_fatigue_limit
+Fit the Pascual-Meeker random fatigue limit model to S-N data with runouts:
+each specimen's fatigue limit varies unit to unit, so the curve flattens
+naturally near the limit and runouts carry real information. Inputs: stress
+amplitudes, lives, runout flags. Returns the five ML estimates, the log
+likelihood, and a convergence flag. Needs at least 10 observations and 6
+failures. The notes state the validation status honestly.
+
 ### compute_roughness_factor
 FKM surface roughness factor K_R from Rz (micrometres) and Rm (MPa) for the
 seven FKM material groups. Multiply a stress-based fatigue strength by K_R.

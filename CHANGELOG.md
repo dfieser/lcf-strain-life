@@ -10,6 +10,20 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- Random fatigue limit model, completing the P2 statistics scope. New
+  `lcf.rfl` module fits the Pascual-Meeker normal-normal model by maximum
+  likelihood: each specimen's fatigue limit is unit-to-unit random, the
+  S-N curve flattens naturally near the limit, and runouts enter the
+  likelihood as censored observations including the probability that the
+  limit sits above the test stress. The marginal integral is evaluated by
+  Gauss-Legendre quadrature, vectorized per stress level. Validation
+  status, stated in every result: the likelihood is cross-checked against
+  brute-force adaptive integration, and the fitter recovers known
+  parameters from data simulated at the published laminate-panel test
+  design (five levels, 25 specimens, censoring). It is not yet benchmarked
+  against the published fit itself because those raw datasets (Shimokawa
+  and Hamaguchi 1987, Shen 1994) are not openly published. Exposed as the
+  `fit_random_fatigue_limit` MCP tool, physics record and PDF updated.
 - FKM surface roughness factor. New `lcf.surface` module computes K_R from
   Rz and Rm for the seven FKM material groups, with the formula and
   constants verified against an open engineering reference and its
