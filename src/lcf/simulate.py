@@ -31,12 +31,13 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy import optimize
 
-from . import counting, life
+from . import counting, life, notch
 
 __all__ = [
     "ClosedLoop",
     "HysteresisSimulation",
     "simulate_hysteresis",
+    "simulate_hysteresis_from_nominal",
     "variable_amplitude_life",
 ]
 
@@ -184,8 +185,94 @@ def simulate_hysteresis(
     return HysteresisSimulation(loops=loops, path=path, notes=notes)
 
 
+def simulate_hysteresis_from_nominal(
+    nominal_stress_history,
+    *,
+    Kt: float,
+    E: float,
+    K_prime: float,
+    n_prime: float,
+    close_residue: bool = True,
+) -> HysteresisSimulation:
+    """Simulate the local notch response of a nominal stress history.
+
+    The classic load-input local strain approach: the initial loading
+    follows Neuber's rule on the cyclic curve to the rotated peak nominal
+    stress, every branch follows the modified Neuber rule on the doubled
+    (Masing) curve for its nominal stress range (reusing
+    :func:`lcf.notch.neuber_local` and :func:`lcf.notch.neuber_local_range`),
+    and material memory follows the rainflow closure rule on the nominal
+    ranges, which map monotonically to the local ones. Loops carry the
+    LOCAL strain and stress at the notch root.
+    """
+    _check_positive(E=E, K_prime=K_prime, n_prime=n_prime, Kt=Kt)
+    pts = [v for _, v in counting.reversals(nominal_stress_history)]
+    if len(pts) < 2:
+        raise ValueError(
+            f"need at least 2 turning points to simulate, got {len(pts)}. "
+            "Provide a nominal stress history with at least one reversal."
+        )
+    if close_residue:
+        kmax = int(np.argmax(pts))
+        rotated = pts[kmax:] + pts[:kmax] + [pts[kmax]]
+        seq = [v for _, v in counting._reduce_points(list(enumerate(rotated)))]
+    else:
+        seq = pts
+
+    def initial(s_nom: float) -> tuple[float, float]:
+        if s_nom == 0.0:
+            return 0.0, 0.0
+        sig, eps = notch.neuber_local(abs(s_nom), Kt, E, K_prime, n_prime)
+        sign = float(np.sign(s_nom))
+        return sign * eps, sign * sig
+
+    loops: list[ClosedLoop] = []
+    notes: list[str] = []
+    e0, s0 = initial(seq[0])
+    stack: list[tuple[float, float, float]] = [(seq[0], e0, s0)]  # (S, eps, sig)
+    path: list[tuple[float, float]] = [(e0, s0)]
+
+    for s_new in seq[1:]:
+        while len(stack) >= 2:
+            S1, e1, sg1 = stack[-1]
+            S0, e0_, sg0 = stack[-2]
+            prior = abs(S1 - S0)
+            if abs(s_new - S1) < prior - _CLOSE_TOL * max(1.0, prior):
+                break
+            if len(stack) == 2 and not close_residue:
+                loops.append(_loop(e0_, sg0, e1, sg1, 0.5))
+                stack.pop(-2)
+            else:
+                loops.append(_loop(e0_, sg0, e1, sg1, 1.0))
+                stack.pop()
+                stack.pop()
+        if stack:
+            S_o, e_o, s_o = stack[-1]
+            dsig, deps = notch.neuber_local_range(
+                abs(s_new - S_o), Kt, E, K_prime, n_prime
+            )
+            sign = float(np.sign(s_new - S_o))
+            state = (s_new, e_o + sign * deps, s_o + sign * dsig)
+        else:
+            e_i, s_i = initial(s_new)
+            state = (s_new, e_i, s_i)
+        stack.append(state)
+        path.append((state[1], state[2]))
+
+    if not close_residue and len(stack) > 1:
+        for k in range(len(stack) - 1):
+            _, e_a, s_a = stack[k]
+            _, e_b, s_b = stack[k + 1]
+            loops.append(_loop(e_a, s_a, e_b, s_b, 0.5))
+        notes.append(
+            f"{len(stack) - 1} unclosed reversal(s) counted as half cycles. "
+            "Use close_residue=True to treat the history as a repeating block."
+        )
+    return HysteresisSimulation(loops=loops, path=path, notes=notes)
+
+
 def variable_amplitude_life(
-    strain_history,
+    strain_history=None,
     *,
     E: float,
     K_prime: float,
@@ -195,14 +282,19 @@ def variable_amplitude_life(
     eps_f: float,
     c: float,
     mean_stress_model: str = "swt",
+    nominal_stress_history=None,
+    Kt: float | None = None,
 ) -> dict:
-    """Blocks to failure for a repeating strain history block.
+    """Blocks to failure for a repeating history block.
 
-    Simulates the stress response with material memory, aggregates the
-    closed loops, computes each loop's life with the chosen mean-stress
-    model (``swt`` from the loop's maximum stress, ``morrow`` from its mean
-    stress, ``none`` for the uncorrected curve), and Miner-sums the damage.
-    ``blocks_to_failure`` is None when no loop is damaging.
+    Give either ``strain_history`` (local strain, smooth specimen) or
+    ``nominal_stress_history`` with ``Kt`` (load input, the local response
+    comes from Neuber's rule at every branch). Simulates the response with
+    material memory, aggregates the closed loops, computes each loop's life
+    with the chosen mean-stress model (``swt`` from the loop's maximum
+    stress, ``morrow`` from its mean stress, ``none`` for the uncorrected
+    curve), and Miner-sums the damage. ``blocks_to_failure`` is None when
+    no loop is damaging.
     """
     model = str(mean_stress_model).strip().lower()
     if model not in ("swt", "morrow", "none"):
@@ -210,9 +302,23 @@ def variable_amplitude_life(
             f"unknown mean_stress_model {mean_stress_model!r}, "
             "use 'swt', 'morrow', or 'none'"
         )
-    sim = simulate_hysteresis(
-        strain_history, E=E, K_prime=K_prime, n_prime=n_prime, close_residue=True
-    )
+    if (strain_history is None) == (nominal_stress_history is None):
+        raise ValueError(
+            "give exactly one of strain_history or nominal_stress_history "
+            "(the latter with Kt)"
+        )
+    if nominal_stress_history is not None:
+        if Kt is None:
+            raise ValueError("nominal_stress_history requires Kt")
+        sim = simulate_hysteresis_from_nominal(
+            nominal_stress_history, Kt=Kt, E=E, K_prime=K_prime,
+            n_prime=n_prime, close_residue=True,
+        )
+    else:
+        sim = simulate_hysteresis(
+            strain_history, E=E, K_prime=K_prime, n_prime=n_prime,
+            close_residue=True,
+        )
 
     grouped: dict[tuple, dict] = {}
     for lp in sim.loops:

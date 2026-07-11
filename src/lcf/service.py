@@ -432,7 +432,7 @@ class LcfService:
 
     def simulate_variable_amplitude(
         self,
-        strain_history: list[float],
+        strain_history: list[float] | None = None,
         *,
         E: float,
         K_prime: float,
@@ -442,31 +442,38 @@ class LcfService:
         eps_f: float,
         c: float,
         mean_stress_model: str = "swt",
+        nominal_stress_history: list[float] | None = None,
+        Kt: float | None = None,
         name: str | None = None,
         max_loops_returned: int = 50,
     ) -> dict:
         """Variable-amplitude strain-life for a repeating history block.
 
-        Experimental: internally consistent with the constant-amplitude
-        solvers and rainflow counting, not yet validated against a published
-        variable-amplitude dataset (ADR-0016).
+        Strain input (smooth specimen) or nominal stress input with Kt
+        (notched member, Neuber per branch). Validation evidence in the
+        notes (ADR-0016).
         """
         out = simulate.variable_amplitude_life(
             strain_history, E=E, K_prime=K_prime, n_prime=n_prime,
             sigma_f=sigma_f, b=b, eps_f=eps_f, c=c,
             mean_stress_model=mean_stress_model,
+            nominal_stress_history=nominal_stress_history, Kt=Kt,
         )
         out["notes"].append(
-            "validation status: compared against the Conle SAE "
-            "smooth-specimen dataset (see examples/validate_sae_conle.py), "
-            "transmission and bracket histories predict within 2x of "
-            "experiment, suspension about 3x non-conservative, all leaning "
-            "non-conservative, consistent with documented linear-damage "
-            "scatter. Verify against your own test data."
+            "validation status: strain input compared against the Conle SAE "
+            "smooth-specimen dataset (examples/validate_sae_conle.py), two "
+            "of three histories within 2x, all leaning non-conservative. "
+            "Load input compared against the SAE keyhole benchmark "
+            "(examples/validate_sae_keyhole.py): constant amplitude within "
+            "4 percent of the benchmark's reference calculation, the SM2 "
+            "variable-amplitude case within 2x of experiment. Verify "
+            "against your own test data."
         )
         if name:
             ihash = hash_inputs(
-                list(strain_history), E, K_prime, n_prime, sigma_f, b, eps_f,
+                list(strain_history) if strain_history else None,
+                list(nominal_stress_history) if nominal_stress_history else None,
+                Kt, E, K_prime, n_prime, sigma_f, b, eps_f,
                 c, mean_stress_model,
             )
             self.store.save(name, "va_life", to_jsonable(out), input_hash=ihash)

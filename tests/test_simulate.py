@@ -218,6 +218,73 @@ def test_service_simulate_variable_amplitude(tmp_path):
 
 
 # --------------------------------------------------------------------------- #
+# load-input (Neuber) mode
+# --------------------------------------------------------------------------- #
+# Committee constants from the archived eFatigue SAE keyhole benchmark
+# (web.archive.org snapshot 2025-12-15 of efatigue.com/benchmarks/SAE_keyhole,
+# documenting SAE AE-6, Wetzel ed., 1977): S(MPa) = 11.2 P(kN), Kt = 3.
+RQC100 = dict(E=203000.0, sigma_f=1160.0, b=-0.075, eps_f=1.06, c=-0.75,
+              K_prime=1131.6, n_prime=0.1)
+
+
+def test_nominal_ca_matches_notch_module():
+    from lcf import notch
+
+    S = 150.0
+    sim = simulate.simulate_hysteresis_from_nominal(
+        [S, -S] * 3, Kt=3.0, E=E, K_prime=K, n_prime=N_PRIME
+    )
+    sig, eps = notch.neuber_local(S, 3.0, E, K, N_PRIME)
+    for lp in sim.loops:
+        assert lp.strain_amp == pytest.approx(eps, rel=1e-6)
+        assert lp.stress_max == pytest.approx(sig, rel=1e-6)
+        assert lp.stress_mean == pytest.approx(0.0, abs=1e-6)
+
+
+def test_nominal_memory_interruption_invisible():
+    a = simulate.simulate_hysteresis_from_nominal(
+        [200.0, -40.0, 120.0, -200.0], Kt=3.0, E=E, K_prime=K,
+        n_prime=N_PRIME, close_residue=False,
+    )
+    b = simulate.simulate_hysteresis_from_nominal(
+        [200.0, -200.0], Kt=3.0, E=E, K_prime=K, n_prime=N_PRIME,
+        close_residue=False,
+    )
+    assert a.path[-1][1] == pytest.approx(b.path[-1][1], rel=1e-9)
+
+
+def test_va_life_input_refusals():
+    kw = dict(E=E, K_prime=K, n_prime=N_PRIME, sigma_f=SIGMA_F, b=B,
+              eps_f=EPS_F, c=C)
+    with pytest.raises(ValueError, match="exactly one"):
+        simulate.variable_amplitude_life([0.01, -0.01],
+                                         nominal_stress_history=[1.0, -1.0],
+                                         Kt=3.0, **kw)
+    with pytest.raises(ValueError, match="exactly one"):
+        simulate.variable_amplitude_life(**kw)
+    with pytest.raises(ValueError, match="Kt"):
+        simulate.variable_amplitude_life(
+            nominal_stress_history=[100.0, -100.0], **kw)
+
+
+def test_keyhole_cr1_constant_amplitude_golden():
+    # Specimen CR1, RQC-100 keyhole at +-13.3 kN (nominal +-149 MPa, Kt=3).
+    # The archived benchmark's own strain-life reference computation gives
+    # 211,000 cycles, the experiment reached 605,000 cycles to a 2.5 mm
+    # crack (a definition that includes growth these methods do not model,
+    # so initiation predictions run conservative).
+    S = 11.2 * 13.3
+    out = simulate.variable_amplitude_life(
+        nominal_stress_history=[S, -S], Kt=3.0,
+        **{k: RQC100[k] for k in
+           ("E", "K_prime", "n_prime", "sigma_f", "b", "eps_f", "c")},
+    )
+    cycles = out["blocks_to_failure"]  # one loop per block
+    assert cycles == pytest.approx(211000.0, rel=0.10)
+    assert cycles < 605000.0  # conservative against the crack-based life
+
+
+# --------------------------------------------------------------------------- #
 # published-case validation, gated on locally downloaded FD&E data
 # --------------------------------------------------------------------------- #
 import os
@@ -258,3 +325,43 @@ def test_conle_sae_dataset_prediction_band(name, exp, lo, hi):
     geo_mean = math.exp(sum(math.log(v) for v in exp) / len(exp))
     ratio = out["blocks_to_failure"] / geo_mean
     assert lo <= ratio <= hi
+
+
+@pytest.mark.skipif(
+    not FDE_DIR,
+    reason="set LCF_FDE_DATA_DIR to run the SAE keyhole SM2 validation",
+)
+def test_keyhole_sm2_variable_amplitude_band():
+    # Specimen SM2: Man-Ten keyhole, suspension history, peak 26.7 kN,
+    # nominal scale 299 MPa (archived eFatigue benchmark). Experimental
+    # lives 1750, 2240, 1410 blocks (geo-mean 1768), the benchmark's own
+    # computation 2892 blocks. Bands measured 2026-07-11: SWT 3233 (1.83x
+    # experiment, within the 2x criterion), Morrow 1504 (0.85x).
+    import math
+    from pathlib import Path
+
+    manten = dict(E=203000.0, sigma_f=915.0, b=-0.095, eps_f=0.26, c=-0.47,
+                  K_prime=1200.6, n_prime=0.2)
+    vals = []
+    for line in (Path(FDE_DIR) / "suspension.txt").read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#"):
+            vals.append(float(line.split(":")[0]))
+    scale = 299.0 / max(abs(v) for v in vals)
+    nominal = [v * scale for v in vals]
+    geo_mean = math.exp(sum(math.log(v) for v in (1750, 2240, 1410)) / 3)
+
+    swt = simulate.variable_amplitude_life(
+        nominal_stress_history=nominal, Kt=3.0,
+        **{k: manten[k] for k in
+           ("E", "K_prime", "n_prime", "sigma_f", "b", "eps_f", "c")},
+    )["blocks_to_failure"]
+    assert 0.5 <= swt / geo_mean <= 2.0
+    assert swt == pytest.approx(2892.0, rel=0.20)  # vs the benchmark's own calc
+
+    morrow = simulate.variable_amplitude_life(
+        nominal_stress_history=nominal, Kt=3.0, mean_stress_model="morrow",
+        **{k: manten[k] for k in
+           ("E", "K_prime", "n_prime", "sigma_f", "b", "eps_f", "c")},
+    )["blocks_to_failure"]
+    assert 0.5 <= morrow / geo_mean <= 2.0

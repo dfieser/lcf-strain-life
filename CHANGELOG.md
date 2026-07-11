@@ -10,6 +10,22 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- Load-input (notched member) mode for the variable-amplitude engine,
+  completing the P3 done-criterion. `simulate_variable_amplitude` and the
+  library now accept a nominal stress history with Kt: the initial
+  loading follows Neuber's rule on the cyclic curve and every branch the
+  modified Neuber rule on the doubled curve, reusing the notch module's
+  solvers, so loops carry the local notch-root strain and stress.
+  Validated against the SAE keyhole benchmark (AE-6, 1977, inputs and
+  results recovered from the Internet Archive copy of the offline
+  eFatigue benchmark page): the constant-amplitude RQC-100 case (CR1)
+  predicts within 4 percent of the benchmark's own strain-life
+  calculation and conservatively against the crack-based experimental
+  life, and the Man-Ten suspension variable-amplitude case (SM2)
+  predicts within a factor of two of the three experimental lives, with
+  Morrow at 0.85x. Reproducible with `examples/validate_sae_keyhole.py`,
+  golden-tested (CR1 inline, SM2 gated on `LCF_FDE_DATA_DIR`), physics
+  record updated and PDF regenerated.
 - Random fatigue limit model, completing the P2 statistics scope. New
   `lcf.rfl` module fits the Pascual-Meeker normal-normal model by maximum
   likelihood: each specimen's fatigue limit is unit-to-unit random, the
