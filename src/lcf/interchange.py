@@ -24,6 +24,7 @@ __all__ = [
     "import_material",
     "to_pylife_woehler",
     "from_pylife_woehler",
+    "to_py_fatigue_sn",
 ]
 
 SCHEMA = "lcf-strain-life/material"
@@ -147,6 +148,31 @@ def to_pylife_woehler(
             "Basquin line in pyLife WoehlerCurve form, knee ND is a "
             "representation choice, no endurance limit implied. "
             "Shape-compatible, not integration-tested against pyLife."
+        ),
+    }
+
+
+def to_py_fatigue_sn(sigma_f: float, b: float) -> dict:
+    """Express the Basquin line in py-fatigue SNCurve conventions.
+
+    py-fatigue defines ``log10(N) = intercept - slope * log10(S)``. From
+    Basquin in reversals, ``slope = -1/b`` and
+    ``intercept = log10(0.5) + slope * log10(sigma_f)`` (the 0.5 converts
+    reversals to cycles). No endurance limit is encoded.
+    """
+    import math
+
+    if not b < 0:
+        raise ValueError(f"b must be negative, got {b}")
+    slope = -1.0 / b
+    intercept = math.log10(0.5) + slope * math.log10(sigma_f)
+    return {
+        "slope": slope,
+        "intercept": intercept,
+        "note": (
+            "Basquin line in py-fatigue SNCurve form "
+            "(log10 N = intercept - slope*log10 S), no endurance limit "
+            "encoded."
         ),
     }
 

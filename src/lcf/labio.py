@@ -34,6 +34,7 @@ __all__ = [
     "ColumnResolution",
     "SeriesIngest",
     "preview_lab_file",
+    "read_fde_history",
     "read_lab_file",
     "read_series",
 ]
@@ -372,6 +373,39 @@ def preview_lab_file(
     out["file"] = str(path)
     out["n_rows"] = int(len(df))
     return out
+
+
+def read_fde_history(source: str | Path) -> list[float]:
+    """Read an SAE FD and E committee load-history file into a value list.
+
+    The format, as published at fde.uwaterloo.ca: ``#`` comment lines
+    (including the GPL license header), one value per line, with occasional
+    progress markers of the form ``-112 : 1500`` whose part before the colon
+    is the value. ``source`` is a file path, or the file's text content when
+    it contains newlines (so a runtime download can be passed directly).
+    The license header of the file itself is not altered by reading it,
+    redistribute the files under their own terms.
+    """
+    text = str(source)
+    if "\n" not in text:
+        text = Path(source).read_text(encoding="utf-8", errors="replace")
+    values: list[float] = []
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        token = line.split(":")[0].strip()
+        try:
+            values.append(float(token))
+        except ValueError:
+            raise ValueError(
+                f"line {lineno} is not a value or marker: {line!r}. "
+                "Expected the FD&E format: # comments, one value per line, "
+                "optional 'value : index' markers."
+            )
+    if not values:
+        raise ValueError("no data values found, is this an FD&E history file?")
+    return values
 
 
 def read_series(

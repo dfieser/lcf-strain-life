@@ -404,6 +404,24 @@ def search_critical_plane_tensor(
 
 
 @mcp.tool()
+def compute_roughness_factor(
+    Rz: float, Rm: float, material_group: str = "steel"
+) -> dict:
+    """FKM surface roughness factor K_R.
+
+    ``Rz`` is the surface roughness in micrometres (DIN 4768), ``Rm`` the
+    tensile strength in MPa, ``material_group`` one of steel, cast_steel,
+    nodular_cast_iron, malleable_cast_iron, grey_cast_iron,
+    wrought_aluminium, cast_aluminium. Multiply a stress-based fatigue
+    strength by K_R. Capped at 1.0 for polished surfaces. Strain-life
+    constants are not corrected directly by this factor.
+    """
+    return _service.compute_roughness_factor(
+        Rz, Rm, material_group=material_group
+    )
+
+
+@mcp.tool()
 def generate_report(key: str) -> dict:
     """One-call markdown fatigue report of everything stored under a key.
 
@@ -434,8 +452,10 @@ def export_material(
     ``fmt='lcf'`` gives the versioned lcf-strain-life/material@1 JSON
     document (MPa, strain fraction, reversals, with provenance).
     ``fmt='pylife'`` expresses the Basquin line in pyLife WoehlerCurve
-    conventions (k_1, ND, SD, TN, TS), shape-compatible with pyLife's
-    documented pandas form, knee ND is a representation choice.
+    conventions (k_1, ND, SD, TN, TS) and ``fmt='py_fatigue'`` in py-fatigue
+    SNCurve conventions (slope, intercept). Both adapters are round-trip
+    verified against the installed libraries in the development test suite
+    (pyLife 2.3.1, py-fatigue 2.1.1), the knee ND is a representation choice.
     """
     return _service.export_material(
         name, E, sigma_f, b, eps_f, c, K_prime=K_prime, n_prime=n_prime,

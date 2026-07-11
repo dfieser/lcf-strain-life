@@ -32,6 +32,7 @@ from . import (
     spectrum,
     staircase,
     stats,
+    surface,
 )
 from .ingest import from_timeseries, read_csv
 from .meanstress import equivalent_fully_reversed_stress, walker_gamma_steel
@@ -522,6 +523,14 @@ class LcfService:
             self.store.save(name, "basis_value", out, input_hash=ihash)
         return out
 
+    def compute_roughness_factor(
+        self, Rz: float, Rm: float, *, material_group: str = "steel"
+    ) -> dict:
+        """FKM roughness factor K_R for a surface and tensile strength."""
+        return to_jsonable(
+            surface.fkm_roughness_factor(Rz, Rm, material_group=material_group)
+        )
+
     def generate_report(self, key: str) -> dict:
         """One-call markdown report of everything stored under ``key``.
 
@@ -572,7 +581,11 @@ class LcfService:
             )
         if fmt == "pylife":
             return interchange.to_pylife_woehler(sigma_f, b, nd_cycles=nd_cycles)
-        raise ValueError(f"unknown format {fmt!r}, use 'lcf' or 'pylife'")
+        if fmt == "py_fatigue":
+            return interchange.to_py_fatigue_sn(sigma_f, b)
+        raise ValueError(
+            f"unknown format {fmt!r}, use 'lcf', 'pylife', or 'py_fatigue'"
+        )
 
     def import_material(self, doc: dict) -> dict:
         """Validate and flatten a lcf-strain-life material document."""

@@ -225,6 +225,17 @@ CITATIONS: dict[str, dict[str, str]] = {
                     "reference), standard partition of residual error into "
                     "pure error and lack of fit",
     },
+    "fkm_roughness": {
+        "method": "FKM surface roughness factor K_R",
+        "citation": "FKM guideline, Rechnerischer Festigkeitsnachweis fuer "
+                    "Maschinenbauteile (Analytical Strength Assessment). "
+                    "Formula and material-group constants as tabulated in "
+                    "open engineering references (quadco.engineering, "
+                    "accessed 2026-07-11), validated against the published "
+                    "worked example K_R=0.79 for steel, Rm 600 MPa, Rz 100",
+        "note": "applies to stress-based fatigue strengths, the technological "
+                "size factor is not implemented",
+    },
     "va_local_strain_simulation": {
         "method": "Variable-amplitude local strain simulation with material "
                   "memory (Masing branches, rainflow-consistent closure)",

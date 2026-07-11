@@ -197,6 +197,34 @@ def test_explicit_column_map_override(tmp_path, synthetic_cyclic):
 
 
 # --------------------------------------------------------------------------- #
+# FD&E history format
+# --------------------------------------------------------------------------- #
+FDE_SAMPLE = """#This is a test history
+#  Copyright (C) 1999  Fatigue Design & Evaluation Comm. of SAE
+#BEGIN DATA
+ -999
+  -41
+ -112   :   1500
+  333
+"""
+
+
+def test_read_fde_history_from_text_and_file(tmp_path):
+    vals = labio.read_fde_history(FDE_SAMPLE)
+    assert vals == [-999.0, -41.0, -112.0, 333.0]
+    p = tmp_path / "h.txt"
+    p.write_text(FDE_SAMPLE, encoding="utf-8")
+    assert labio.read_fde_history(p) == vals
+
+
+def test_read_fde_history_refuses_garbage():
+    with pytest.raises(ValueError, match="line 2"):
+        labio.read_fde_history("#ok\nnot a number\n")
+    with pytest.raises(ValueError, match="no data"):
+        labio.read_fde_history("#only comments\n#here\n")
+
+
+# --------------------------------------------------------------------------- #
 # preview
 # --------------------------------------------------------------------------- #
 def test_preview_reports_resolution(tmp_path, synthetic_cyclic):

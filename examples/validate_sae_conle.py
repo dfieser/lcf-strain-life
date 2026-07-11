@@ -31,7 +31,7 @@ from __future__ import annotations
 import math
 import urllib.request
 
-from lcf import simulate
+from lcf import labio, simulate
 
 KSI = 6.894757  # MPa per ksi
 
@@ -58,12 +58,7 @@ BASE = "https://fde.uwaterloo.ca/Fde/Loads/Keyhole/{}.txt"
 def fetch_history(name: str) -> list[float]:
     with urllib.request.urlopen(BASE.format(name), timeout=30) as fh:
         text = fh.read().decode("utf-8", errors="replace")
-    values = []
-    for line in text.splitlines():
-        line = line.strip()
-        if line and not line.startswith("#"):
-            values.append(float(line.split(":")[0]))
-    return values
+    return labio.read_fde_history(text)
 
 
 def main() -> None:

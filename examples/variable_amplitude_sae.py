@@ -21,7 +21,7 @@ from __future__ import annotations
 import sys
 import urllib.request
 
-from lcf import simulate
+from lcf import labio, simulate
 
 BASE = "https://fde.uwaterloo.ca/Fde/Loads/Keyhole/{}.txt"
 
@@ -44,14 +44,7 @@ def fetch_history(name: str) -> list[float]:
     print(f"downloading {url}")
     with urllib.request.urlopen(url, timeout=30) as fh:
         text = fh.read().decode("utf-8", errors="replace")
-    values = []
-    for line in text.splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        # occasional progress markers look like "-112 : 1500"
-        values.append(float(line.split(":")[0]))
-    return values
+    return labio.read_fde_history(text)
 
 
 def main() -> None:

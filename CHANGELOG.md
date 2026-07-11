@@ -10,6 +10,25 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- FKM surface roughness factor. New `lcf.surface` module computes K_R from
+  Rz and Rm for the seven FKM material groups, with the formula and
+  constants verified against an open engineering reference and its
+  published worked example (steel, Rm 600 MPa, Rz 100, K_R = 0.79) as a
+  golden test. Capped at 1.0 for polished surfaces, applies to
+  stress-based fatigue strengths, and the result says that strain-life
+  constants are not corrected directly. Exposed as the
+  `compute_roughness_factor` MCP tool. The FKM technological size factor
+  stays deferred, its constants were not available from a verifiable open
+  source.
+- The pyLife and py-fatigue adapters are now round-trip verified against
+  the installed libraries (pyLife 2.3.1, py-fatigue 2.1.1, development
+  test dependencies only): real WoehlerCurve and SNCurve objects built
+  from our exports reproduce the Basquin inversion to nine digits.
+  `export_material` gains `fmt="py_fatigue"` (slope/intercept
+  conventions). New `labio.read_fde_history` parses the SAE FD and E
+  committee history format (comments, one value per line, progress
+  markers), shared by the examples and tested.
+
 - Tensor critical-plane search (P5 of the adopted build plan). New
   `lcf.criticalplane` module takes strain and stress tensor component
   histories over one cycle, scans plane normals over a hemisphere grid,
