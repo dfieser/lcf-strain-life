@@ -18,6 +18,7 @@ import numpy as np
 from . import (
     counting,
     criticalplane,
+    cyclic_evolution,
     damage,
     estimate,
     fits,
@@ -547,6 +548,39 @@ class LcfService:
                                 list(censored) if censored else None)
             self.store.save(name, "rfl_fit", out, input_hash=ihash)
         return out
+
+    def fit_mean_stress_relaxation(
+        self, cycles: list[float], mean_stresses: list[float],
+        *, name: str | None = None,
+    ) -> dict:
+        """Fit the cycle-dependent mean stress relaxation power law."""
+        out = cyclic_evolution.fit_relaxation_exponent(cycles, mean_stresses)
+        if name:
+            self.store.save(name, "relaxation_fit", out,
+                            input_hash=hash_inputs(list(cycles), list(mean_stresses)))
+        return to_jsonable(out)
+
+    def fit_ratcheting_law(
+        self, cycles: list[float], ratchet_strains: list[float],
+        *, name: str | None = None,
+    ) -> dict:
+        """Fit the ratcheting strain accumulation power law."""
+        out = cyclic_evolution.fit_ratcheting(cycles, ratchet_strains)
+        if name:
+            self.store.save(name, "ratcheting_fit", out,
+                            input_hash=hash_inputs(list(cycles), list(ratchet_strains)))
+        return to_jsonable(out)
+
+    def ratcheting_penalized_life(
+        self, plastic_strain_amp: float, eps_r: float, *,
+        eps_f: float, c: float,
+    ) -> dict:
+        """Coffin-Manson life with the ratcheting ductility-exhaustion penalty."""
+        return to_jsonable(
+            cyclic_evolution.ratcheting_penalized_life(
+                plastic_strain_amp, eps_r, eps_f=eps_f, c=c
+            )
+        )
 
     def compute_roughness_factor(
         self, Rz: float, Rm: float, *, material_group: str = "steel"

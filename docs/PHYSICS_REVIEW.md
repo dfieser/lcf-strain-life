@@ -93,11 +93,20 @@ Under strain control the mean stress relaxes toward zero as plastic strain
 accumulates, and Morrow suits balanced or compressive means while SWT suits
 tensile means. Under stress control the specimen ratchets, accumulating
 strain in the direction of the mean stress, and the Walker fitted exponent
-captures the stress ratio sensitivity. Cycle-dependent relaxation and
-ratcheting evolution models are not implemented. The corrections below apply
-to the stabilized cycle. References: Dowling 4th ed. ch. 9, Morrow and
-Sinclair 1958 (ASTM STP 237), Jhansale and Topper 1973 (ASTM STP 519), Xia,
-Kujawski and Ellyin 1996 (Int. J. Fatigue 18:335).
+captures the stress ratio sensitivity. The corrections in this section apply
+to the stabilized cycle. References: Dowling 4th ed. ch. 9.
+
+The cycle-dependent evolution is modeled separately. Mean stress relaxation
+under strain control follows the power law $\sigma_m(N) = \sigma_{m,1}
+N^{b_r}$ with $b_r \le 0$. Ratcheting under stress control accumulates strain
+as $\varepsilon_r(N) = C N^{p}$, and its life interaction is a
+ductility-exhaustion penalty on the plastic strain-life line,
+$\Delta\varepsilon_p/2 = (\varepsilon'_f - \varepsilon_r)(2N_f)^{c}$. These
+forms were reconstructed from collaborator notes and match the standard
+published forms, pending the collaborator's confirmation of the intended
+formulation. References: Morrow and Sinclair 1958 (ASTM STP 237), Jhansale
+and Topper 1973 (ASTM STP 519), Xia, Kujawski and Ellyin 1996 (Int. J.
+Fatigue 18:335), Kapoor 1994 (Fatigue Fract. Eng. Mater. Struct. 17:201).
 
 Morrow, elastic term shifted by the mean stress:
 

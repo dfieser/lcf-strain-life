@@ -10,6 +10,20 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- Cycle-dependent mean stress relaxation and ratcheting, a new
+  `lcf.cyclic_evolution` module. Mean stress relaxation under strain control
+  (sigma_m(N) = sigma_m1 N^b_r) and ratcheting strain accumulation under
+  stress control (eps_r = C N^p) with power-law fitters, plus the ratcheting
+  ductility-exhaustion life penalty on the Coffin-Manson plastic line. Three
+  new MCP tools: `fit_mean_stress_relaxation`, `fit_ratcheting_law`,
+  `ratcheting_penalized_life`. These forms were reconstructed from the
+  collaborator notes of 2026-07-08 (whose inline equations were lost in
+  transfer) and match the standard published forms of Jhansale-Topper,
+  Morrow-Sinclair, Xia-Kujawski-Ellyin, and Kapoor, cited in the registry.
+  Every result carries a note that the formulation is reconstructed and
+  pending the collaborator's confirmation. Validation is internal
+  consistency and fitter-recovery of known constants. The physics record
+  and PDF now document these forms.
 - FKM technological size factor K_d,m in `lcf.surface`, exposed as
   `compute_size_factor`. Reduces the tensile strength (and stress-based
   fatigue strength) for components thicker than the reference specimen, by

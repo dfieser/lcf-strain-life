@@ -437,6 +437,51 @@ def fit_random_fatigue_limit(
 
 
 @mcp.tool()
+def fit_mean_stress_relaxation(
+    cycles: list[float], mean_stresses: list[float], name: str | None = None
+) -> dict:
+    """Fit the cycle-dependent mean stress relaxation power law.
+
+    Strain-controlled asymmetric cycling relaxes the mean stress toward zero
+    as sigma_m(N) = sigma_m1 * N**b_r. Give measured (cycle, mean stress)
+    pairs, get sigma_m1 and the relaxation exponent b_r (<= 0). Reconstructed
+    from collaborator notes matching the standard published form, the notes
+    say so.
+    """
+    return _service.fit_mean_stress_relaxation(cycles, mean_stresses, name=name)
+
+
+@mcp.tool()
+def fit_ratcheting_law(
+    cycles: list[float], ratchet_strains: list[float], name: str | None = None
+) -> dict:
+    """Fit the ratcheting strain accumulation power law eps_r = C * N**p.
+
+    Stress-controlled asymmetric cycling accumulates strain in the mean
+    direction. Give measured (cycle, accumulated strain) pairs, get C and the
+    ratcheting exponent p. Reconstructed from collaborator notes matching the
+    standard published form.
+    """
+    return _service.fit_ratcheting_law(cycles, ratchet_strains, name=name)
+
+
+@mcp.tool()
+def ratcheting_penalized_life(
+    plastic_strain_amp: float, eps_r: float, eps_f: float, c: float
+) -> dict:
+    """Coffin-Manson life with the ratcheting ductility-exhaustion penalty.
+
+    Solves plastic_strain_amp = (eps_f - eps_r) * (2Nf)**c, the plastic
+    strain-life line with the fatigue ductility reduced by the accumulated
+    ratcheting strain eps_r. Returns reversals and cycles. Reconstructed from
+    collaborator notes, see the notes for the validation status.
+    """
+    return _service.ratcheting_penalized_life(
+        plastic_strain_amp, eps_r, eps_f=eps_f, c=c
+    )
+
+
+@mcp.tool()
 def compute_roughness_factor(
     Rz: float, Rm: float, material_group: str = "steel"
 ) -> dict:

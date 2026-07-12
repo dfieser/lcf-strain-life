@@ -237,6 +237,26 @@ CITATIONS: dict[str, dict[str, str]] = {
                 "the published laminate-panel fit, its raw data are not "
                 "openly published",
     },
+    "mean_stress_relaxation": {
+        "method": "Cycle-dependent mean stress relaxation power law "
+                  "(strain-controlled asymmetric cycling)",
+        "citation": "Jhansale and Topper, ASTM STP 519 (1973) 246-270, and "
+                    "Morrow and Sinclair, ASTM STP 237 (1958) 83-109",
+        "note": "reconstructed from collaborator notes (2026-07-08) matching "
+                "the standard published power law, pending confirmation the "
+                "formulation is the intended one",
+    },
+    "ratcheting": {
+        "method": "Ratcheting strain accumulation power law and its "
+                  "ductility-exhaustion life penalty (stress-controlled "
+                  "asymmetric cycling)",
+        "citation": "Xia, Kujawski and Ellyin, Int. J. Fatigue 18 (1996) "
+                    "335-341, and Kapoor, Fatigue Fract. Eng. Mater. Struct. "
+                    "17 (1994) 201-219",
+        "note": "reconstructed from collaborator notes (2026-07-08) matching "
+                "the standard published forms, pending confirmation the "
+                "formulation is the intended one",
+    },
     "fkm_roughness": {
         "method": "FKM surface roughness factor K_R",
         "citation": "FKM guideline, Rechnerischer Festigkeitsnachweis fuer "

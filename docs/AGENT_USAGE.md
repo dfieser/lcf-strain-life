@@ -184,6 +184,15 @@ amplitudes, lives, runout flags. Returns the five ML estimates, the log
 likelihood, and a convergence flag. Needs at least 10 observations and 6
 failures. The notes state the validation status honestly.
 
+### fit_mean_stress_relaxation, fit_ratcheting_law, ratcheting_penalized_life
+Cycle-dependent evolution under asymmetric loading. `fit_mean_stress_relaxation`
+fits sigma_m(N) = sigma_m1 N^b_r to strain-controlled relaxation data.
+`fit_ratcheting_law` fits eps_r = C N^p to stress-controlled ratcheting
+strain. `ratcheting_penalized_life` solves the Coffin-Manson plastic line
+with the fatigue ductility reduced by the accumulated ratcheting strain.
+Reconstructed from collaborator notes matching the standard published forms,
+every result carries that provenance note.
+
 ### compute_roughness_factor
 FKM surface roughness factor K_R from Rz (micrometres) and Rm (MPa) for the
 seven FKM material groups. Multiply a stress-based fatigue strength by K_R.
