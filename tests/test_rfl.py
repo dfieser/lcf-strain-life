@@ -154,7 +154,7 @@ def test_notes_state_validation_status():
         LEVELS, 25, censor_time=CENSOR, rng=7, **TRUTH
     )
     fit = rfl.fit_rfl(stress, life, cen)
-    assert any("not yet benchmarked" in n for n in fit.notes)
+    assert any("reproduction of the published" in n for n in fit.notes)
 
 
 def test_service_exposure_and_persistence(tmp_path):
