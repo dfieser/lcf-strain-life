@@ -30,7 +30,9 @@ from scipy import stats as scistats
 
 __all__ = ["RflFit", "rfl_loglik", "fit_rfl", "simulate_rfl"]
 
-_NODES = 160
+_NODES = 96  # Gauss-Legendre nodes for the marginal integral over V. The
+             # laminate-panel fit is identical from 64 nodes up, 96 keeps a
+             # margin for arbitrary user data while halving the fit time.
 
 
 @dataclass
