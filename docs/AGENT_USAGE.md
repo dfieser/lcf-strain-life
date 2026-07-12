@@ -190,6 +190,14 @@ seven FKM material groups. Multiply a stress-based fatigue strength by K_R.
 Capped at 1.0 for polished surfaces. Strain-life constants are not corrected
 directly by this factor.
 
+### compute_size_factor
+FKM technological size factor K_d,m for an effective diameter d_eff (mm),
+with the material constants a_dm and d_eff_N supplied by the caller from
+their licensed FKM guideline (the tables are copyrighted and not bundled).
+1.0 at or below the reference diameter, lower above it. Multiply a
+stress-based fatigue or tensile strength by it. The logarithmic formula is
+a verified published relation.
+
 ### search_critical_plane_tensor
 Find the critical plane from strain (and stress) tensor component histories
 sampled over one cycle. Scans plane normals over a hemisphere grid, resolves

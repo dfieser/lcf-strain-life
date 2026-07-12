@@ -556,6 +556,18 @@ class LcfService:
             surface.fkm_roughness_factor(Rz, Rm, material_group=material_group)
         )
 
+    def compute_size_factor(
+        self, d_eff: float, *, a_dm: float, d_eff_N: float
+    ) -> dict:
+        """FKM technological size factor K_d,m for an effective diameter.
+
+        ``a_dm`` and ``d_eff_N`` come from the caller's licensed FKM
+        guideline, the tables are copyrighted and not bundled.
+        """
+        return to_jsonable(
+            surface.fkm_size_factor(d_eff, a_dm=a_dm, d_eff_N=d_eff_N)
+        )
+
     def generate_report(self, key: str) -> dict:
         """One-call markdown report of everything stored under ``key``.
 

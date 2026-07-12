@@ -10,6 +10,17 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- FKM technological size factor K_d,m in `lcf.surface`, exposed as
+  `compute_size_factor`. Reduces the tensile strength (and stress-based
+  fatigue strength) for components thicker than the reference specimen, by
+  the logarithmic FKM formula with the 0.7686 coefficient, verified against
+  two independent open sources. Only the formula is implemented: the
+  per-material constant tables are copyrighted FKM data and are not
+  bundled (the same rule that excludes NIMS, MMPDS, and Boller-Seeger
+  tables), so the caller supplies a_dm and d_eff_N from a licensed copy of
+  the guideline. The formula's mathematical properties (unity at the
+  reference diameter, monotonic decrease, exact closed form) are the
+  tested behavior.
 - Load-input (notched member) mode for the variable-amplitude engine,
   completing the P3 done-criterion. `simulate_variable_amplitude` and the
   library now accept a nominal stress history with Kt: the initial

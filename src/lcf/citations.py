@@ -245,8 +245,17 @@ CITATIONS: dict[str, dict[str, str]] = {
                     "open engineering references (quadco.engineering, "
                     "accessed 2026-07-11), validated against the published "
                     "worked example K_R=0.79 for steel, Rm 600 MPa, Rz 100",
-        "note": "applies to stress-based fatigue strengths, the technological "
-                "size factor is not implemented",
+        "note": "applies to stress-based fatigue strengths",
+    },
+    "fkm_size_factor": {
+        "method": "FKM technological size factor K_d,m for tensile strength",
+        "citation": "FKM guideline, Rechnerischer Festigkeitsnachweis fuer "
+                    "Maschinenbauteile. Logarithmic formula with the 0.7686 "
+                    "coefficient verified against two independent open "
+                    "sources (accessed 2026-07-11)",
+        "note": "only the formula is implemented, the per-material constant "
+                "tables are copyrighted FKM data and are not bundled, the "
+                "caller supplies a_dm and d_eff_N from a licensed guideline",
     },
     "va_local_strain_simulation": {
         "method": "Variable-amplitude local strain simulation with material "

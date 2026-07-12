@@ -455,6 +455,20 @@ def compute_roughness_factor(
 
 
 @mcp.tool()
+def compute_size_factor(d_eff: float, a_dm: float, d_eff_N: float) -> dict:
+    """FKM technological size factor K_d,m for tensile strength.
+
+    ``d_eff`` is the effective diameter in mm. ``a_dm`` and ``d_eff_N`` are
+    the material constants from the caller's licensed FKM guideline (tables
+    3.2.1 and 3.2.2), which are copyrighted and not bundled here. Returns
+    K_d,m, 1.0 at or below the reference diameter and lower above it.
+    Multiply a stress-based fatigue or tensile strength by it. The
+    logarithmic formula is a verified published relation.
+    """
+    return _service.compute_size_factor(d_eff, a_dm=a_dm, d_eff_N=d_eff_N)
+
+
+@mcp.tool()
 def generate_report(key: str) -> dict:
     """One-call markdown fatigue report of everything stored under a key.
 

@@ -17,15 +17,34 @@ guideline, Rechnerischer Festigkeitsnachweis fuer Maschinenbauteile. The
 worked example from the same source, steel with Rm 600 MPa and Rz 100, gives
 K_R = 0.79 and is a golden test.
 
-The FKM technological size factor is NOT implemented, its constant tables
-were not available from a verifiable open source.
+This module also provides the FKM technological size factor K_d,m, which
+reduces the tensile strength (and thus stress-based fatigue strength) for
+components thicker than the reference test specimen:
+
+    K_d,m = 1                                              for d_eff <= d_eff_N
+    K_d,m = (1 - 0.7686 a_dm lg(d_eff / 7.5)) /
+            (1 - 0.7686 a_dm lg(d_eff_N / 7.5))            for d_eff > d_eff_N
+
+with lg the base-10 log and d in mm. The 7.5 mm reference is the FKM
+standard specimen. This formula is a published relation, verified against
+two independent open sources.
+
+The per-material constants a_dm and d_eff_N are NOT embedded here. They are
+tabulated only in the copyrighted FKM guideline, which the project rules
+forbid copying (the same rule that excludes NIMS, MMPDS, and Boller-Seeger
+data tables). The caller supplies them from their own licensed copy of the
+guideline. This is deliberate, not an oversight.
 """
 
 from __future__ import annotations
 
 import math
 
-__all__ = ["MATERIAL_GROUPS", "fkm_roughness_factor"]
+__all__ = [
+    "MATERIAL_GROUPS",
+    "fkm_roughness_factor",
+    "fkm_size_factor",
+]
 
 #: (a_R, Rm_N_min in MPa) per FKM material group
 MATERIAL_GROUPS: dict[str, tuple[float, float]] = {
@@ -84,5 +103,53 @@ def fkm_roughness_factor(
         "material_group": group,
         "a_R": a_r,
         "Rm_N_min": rm_min,
+        "notes": notes,
+    }
+
+
+#: FKM standard test-specimen diameter in mm.
+_D_REF = 7.5
+
+
+def fkm_size_factor(d_eff: float, *, a_dm: float, d_eff_N: float) -> dict:
+    """FKM technological size factor ``K_d,m`` for tensile strength.
+
+    Give the effective diameter ``d_eff`` in mm and the two material
+    constants ``a_dm`` and ``d_eff_N`` (mm) from your licensed copy of the
+    FKM guideline (tables 3.2.1 and 3.2.2). Those tables are copyrighted and
+    are not bundled here, see the module docstring. Returns ``K_d,m``, which
+    is 1.0 at or below the reference diameter and decreases above it.
+
+    Multiply a stress-based fatigue strength or tensile strength by
+    ``K_d,m``. The formula is a verified published relation, the constants
+    are yours.
+    """
+    if not d_eff > 0:
+        raise ValueError(f"d_eff must be positive mm, got {d_eff}")
+    if not d_eff_N > 0:
+        raise ValueError(f"d_eff_N must be positive mm, got {d_eff_N}")
+    if not a_dm >= 0:
+        raise ValueError(f"a_dm must be non-negative, got {a_dm}")
+
+    notes: list[str] = [
+        "K_d,m multiplies a stress-based fatigue or tensile strength.",
+        "a_dm and d_eff_N are caller-supplied from the FKM guideline "
+        "tables, which are copyrighted and not bundled.",
+    ]
+    if d_eff <= d_eff_N:
+        k = 1.0
+        notes.append(
+            f"d_eff {d_eff:g} mm is at or below the reference {d_eff_N:g} mm, "
+            "no size reduction."
+        )
+    else:
+        num = 1.0 - 0.7686 * a_dm * math.log10(d_eff / _D_REF)
+        den = 1.0 - 0.7686 * a_dm * math.log10(d_eff_N / _D_REF)
+        k = num / den
+    return {
+        "K_dm": float(k),
+        "d_eff": float(d_eff),
+        "a_dm": float(a_dm),
+        "d_eff_N": float(d_eff_N),
         "notes": notes,
     }
