@@ -16,8 +16,12 @@ life comes from the existing solvers in :mod:`lcf.life`, SWT by default.
 
 Model limits, stated plainly: stabilized cyclic properties are assumed
 throughout, and cycle-dependent mean stress relaxation and ratcheting are
-not modeled. Predictions have not yet been validated against a published
-variable-amplitude dataset and are labeled experimental until they are.
+not modeled. Validation status: the strain-input engine is checked against
+the Conle SAE smooth-specimen dataset (within 2x on two of three histories,
+about 3x non-conservative on the third), and the load-input Neuber mode
+against the SAE keyhole benchmark (SM2 within 2x of experiment, CR1 within
+4 percent of the benchmark's own reference calculation). See the evidence
+notes each result carries and examples/validate_sae_*.py.
 
 References: Masing, Proc. 2nd Int. Congress for Applied Mechanics, Zurich,
 1926 (the doubled branch). Dowling, Mechanical Behavior of Materials, 4th

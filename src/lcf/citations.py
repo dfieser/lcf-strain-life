@@ -7,8 +7,8 @@ its original publication or standard. Agents reach it through the
 human-readable equivalent is docs/PHYSICS_REVIEW.pdf.
 
 Entries state the method, the citation, and where honesty requires it, a
-status note (for example that ASTM E739 was withdrawn, or that a module is a
-survey-level implementation).
+status note (for example that ASTM E739 was withdrawn, or that a method's
+validation is implementation-grade rather than benchmarked).
 """
 
 from __future__ import annotations
