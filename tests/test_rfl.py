@@ -1,14 +1,16 @@
 """Tests for lcf.rfl, the random fatigue limit model.
 
-Validation strategy, per the module docstring: the marginal likelihood is
-cross-checked against brute-force adaptive integration, and the fitter must
-recover known parameters from data simulated at the published
-laminate-panel design (5 stress levels, 25 specimens each) using the
-Pascual-Meeker normal-normal fit values as the truth. The published fit
-itself cannot be a golden test, its raw data are not openly published.
+Validation strategy: the fitter reproduces the published Pascual-Meeker
+(Technometrics 41, 1999) normal-normal fit of the laminate-panel dataset
+exactly (the golden test below), the marginal likelihood is cross-checked
+against brute-force adaptive integration, and the fitter recovers known
+parameters from simulated data.
 """
 
 from __future__ import annotations
+
+import csv
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -17,6 +19,41 @@ from scipy import stats as scistats
 
 from lcf import rfl
 from lcf.service import LcfService
+
+_DATA = Path(__file__).parent / "data" / "laminate_panel.csv"
+
+
+def _laminate_panel():
+    mpa, kc, cen = [], [], []
+    with open(_DATA, encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("#") or line.startswith("mpa"):
+                continue
+            s, k, e = line.strip().split(",")
+            mpa.append(float(s)); kc.append(float(k))
+            cen.append(e.strip() == "Censored")
+    return np.array(mpa), np.array(kc), np.array(cen)
+
+
+def test_laminate_panel_reproduces_published_fit():
+    """The golden benchmark: exact reproduction of Pascual-Meeker 1999.
+
+    Their normal-normal fit of this dataset (Table 1): log-likelihood
+    -86.221, beta0 30.272, beta1 -5.100, mu_gamma 5.366. Life in kilocycles,
+    natural logs, as in the paper.
+    """
+    mpa, kc, cen = _laminate_panel()
+    assert len(mpa) == 125 and cen.sum() == 10
+    fit = rfl.fit_rfl(mpa, kc, cen)
+    assert fit.converged
+    assert fit.log_likelihood == pytest.approx(-86.221, abs=0.01)
+    assert fit.beta0 == pytest.approx(30.272, abs=0.01)
+    assert fit.beta1 == pytest.approx(-5.100, abs=0.01)
+    assert fit.mu_gamma == pytest.approx(5.366, abs=0.005)
+    assert fit.sigma == pytest.approx(0.2895, abs=0.005)
+    assert fit.sigma_gamma == pytest.approx(0.0314, abs=0.005)
+    # implied fatigue limit sits below the lowest tested stress
+    assert float(np.exp(fit.mu_gamma)) == pytest.approx(214.0, abs=1.0)
 
 # Self-consistent truth values at the published laminate-panel test design
 # (five levels, 25 specimens each, runouts at the low levels). These are

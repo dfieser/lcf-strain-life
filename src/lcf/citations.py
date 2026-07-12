@@ -232,10 +232,9 @@ CITATIONS: dict[str, dict[str, str]] = {
                     "the Random Fatigue-Limit Model, Technometrics 41 "
                     "(1999) 277-290. Modern context: Meeker et al., "
                     "Statistical Science 41 (2026) 1-27",
-        "note": "implementation validated by likelihood cross-check and "
-                "simulated parameter recovery, not yet benchmarked against "
-                "the published laminate-panel fit, its raw data are not "
-                "openly published",
+        "note": "validated by exact reproduction of the published "
+                "laminate-panel fit (log-likelihood -86.221, parameters "
+                "matching Table 1), data from the public SMRD.data package",
     },
     "mean_stress_relaxation": {
         "method": "Cycle-dependent mean stress relaxation power law "

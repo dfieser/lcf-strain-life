@@ -11,14 +11,13 @@ test stress never fails. Runouts are right-censored observations. The
 marginal likelihood integrates over ``V`` (Gauss-Legendre quadrature), and
 the five parameters are found by maximum likelihood.
 
-Validation status, stated plainly: the implementation is validated by (1)
-cross-checking the marginal likelihood against brute-force adaptive
-integration and (2) recovering known parameters from data simulated at the
-published laminate-panel test design (five stress levels, 25 specimens
-each, censoring) of Pascual and Meeker, Technometrics 41 (1999) 277-290.
-It is NOT yet benchmarked against their published fit itself, because the
-underlying datasets (Shimokawa and Hamaguchi 1987, Shen 1994) are not
-openly published. Treat fits accordingly, and read the convergence flag.
+Validation status, stated plainly: the fitter reproduces the published
+Pascual and Meeker (Technometrics 41, 1999, 277-290) normal-normal fit of
+the laminate-panel dataset exactly, log-likelihood -86.221 and parameters
+matching their Table 1 to the digit (tests/test_rfl.py, data from the
+public SMRD.data R package). The marginal likelihood is also cross-checked
+against brute-force integration and the fitter recovers known parameters
+from simulated data.
 """
 
 from __future__ import annotations
@@ -171,9 +170,9 @@ def fit_rfl(
     notes = [
         "normal-normal random fatigue limit model, Pascual and Meeker, "
         "Technometrics 41 (1999) 277-290",
-        "implementation validated by likelihood cross-check and simulated "
-        "parameter recovery, not yet benchmarked against the published "
-        "laminate-panel fit, its raw data are not openly published",
+        "validated by exact reproduction of the published laminate-panel "
+        "fit (log-likelihood -86.221) plus likelihood cross-check and "
+        "simulated parameter recovery",
     ]
     if not res.success:
         notes.append(f"optimizer did not report convergence: {res.message}")

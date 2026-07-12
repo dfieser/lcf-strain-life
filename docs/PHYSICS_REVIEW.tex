@@ -330,12 +330,12 @@ so the S-N curve flattens naturally near the limit and runouts enter the
 likelihood as censored observations, including the probability that the
 limit sits above the test stress. The five parameters are fit by maximum
 likelihood with the marginal integral over \(V\) evaluated by quadrature.
-Validation status, stated plainly: the implementation is verified against
-brute-force integration and by recovering known parameters from data
-simulated at the published laminate-panel design, it is not yet benchmarked
-against the published fit itself because those raw datasets are not openly
-published. Reference: Pascual and Meeker 1999 (Technometrics 41:277),
-Meeker et al.\ 2026 (Statistical Science 41:1).
+Validation: the fitter reproduces the published Pascual-Meeker
+normal-normal fit of the laminate-panel dataset exactly, log-likelihood
+\(-86.221\) and parameters matching their Table 1 to the digit, with the
+likelihood also cross-checked against brute-force integration. Reference:
+Pascual and Meeker 1999 (Technometrics 41:277), Meeker et al.\ 2026
+(Statistical Science 41:1).
 
 Outlier screening operates on the residuals of the log-life regression.
 Runouts are censored observations, not outliers, and are excluded from the

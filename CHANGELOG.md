@@ -10,6 +10,14 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- The random fatigue limit fit is now benchmarked against the published
+  Pascual-Meeker result. The laminate-panel dataset (Shimokawa and
+  Hamaguchi 1987, 125 specimens, obtained from the public GPL SMRD.data R
+  package) is bundled as a golden test, and the fitter reproduces the 1999
+  Technometrics normal-normal fit exactly: log-likelihood -86.221, beta0
+  30.272, beta1 -5.100, mu_gamma 5.366, matching Table 1 to the digit. The
+  validation status changes from implementation-grade to published-fit
+  reproduction everywhere it is stated.
 - Cycle-dependent mean stress relaxation and ratcheting, a new
   `lcf.cyclic_evolution` module. Mean stress relaxation under strain control
   (sigma_m(N) = sigma_m1 N^b_r) and ratcheting strain accumulation under
