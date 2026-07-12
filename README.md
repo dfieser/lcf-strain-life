@@ -22,16 +22,19 @@ Provide your own strain-controlled fatigue test data and get the standardized re
 
 | Stage | What happens |
 |---|---|
-| Ingest and normalize | raw `time, strain, force` plus parameters become true stress-strain |
+| Ingest and normalize | raw `time, strain, force` plus parameters become true stress-strain, reading the delimited exports labs actually produce, with ASTM E606 metadata and one-call batch analysis of a whole test series |
 | Cycle reduction | peak and valley per cycle, half-life cycle, cycles-to-failure `N_f` |
 | Per-cycle metrics | stress amplitude, plastic strain amplitude, mean stress, T/C ratio, hysteresis energy |
 | Strain-life fits | Basquin, Coffin-Manson, Ramberg-Osgood, transition life |
 | Constant estimation | five published methods estimate the constants from tensile properties or hardness when no fatigue data exists |
 | Mean stress | Morrow, modified Morrow, SWT, Walker corrections |
-| Variable amplitude | rainflow, level-crossing, and peak counting (ASTM E1049), racetrack filter, spectrum life |
+| Variable amplitude | rainflow, level-crossing, and peak counting (ASTM E1049), racetrack filter, spectrum life, and a Masing-memory local-strain engine (strain or load-input Neuber) validated against published SAE datasets |
 | Damage | Miner, DLDR, Corten-Dolan, Woehler knee variants including Haibach |
-| Notch and statistics | Neuber and Glinka local strain, design curves with runout handling, outlier screening |
+| Notch and multiaxial | Neuber and Glinka local strain, tensor critical-plane search (Fatemi-Socie, Brown-Miller, SWT) |
+| Statistics | design curves with runout handling, outlier screening, Dixon-Mood staircase, A/B-basis values, the random fatigue limit model |
 | High temperature | frequency-modified Coffin-Manson, time-fraction creep-fatigue |
+| Surface | FKM roughness factor, and the FKM size-factor formula |
+| Interchange and reports | versioned material documents, pyLife and py-fatigue adapters, one-call markdown lab reports |
 | Provenance | every method maps to its published source through the citations registry |
 | Save and recall | results persisted per test or material, recalled without recomputation, rendered as plots |
 
