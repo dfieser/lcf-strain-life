@@ -91,8 +91,44 @@ src/lcf/            library and MCP server
 tests/              unit tests including golden-value validation
 examples/           runnable example scripts
 docs/               the physics PDF and the agent usage guide
+website/               landing page and setup guide, published to GitHub Pages
 ../dev/             workspace-level design notes and decision records, outside the repo
 ```
+
+## Website design rules (website/)
+
+The landing page and setup guide live in `website/`, plain HTML and CSS with one
+small vanilla JS file. No build step and no framework. These rules exist so the
+site never reads as machine-generated. Follow them for any change under `website/`.
+
+Hard rules:
+- No CSS gradients of any kind, linear, radial, or conic, including gradient
+  masks and gradient text. Use solid colors and tiled SVG textures instead.
+- No Tailwind or any utility-class framework. No shadcn or copied component kits.
+- No colored left-border cards. Use a full border with a small square indicator.
+- No glassmorphism, no backdrop-filter, no heavy blurred shadows.
+- No purple or blue-to-purple accent. The accent is the teal in the tokens.
+- No Inter or Space Grotesk. Type is the system sans plus a monospace utility
+  face, a deliberate pairing.
+- The hero is left-aligned and asymmetric, never a centered hero with a vague
+  headline. Headlines say what the tool does for a fatigue engineer.
+- No emoji as icons, section markers, or the favicon. The favicon is
+  `assets/favicon.svg`.
+- Radii stay small and technical. Chips and tags are rectangular, not pills.
+- Real content only. Real plots from `examples/output`, real numbers from the
+  validated examples, no fabricated screenshots or logos.
+
+Quality bars: accessible (semantic landmarks, keyboard support, visible focus,
+alt text, WCAG contrast, reduced motion), responsive, self-contained (local
+assets only, no CDN or external fonts), both themes given equal care through the
+design tokens.
+
+Supported MCP clients to name in the setup guide: Claude Desktop, Cursor, VS Code
+in Copilot agent mode (its config key is `servers`, not `mcpServers`), and Google
+Antigravity. The universal launch command is `uvx --from "lcf-strain-life[mcp]" lcf-mcp`.
+
+Full rationale and the sources behind these tells are in
+`../dev/docs/design/site-design-rules.md`.
 
 ## Commit and PR guidance
 

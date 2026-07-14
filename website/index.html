@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>lcf-strain-life: fatigue analysis you drive by talking to an AI assistant</title>
+  <meta name="description" content="An open toolkit that lets any MCP-compatible AI assistant run a full low cycle fatigue analysis on your own strain-controlled test data. No coding required.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="brand" href="index.html">lcf<span class="dot">·</span>strain-life</a>
+    <nav class="nav__links" aria-label="Primary">
+      <a class="hide-sm" href="#what">What it does</a>
+      <a class="hide-sm" href="#example">Example</a>
+      <a href="get-started.html">Get started</a>
+      <a class="nav__cta" href="https://github.com/dfieser/lcf-strain-life">GitHub</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme" title="Switch light or dark theme">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 3v18" stroke="currentColor" stroke-width="1.8"></path><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"></path></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- Hero -->
+  <section class="hero section">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <span class="eyebrow">Open fatigue toolkit · MCP server</span>
+        <h1>Run a full fatigue analysis by describing what you want.</h1>
+        <p class="lead">lcf-strain-life connects to any AI assistant that supports the Model Context Protocol and turns your own strain-controlled test data into standardized results, fitted models, life predictions, and plots. No coding required.</p>
+        <div class="btn-row">
+          <a class="btn btn-primary" href="get-started.html">Set it up in 5 minutes</a>
+          <a class="btn btn-ghost" href="https://github.com/dfieser/lcf-strain-life">View on GitHub</a>
+        </div>
+        <p class="hero__note">Python 3.11+ · MIT license · works with the lab exports you already have</p>
+      </div>
+
+      <div class="hero__visual">
+        <div class="readout" role="img" aria-label="Illustration of an assistant fitting strain-life constants for the SAE 1137 example and returning a plot.">
+          <div class="readout__bar"><span class="lamp on"></span><span class="lamp"></span><span class="lamp"></span><span class="title">assistant · lcf tools</span></div>
+          <div class="readout__body">
+            <div class="msg user"><span class="who">You</span><span class="bubble">Fit the strain-life constants for this SAE 1137 series and give me the transition life.</span></div>
+            <div class="msg bot"><span class="who">Assistant</span><span class="bubble">
+              Fitted across 6 tests. Here are the constants and the strain-life plot.
+              <dl>
+                <dt>Coffin-Manson &epsilon;'<sub>f</sub></dt><dd>1.11</dd>
+                <dt>Coffin-Manson c</dt><dd>-0.62</dd>
+                <dt>Basquin &sigma;'<sub>f</sub></dt><dd>1073 MPa</dd>
+                <dt>Basquin b</dt><dd>-0.084</dd>
+                <dt>Transition life</dt><dd>~22,000 rev.</dd>
+              </dl>
+            </span></div>
+            <div class="readout__plot"><img src="assets/img/strain_life.png" alt="Strain-life plot: total, elastic, and plastic strain amplitude against reversals to failure on log-log axes for the SAE 1137 example."></div>
+          </div>
+        </div>
+        <p class="caption">Illustration of a typical exchange. The numbers and plot are the real SAE 1137 example from the repository.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust -->
+  <section class="section--tight" aria-label="Project credibility">
+    <div class="container stack" style="gap:1.1rem">
+      <div class="chips">
+        <a class="chip" href="https://doi.org/10.5281/zenodo.21222820"><b>DOI</b> 10.5281/zenodo.21222820</a>
+        <a class="chip" href="https://pypi.org/project/lcf-strain-life/"><b>PyPI</b> v0.1.1</a>
+        <span class="chip"><b>License</b> MIT</span>
+        <span class="chip"><b>Python</b> 3.11+</span>
+        <a class="chip" href="https://github.com/dfieser/lcf-strain-life/actions"><b>CI</b> tests</a>
+      </div>
+      <p style="color:var(--text-muted)">Built by <strong>David Fieser</strong> (<a href="https://orcid.org/0009-0007-5754-4331">ORCID</a>) and <strong>Hugh Shortt</strong> (<a href="https://orcid.org/0000-0001-8015-3733">ORCID</a>), University of Tennessee, Knoxville. Both authors contributed equally.</p>
+    </div>
+  </section>
+
+  <!-- Why -->
+  <section class="section" id="why">
+    <div class="container">
+      <div class="section-intro">
+        <span class="eyebrow">Why it exists</span>
+        <h2>The analysis is standard. Getting there is the slow part.</h2>
+      </div>
+      <p>Plenty of fatigue software exists. What did not exist is a toolkit an AI assistant can drive from start to finish. You have the test data. Turning it into standardized, reproducible results is the manual, error-prone part, often locked inside one-off scripts and spreadsheets. lcf-strain-life lets you describe the analysis in plain language and get results you can reproduce, with the published source cited for every method it uses.</p>
+    </div>
+  </section>
+
+  <!-- What it does -->
+  <section class="section" id="what">
+    <div class="container">
+      <div class="section-intro">
+        <span class="eyebrow">What it does</span>
+        <h2>From raw signal to life prediction, all reachable in plain language.</h2>
+      </div>
+      <div class="grid-cards">
+        <div class="card"><span class="card__tag">Reduce</span><h3>Read your test data</h3><p>Turn a raw strain, force, and time signal into per-cycle metrics and a half-life summary. Reads the delimited exports labs actually produce, including MTS and Instron style files.</p></div>
+        <div class="card"><span class="card__tag">Fit</span><h3>Fit the standard models</h3><p>Coffin-Manson, Basquin, and Ramberg-Osgood, with the transition life and a Masing consistency check on the fit.</p></div>
+        <div class="card"><span class="card__tag">Predict</span><h3>Predict life</h3><p>Cycles to failure for a given strain amplitude, with Morrow, SWT, or Walker mean-stress corrections.</p></div>
+        <div class="card"><span class="card__tag">Count</span><h3>Variable amplitude</h3><p>Rainflow, level-crossing, and peak counting to ASTM E1049, plus spectrum life and a local-strain engine with material memory.</p></div>
+        <div class="card"><span class="card__tag">Estimate</span><h3>No fatigue data yet?</h3><p>Five published methods estimate the strain-life constants from monotonic properties or hardness. These are screening estimates, and they are labeled as such.</p></div>
+        <div class="card"><span class="card__tag">Design</span><h3>Statistics and design curves</h3><p>Design curves with reliability and confidence, outlier screening, Dixon-Mood staircase, and A- and B-basis values.</p></div>
+        <div class="card"><span class="card__tag">Notch</span><h3>Notch and multiaxial</h3><p>Neuber and Glinka local strain, and a critical-plane search with Fatemi-Socie, Brown-Miller, and SWT parameters.</p></div>
+        <div class="card"><span class="card__tag">Hot</span><h3>High temperature</h3><p>Frequency-modified Coffin-Manson and time-fraction creep-fatigue with a D-diagram check.</p></div>
+      </div>
+      <p class="note-line">Every method cites its published source. All analysis uses true stress and true strain. Results are saved and can be recalled later without recomputing. <a href="https://github.com/dfieser/lcf-strain-life/blob/main/docs/AGENT_USAGE.md">See the full tool list &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- Example -->
+  <section class="section" id="example">
+    <div class="container">
+      <div class="section-intro">
+        <span class="eyebrow">One example, start to finish</span>
+        <h2>Ask for a fit. Get constants, a life estimate, and a plot.</h2>
+      </div>
+      <div class="example">
+        <div class="stack" style="gap:1rem">
+          <p>Give the assistant a series of strain-controlled tests, here the SAE 1137 example from the repository, and ask for the fit. It reduces each test, fits the constants across the series, and returns a plot you can save. Behind the plain-language request are the same standardized equations you would run by hand, with every method traceable to its source.</p>
+          <div class="callout callout--warn">
+            <span class="callout__label">Honest about limits</span>
+            <p>The variable-amplitude life engine is validated against published SAE datasets. On those histories it landed within about two to three times of experiment and leaned non-conservative. Treat its numbers as an engineering estimate and verify against your own data.</p>
+          </div>
+        </div>
+        <figure class="stack" style="gap:0">
+          <div class="readout__plot" style="border-radius:var(--radius)"><img src="assets/img/sample_hysteresis.png" alt="Stress-strain hysteresis loop reconstructed from a reduced strain-controlled test."></div>
+          <figcaption class="caption caption--center">A hysteresis loop from a reduced test, rendered by the toolkit.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Who -->
+  <section class="section--tight" id="who">
+    <div class="container">
+      <p class="lead" style="max-width:60ch"><strong style="color:var(--text)">Material-agnostic by design.</strong> It serves many materials and many fatigue workflows across research and engineering, not one alloy family and not one industry.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-intro">
+        <span class="eyebrow">Common questions</span>
+        <h2>Before you start</h2>
+      </div>
+      <div class="faq">
+        <details><summary>Do I need to know how to code?</summary><p>No. You talk to your AI assistant in plain language, and it calls the analysis for you. A Python library is available for those who want to script it, but it is optional.</p></details>
+        <details><summary>Which AI assistants work?</summary><p>Any assistant that supports the Model Context Protocol, for example Claude Desktop, Cursor, VS Code in Copilot agent mode, or Google Antigravity. The setup guide shows the one command to run and where to add it. It is not tied to a single product.</p></details>
+        <details><summary>Does my data leave my machine?</summary><p>The toolkit installs and runs on your own computer, and all computation happens locally. Your assistant only sees what you choose to share with it in the conversation.</p></details>
+        <details><summary>Is it free?</summary><p>Yes. It is open source under the MIT license, and the source is on GitHub.</p></details>
+        <details><summary>How do I cite it?</summary><p>Use the DOI 10.5281/zenodo.21222820, or the <a href="https://github.com/dfieser/lcf-strain-life/blob/main/CITATION.cff">CITATION.cff</a> file in the repository.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="container cta-band">
+      <span class="eyebrow">Ready when you are</span>
+      <h2>Try it on your own fatigue data.</h2>
+      <p class="lead">A one-time setup of about five minutes, then it is there every time you open your assistant.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="get-started.html">Set it up in 5 minutes</a>
+        <a class="btn btn-ghost" href="https://github.com/dfieser/lcf-strain-life">View on GitHub</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <a class="brand" href="index.html" style="font-size:1.05rem">lcf<span class="dot">·</span>strain-life</a>
+        <p class="footer__meta" style="margin-top:0.7rem">An AI-agent-native toolkit for low cycle fatigue strain-life analysis. A Python library and an MCP server.</p>
+      </div>
+      <div>
+        <h4>Project</h4>
+        <div class="footer__links">
+          <a href="get-started.html">Get started</a>
+          <a href="https://github.com/dfieser/lcf-strain-life">GitHub</a>
+          <a href="https://pypi.org/project/lcf-strain-life/">PyPI</a>
+          <a href="https://github.com/dfieser/lcf-strain-life/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+      </div>
+      <div>
+        <h4>Reference</h4>
+        <div class="footer__links">
+          <a href="https://github.com/dfieser/lcf-strain-life/blob/main/docs/AGENT_USAGE.md">Tool list</a>
+          <a href="https://github.com/dfieser/lcf-strain-life/blob/main/docs/PHYSICS_REVIEW.md">Physics review</a>
+          <a href="https://doi.org/10.5281/zenodo.21222820">DOI &amp; citation</a>
+          <a href="https://github.com/dfieser/lcf-strain-life/blob/main/LICENSE">MIT license</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer__bottom" style="padding-inline:0">
+      <span>&copy; 2026 David Fieser and Hugh Shortt. MIT licensed.</span>
+      <span>Works with any MCP-compatible assistant. Not affiliated with any assistant vendor.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

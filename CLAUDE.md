@@ -43,3 +43,7 @@ The virtual environment is in .venv on Python 3.13. Run the test suite with:
     ./.venv/Scripts/python.exe -m pytest
 
 Validate scientific changes against the golden datasets in tests. Keep every change covered by a test. Add a line to CHANGELOG.md for notable changes. Detailed decision records, design notes, and research notes live in the workspace dev folder one level above this repository, at `..\dev`. That folder is developer material and never enters the public repository. Any change to an equation, a default, or a citation must regenerate docs/PHYSICS_REVIEW.tex, the physics record for specialist review.
+
+## Website
+
+The landing page and setup guide are in `website/`, plain HTML and CSS with no build step. Before editing anything there, read the mandatory design rules in [AGENTS.md](AGENTS.md) under "Website design rules". They forbid the patterns that make a site look machine-generated, for example gradients, Tailwind, colored left-border cards, glassmorphism, purple accents, Inter, centered heroes, and emoji icons. Full rationale is in `..\dev\docs\design\site-design-rules.md`.

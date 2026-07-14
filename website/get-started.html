@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Get started: lcf-strain-life</title>
+  <meta name="description" content="A step-by-step setup for non-programmers: install uv, add the fatigue toolkit to your AI assistant, and run your first analysis.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="brand" href="index.html">lcf<span class="dot">·</span>strain-life</a>
+    <nav class="nav__links" aria-label="Primary">
+      <a class="hide-sm" href="index.html#what">What it does</a>
+      <a href="index.html">Home</a>
+      <a class="nav__cta" href="https://github.com/dfieser/lcf-strain-life">GitHub</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme" title="Switch light or dark theme">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 3v18" stroke="currentColor" stroke-width="1.8"></path><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"></path></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="section--tight" style="padding-top:clamp(2.5rem,2rem+3vw,4rem)">
+    <div class="container stack" style="gap:1rem">
+      <span class="eyebrow">Get started</span>
+      <h1 style="font-size:var(--step-4);max-width:20ch">Add fatigue analysis to your AI assistant.</h1>
+      <p class="lead">This is a one-time setup of about five minutes. When you finish, you can ask your assistant to analyze fatigue data in plain language, any time you open it. No coding, and nothing to run yourself.</p>
+      <div class="callout callout--ok" style="max-width:640px">
+        <span class="callout__label">What you need</span>
+        <p>An AI assistant on your computer that supports the Model Context Protocol, for example Claude Desktop, Cursor, VS Code with Copilot agent mode, or Google Antigravity. That is it. The steps below install everything else.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="steps">
+
+        <!-- Step 1 -->
+        <div class="step">
+          <div class="step__num" aria-hidden="true"></div>
+          <div class="step__body">
+            <h3>Install uv</h3>
+            <p>uv is a small, free tool that fetches and runs the toolkit for you, so you never have to set up Python yourself. Install it once. Choose your system:</p>
+            <div class="tabs" data-tabgroup="os">
+              <div class="tablist" role="tablist" aria-label="Operating system">
+                <button class="tab" role="tab" id="t-win" data-key="win" aria-controls="p-win" aria-selected="true" tabindex="0">Windows</button>
+                <button class="tab" role="tab" id="t-mac" data-key="mac" aria-controls="p-mac" aria-selected="false" tabindex="-1">macOS</button>
+              </div>
+              <div class="tabpanel" id="p-win" role="tabpanel" aria-labelledby="t-win">
+                <p>Open <strong>PowerShell</strong> from the Start menu, paste this line, and press Enter:</p>
+                <div class="code"><button class="copy-btn" type="button">Copy</button><pre><code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code></pre></div>
+                <p style="color:var(--text-muted);font-size:0.92rem">Prefer the Microsoft Store style? You can instead run <code>winget install --id=astral-sh.uv -e</code>.</p>
+              </div>
+              <div class="tabpanel" id="p-mac" role="tabpanel" aria-labelledby="t-mac" hidden>
+                <p>Open the <strong>Terminal</strong> app, paste this line, and press Return:</p>
+                <div class="code"><button class="copy-btn" type="button">Copy</button><pre><code>curl -LsSf https://astral.sh/uv/install.sh | sh</code></pre></div>
+              </div>
+            </div>
+            <div class="callout callout--ok">
+              <span class="callout__label">What success looks like</span>
+              <p>The command finishes and prints a line about uv being installed. You can close the window. If it says uv was added to your PATH, that is exactly right.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step">
+          <div class="step__num" aria-hidden="true"></div>
+          <div class="step__body">
+            <h3>Add the toolkit to your assistant</h3>
+            <p>Your assistant keeps a small settings file that lists the tools it can use. You add one entry to it. This is the same entry for every assistant, it just lives in a different place depending on which one you use.</p>
+            <p><strong>The entry to add:</strong></p>
+            <div class="code"><button class="copy-btn" type="button">Copy</button><pre><code>{
+  "mcpServers": {
+    "lcf": {
+      "command": "uvx",
+      "args": ["--from", "lcf-strain-life[mcp]", "lcf-mcp"]
+    }
+  }
+}</code></pre></div>
+            <p>Where to put it:</p>
+            <div class="tabs" data-tabgroup="client">
+              <div class="tablist" role="tablist" aria-label="Assistant">
+                <button class="tab" role="tab" id="c-claude" data-key="claude" aria-controls="pc-claude" aria-selected="true" tabindex="0">Claude Desktop</button>
+                <button class="tab" role="tab" id="c-other" data-key="other" aria-controls="pc-other" aria-selected="false" tabindex="-1">Another assistant</button>
+              </div>
+              <div class="tabpanel" id="pc-claude" role="tabpanel" aria-labelledby="c-claude">
+                <p>Open Claude Desktop. Go to <strong>Settings &rarr; Developer &rarr; Edit Config</strong>. That opens the settings file in your text editor. If the file is empty, paste the whole block above. If it already has an <code>mcpServers</code> section, add just the <code>"lcf"</code> entry inside it. Save the file.</p>
+              </div>
+              <div class="tabpanel" id="pc-other" role="tabpanel" aria-labelledby="c-other" hidden>
+                <p>Any assistant that supports the Model Context Protocol can use this, including editor-based assistants. The <code>command</code> and <code>args</code> stay the same, only the menu and the file differ.</p>
+                <ul>
+                  <li><strong>Cursor:</strong> add it in Settings under MCP, using the block above. See the <a href="https://docs.cursor.com/context/model-context-protocol">Cursor MCP docs</a>.</li>
+                  <li><strong>VS Code</strong> in Copilot agent mode: run <code>MCP: Add Server</code> from the command palette, or edit <code>.vscode/mcp.json</code>. VS Code names the top-level key <code>servers</code> instead of <code>mcpServers</code>, and the inner <code>command</code> and <code>args</code> are identical. See the <a href="https://code.visualstudio.com/docs/agent-customization/mcp-servers">VS Code MCP docs</a>.</li>
+                  <li><strong>Google Antigravity:</strong> add a local MCP server in its MCP settings with the same <code>command</code> and <code>args</code>. See the <a href="https://antigravity.google/docs/mcp">Antigravity MCP docs</a>.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="callout callout--warn">
+              <span class="callout__label">Watch the commas</span>
+              <p>This file is JSON. Every entry except the last needs a comma after it, and quotes must be straight quotes. A missing comma is the most common reason setup fails.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step">
+          <div class="step__num" aria-hidden="true"></div>
+          <div class="step__body">
+            <h3>Restart the assistant</h3>
+            <p>Fully quit the assistant and open it again. On Windows, closing the window is not enough, quit it from the system tray. On macOS, quit it with Command-Q. This is what makes it pick up the new tool.</p>
+            <div class="callout callout--ok">
+              <span class="callout__label">What success looks like</span>
+              <p>Your assistant now shows a set of lcf tools, often behind a tools or hammer icon near the message box. The first time it runs, it quietly downloads the toolkit, so the very first analysis can take a minute. After that it is fast.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step">
+          <div class="step__num" aria-hidden="true"></div>
+          <div class="step__body">
+            <h3>Run your first analysis</h3>
+            <p>Ask in plain language. To try it without your own data yet, paste this:</p>
+            <div class="code"><button class="copy-btn" type="button">Copy</button><pre><code>Using the lcf tools, fit the strain-life constants for this data and
+tell me the transition life.
+  total strain amplitude: 0.009, 0.007, 0.005, 0.003, 0.002, 0.00175
+  stress amplitude (MPa): 553, 522, 464, 405, 350, 319
+  reversals to failure:  4234, 7398, 14768, 77104, 437498, 3327958
+  elastic modulus E: 208000 MPa</code></pre></div>
+            <p>The assistant will call the fit and report the Coffin-Manson and Basquin constants, the transition life, and offer a plot. From there you can ask follow-ups in plain language, for example "predict life at 0.4% strain amplitude" or "add a Morrow mean-stress correction".</p>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step">
+          <div class="step__num" aria-hidden="true"></div>
+          <div class="step__body">
+            <h3>Bring your own data</h3>
+            <p>Point the assistant at your own lab export and ask it to analyze the test. The reader handles the delimited exports labs produce, including MTS TestSuite and Instron style files, and it detects the columns and units for you. Ask it to preview a file first if you want to see how it will be read before committing.</p>
+            <div class="callout callout--warn">
+              <span class="callout__label">Good to know</span>
+              <p>Delimited text exports work well. Proprietary binary formats from a specific machine are not read directly, export them to a delimited file first. If a strain column has no unit label and its values look like percent, the tool will ask you to confirm rather than guess.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Troubleshooting -->
+  <section class="section" id="troubleshooting">
+    <div class="container">
+      <div class="section-intro">
+        <span class="eyebrow">If something does not work</span>
+        <h2>Troubleshooting</h2>
+      </div>
+      <div class="faq">
+        <details><summary>The assistant does not show the lcf tools</summary><p>Make sure you fully quit and reopened it, not just closed the window. Then check the settings file again for a missing comma or a missing closing brace. Most failures are a small typo in that file.</p></details>
+        <details><summary>It says uv or uvx was not found</summary><p>Desktop apps do not always see tools installed for the terminal. On Windows, find the full path by running <code>where uvx</code> in PowerShell, then use that full path, for example <code>C:\Users\you\.local\bin\uvx.exe</code>, in place of <code>"uvx"</code> in the settings file. On macOS, use <code>~/.local/bin/uvx</code>. Restarting your computer once after installing uv also resolves this.</p></details>
+        <details><summary>The first analysis is slow or seems to hang</summary><p>The first run downloads the toolkit and its scientific libraries. This can take a minute on a normal connection. It only happens once. Later runs start quickly.</p></details>
+        <details><summary>I get a JSON or config error</summary><p>The settings file must be valid JSON. Every entry except the last needs a comma, braces must be balanced, and quotes must be straight quotes, not curly ones. Pasting the whole block from Step 2 into an empty file avoids most of these.</p></details>
+        <details><summary>Where is the settings file?</summary><p>In Claude Desktop, the reliable way to open it is Settings &rarr; Developer &rarr; Edit Config, which opens the exact file for your system so you never have to hunt for the path.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Advanced -->
+  <section class="section--tight" id="advanced">
+    <div class="container stack" style="gap:1rem">
+      <span class="eyebrow">For developers</span>
+      <details class="disclose">
+        <summary>Use it as a Python library</summary>
+        <div class="disclose__body">
+          <p>If you write Python, you can skip the assistant and call the library directly.</p>
+          <div class="code"><button class="copy-btn" type="button">Copy</button><pre><code>pip install "lcf-strain-life[mcp]"</code></pre></div>
+          <div class="code"><button class="copy-btn" type="button">Copy</button><pre><code>import lcf
+
+fit = lcf.fit_strain_life(
+    total_strain_amp=[0.009, 0.007, 0.005, 0.003, 0.002, 0.00175],
+    stress_amp=[553, 522, 464, 405, 350, 319],   # MPa, half-life
+    reversals=[4234, 7398, 14768, 77104, 437498, 3327958],
+    E=208000,                                     # MPa
+    min_plastic_strain=5e-4,
+)
+print(fit.coffin_manson.eps_f, fit.coffin_manson.c)
+print(fit.transition_reversals)</code></pre></div>
+          <p>The <a href="https://github.com/dfieser/lcf-strain-life/tree/main/examples">examples folder</a> has runnable scripts, and the <a href="https://github.com/dfieser/lcf-strain-life/blob/main/docs/AGENT_USAGE.md">agent usage guide</a> lists every tool.</p>
+        </div>
+      </details>
+      <div class="callout callout--ok">
+        <span class="callout__label">Coming soon</span>
+        <p>A one-click installer that adds the toolkit to Claude Desktop without editing any settings file is in testing. It is not published yet, so for now the steps above are the supported way in.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container cta-band">
+      <h2>That is the whole setup.</h2>
+      <p class="lead">Ask your assistant anything about your fatigue data, in plain language.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="index.html">Back to overview</a>
+        <a class="btn btn-ghost" href="https://github.com/dfieser/lcf-strain-life">View on GitHub</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="container footer__bottom" style="padding-inline:0;border-top:none">
+      <span>&copy; 2026 David Fieser and Hugh Shortt. MIT licensed.</span>
+      <span>Works with any MCP-compatible assistant. Not affiliated with any assistant vendor.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
