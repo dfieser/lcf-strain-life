@@ -68,11 +68,34 @@ print(fit.basquin.sigma_f, fit.basquin.b)             # about 1073 MPa, -0.084
 print(fit.transition_reversals)                        # about 22,000 reversals
 ```
 
+## Quick start, MCP server
+
+The MCP server is the point of this project: it is how an AI agent drives the
+whole analysis by calling tools.
+
+```bash
+lcf-mcp                # runs the stdio MCP server
+# or
+python -m lcf
+```
+
+Register with Claude Code or Claude Desktop over stdio:
+
+```json
+{ "mcpServers": {
+    "lcf": { "command": "lcf-mcp" } } }
+```
+
 ## Quick start, graphical interface (no code)
 
-For users who do not program. A guided local app in the browser: upload test
-files or type in reduced data, fit the constants, predict life, export plots
-and a report. Everything runs on your machine and no data leaves it.
+A secondary, optional interface for people who do not program and are not
+using an AI agent. The agent-native MCP server above is the primary way to
+use this toolkit. The graphical app is a thin convenience layer over the same
+library functions, adding no capability the tools do not already expose.
+
+It is a guided local app in the browser: upload test files or type in reduced
+data, fit the constants, predict life, export plots and a report. Everything
+runs on your machine and no data leaves it.
 
 ```bash
 pip install "lcf-strain-life[gui]"
@@ -92,21 +115,6 @@ starting with the next release. Download it, double-click, and the app opens
 in the browser. Two honest caveats: the exe unpacks itself on every launch,
 so starting takes a while, and it is currently unsigned, so Windows
 SmartScreen will warn on first run. Choose "More info", then "Run anyway".
-
-## Quick start, MCP server
-
-```bash
-lcf-mcp                # runs the stdio MCP server
-# or
-python -m lcf
-```
-
-Register with Claude Code or Claude Desktop over stdio:
-
-```json
-{ "mcpServers": {
-    "lcf": { "command": "lcf-mcp" } } }
-```
 
 ## Documentation
 
