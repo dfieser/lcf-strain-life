@@ -9,6 +9,19 @@ workspace outside the public repository.
 
 ## [Unreleased]
 
+### Fixed
+- The desktop exe opened a console showing streamlit's interactive
+  first-run "enter your email" onboarding prompt, dead on arrival for a
+  double-click user. Two-part fix: the launcher now writes streamlit's
+  credentials file with an empty email on first run, exactly as streamlit
+  does when the prompt is left blank, never touching an existing file, and
+  the exe is now built windowed so no console appears at all. The launcher
+  also gives streamlit a null output sink because a windowed app has no
+  stdout/stderr. Found by the maintainer on a real double-click. The gap
+  in verification, every earlier check ran the server with a headless
+  override that skips the onboarding prompt, is closed by a new check that
+  launches the exe against a fresh empty user profile with no overrides.
+
 ### Added
 - A graphical no-code interface, `lcf.gui`, for researchers who do not
   program. Installed with `pip install lcf-strain-life[gui]` and started

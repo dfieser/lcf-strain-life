@@ -83,6 +83,11 @@ def main() -> int:
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--noconfirm", "--clean", "--onefile",
+        # no console window on double-click, the app lives in the browser.
+        # The launcher gives streamlit a null stdout/stderr sink and
+        # suppresses the interactive first-run email prompt, so nothing
+        # ever needs a terminal.
+        "--windowed",
         # the finished exe lands at the repository root automatically
         "--distpath", str(ROOT),
         "--name", APP_NAME,

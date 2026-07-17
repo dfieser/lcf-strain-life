@@ -194,6 +194,25 @@ def test_fig_png_bytes(sae1137_constants):
 
 
 # --------------------------------------------------------------------------- #
+# launcher: first-run credentials bootstrap
+# --------------------------------------------------------------------------- #
+def test_credentials_bootstrap_writes_once(tmp_path, monkeypatch):
+    import lcf.gui as gui
+
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
+    cred = tmp_path / ".streamlit" / "credentials.toml"
+
+    gui.ensure_streamlit_credentials()
+    assert cred.exists()
+    assert 'email = ""' in cred.read_text(encoding="utf-8")
+
+    # an existing file, for example a real user's, is never overwritten
+    cred.write_text("[general]\nemail = \"someone@lab.example\"\n", encoding="utf-8")
+    gui.ensure_streamlit_credentials()
+    assert "someone@lab.example" in cred.read_text(encoding="utf-8")
+
+
+# --------------------------------------------------------------------------- #
 # the app itself, headless
 # --------------------------------------------------------------------------- #
 def _app(default_timeout: float = 30.0):

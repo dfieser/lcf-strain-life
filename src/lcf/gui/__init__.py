@@ -10,6 +10,7 @@ disabled explicitly at launch.
 from __future__ import annotations
 
 import multiprocessing
+import os
 import sys
 from pathlib import Path
 
@@ -24,11 +25,41 @@ def app_path() -> Path:
     return Path(__file__).with_name("app.py")
 
 
+def ensure_streamlit_credentials() -> None:
+    """Suppress streamlit's first-run email prompt, once and for all.
+
+    On a machine that never ran streamlit, ``streamlit run`` stops at an
+    interactive "enter your email" onboarding prompt. In the windowed desktop
+    exe there is no console to answer it, and no user of this app should see
+    it anyway. Streamlit skips the prompt when its credentials file exists,
+    so write the file with an empty email exactly as streamlit itself does
+    when the prompt is left blank. An existing file is never touched.
+    """
+    path = Path.home() / ".streamlit" / "credentials.toml"
+    if path.exists():
+        return
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('[general]\nemail = ""\n', encoding="utf-8")
+    except OSError:
+        # a locked-down home directory only costs the pip user the one-time
+        # prompt, and the frozen build runs before this ever matters
+        pass
+
+
 def main() -> None:
     """Launch the Streamlit app (console entry point ``lcf-gui``)."""
     # No-op when not frozen. Required on Windows in the frozen build so
     # multiprocessing child processes do not re-launch the app.
     multiprocessing.freeze_support()
+
+    # The windowed (no-console) exe has no stdout/stderr. Streamlit and its
+    # logging write to both, so give them a sink instead of None.
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
     try:
         from streamlit.web import cli as stcli
     except ImportError as exc:  # pragma: no cover - import guard
@@ -36,6 +67,8 @@ def main() -> None:
             "The graphical interface needs the 'gui' extra:\n"
             "    pip install lcf-strain-life[gui]"
         ) from exc
+
+    ensure_streamlit_credentials()
 
     sys.argv = [
         "streamlit", "run", str(app_path()),
