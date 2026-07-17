@@ -84,12 +84,30 @@ python -m lcf      # same entry point
 The store directory comes from the `LCF_STORE_DIR` environment variable and
 defaults to `.lcfstore`.
 
+## Graphical interface (src/lcf/gui/)
+
+`lcf-gui` serves a local Streamlit app for users who do not program. Rules
+for working on it:
+
+1. The GUI is a thin layer. All science goes through the same `lcf`
+   functions the MCP server calls. Never duplicate an equation, a default,
+   or a dataset in the GUI. Example data comes from `lcf.datasets`.
+2. Pure logic lives in `lcf/gui/core.py` and is unit tested directly.
+   `lcf/gui/app.py` only wires widgets to it. Headless flow tests use
+   `streamlit.testing.v1.AppTest` in `tests/test_gui.py`.
+3. User-facing errors speak domain language, raised as `GuiInputError`,
+   never a raw traceback.
+4. The desktop build has one recipe, `scripts/build_gui_app.py`, used both
+   locally and by the `windows-app` job in publish.yml. Do not add a second
+   build path.
+
 ## Repository layout
 
 ```
-src/lcf/            library and MCP server
+src/lcf/            library, MCP server, and the gui subpackage
 tests/              unit tests including golden-value validation
 examples/           runnable example scripts
+scripts/            the desktop-app build recipe for the gui
 docs/               the physics PDF and the agent usage guide
 website/               landing page and setup guide, published to GitHub Pages
 ../dev/             workspace-level design notes and decision records, outside the repo

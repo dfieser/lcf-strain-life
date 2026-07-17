@@ -10,6 +10,27 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- A graphical no-code interface, `lcf.gui`, for researchers who do not
+  program. Installed with `pip install lcf-strain-life[gui]` and started
+  with `lcf-gui`, it serves a guided local Streamlit app: analyze raw lab
+  exports, fit the strain-life constants, predict life with optional Morrow
+  or SWT correction, estimate constants from monotonic properties, and
+  export plots, tables, and a markdown report. The GUI is a thin layer over
+  the same library functions the MCP server calls, with no duplicated
+  science, and it runs entirely on the local machine with Streamlit
+  telemetry disabled at launch. Covered by pure-logic tests and headless
+  AppTest flows in `tests/test_gui.py`.
+- A bundled example dataset module, `lcf.datasets`, holding the published
+  SAE 1137 reduced data with its citation in one place. The README example,
+  the demo script, and the GUI all source from it. The test-suite copy in
+  `tests/conftest.py` stays independent on purpose, a golden reference must
+  not come from the code it validates.
+- A desktop build recipe, `scripts/build_gui_app.py`, freezing the same
+  `lcf.gui` launcher into a PyInstaller one-folder app, and a `windows-app`
+  job in the publish workflow that builds it with that same script on each
+  version tag and attaches the zip to the GitHub release. The build is
+  unsigned for now and SmartScreen will warn on first run, the README says
+  so. The workflow job first runs on the next tag push.
 - The random fatigue limit fit is now benchmarked against the published
   Pascual-Meeker result. The laminate-panel dataset (Shimokawa and
   Hamaguchi 1987, 125 specimens, obtained from the public GPL SMRD.data R

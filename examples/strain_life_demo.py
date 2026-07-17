@@ -19,11 +19,13 @@ from lcf.service import LcfService
 
 OUT = Path(__file__).parent / "output"
 
-# --- published SAE 1137 per-test reduced data -------------------------------
-total_strain_amp = [0.00900, 0.00700, 0.00500, 0.00300, 0.00200, 0.00175]
-stress_amp = [553.0, 522.0, 464.0, 405.0, 350.0, 319.0]            # MPa, half-life
-reversals = [4234.0, 7398.0, 14768.0, 77104.0, 437498.0, 3327958.0]
-E = 208000.0                                                        # MPa
+# --- published SAE 1137 per-test reduced data, from the bundled dataset -----
+from lcf.datasets import SAE1137_E as E, sae1137_reduced
+
+_sae = sae1137_reduced()
+total_strain_amp = _sae["total_strain_amp"].tolist()
+stress_amp = _sae["stress_amp"].tolist()               # MPa, half-life
+reversals = _sae["reversals"].tolist()
 
 
 def main() -> None:

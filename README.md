@@ -68,6 +68,29 @@ print(fit.basquin.sigma_f, fit.basquin.b)             # about 1073 MPa, -0.084
 print(fit.transition_reversals)                        # about 22,000 reversals
 ```
 
+## Quick start, graphical interface (no code)
+
+For users who do not program. A guided local app in the browser: upload test
+files or type in reduced data, fit the constants, predict life, export plots
+and a report. Everything runs on your machine and no data leaves it.
+
+```bash
+pip install "lcf-strain-life[gui]"
+lcf-gui
+```
+
+The `gui` extra ships with the next PyPI release. Until then, install from a
+clone of this repository with `pip install -e ".[gui]"`.
+
+The app walks through the workflow in order: analyze raw test files, fit
+strain-life constants, predict life, estimate constants when no fatigue data
+exists, and export. A bundled published example dataset (SAE 1137) lets you
+try the whole flow without any files.
+
+A standalone Windows build (no Python needed) is attached to GitHub releases
+starting with the next release. It is currently unsigned, so Windows
+SmartScreen will warn on first run. Choose "More info", then "Run anyway".
+
 ## Quick start, MCP server
 
 ```bash

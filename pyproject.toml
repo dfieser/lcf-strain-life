@@ -40,10 +40,12 @@ dependencies = [
 
 [project.optional-dependencies]
 mcp = ["mcp[cli]>=1.27,<2"]
+gui = ["streamlit>=1.49"]
 dev = ["pytest>=8"]
 
 [project.scripts]
 lcf-mcp = "lcf.mcp_server:main"
+lcf-gui = "lcf.gui:main"
 
 [project.urls]
 Homepage = "https://github.com/dfieser/lcf-strain-life"

@@ -1,9 +1,11 @@
 name: publish
 
-# Publishes when a version tag (vX.Y.Z) is pushed. Two jobs run:
+# Publishes when a version tag (vX.Y.Z) is pushed. Three jobs run:
 # 1. build and upload to PyPI via Trusted Publishing (OIDC), no stored token.
 # 2. create the GitHub Release, which triggers the Zenodo archiver and DOI
 #    when the Zenodo GitHub integration is switched on for this repository.
+# 3. build the Windows desktop app for the graphical interface with the same
+#    scripts/build_gui_app.py used locally, and attach the zip to the release.
 # To release: bump the version, update the changelog, commit, then
 # `git tag vX.Y.Z && git push origin vX.Y.Z`. The full release process is
 # documented in the maintainer notes outside this repository.
@@ -51,3 +53,29 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
             --generate-notes
+
+  windows-app:
+    # The desktop build is unsigned. Windows SmartScreen warns on first run
+    # until the app is code signed, and the download page must say so.
+    name: build the Windows desktop app
+    runs-on: windows-latest
+    needs: github-release      # the release must exist before uploading to it
+    permissions:
+      contents: write          # required to upload the release asset
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Install the package with the gui extra and PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install ".[mcp,gui]" pyinstaller
+      - name: Build the one-folder app
+        run: python scripts/build_gui_app.py
+      - name: Zip and attach to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Compress-Archive -Path dist/lcf-strain-life-app -DestinationPath "lcf-strain-life-app-windows-$env:GITHUB_REF_NAME.zip"
+          gh release upload "$env:GITHUB_REF_NAME" "lcf-strain-life-app-windows-$env:GITHUB_REF_NAME.zip"
