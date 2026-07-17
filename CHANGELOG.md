@@ -10,6 +10,24 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Fixed
+- A code review of the graphical interface surfaced eight state-handling
+  defects, now all fixed and covered by tests. The displayed fit is dropped
+  when the table or fit options change so the shown constants can never
+  disagree with the visible data, and a Clear fit control was added. The
+  predict page lets a user choose between a fit and an estimate when both
+  exist, instead of the fit permanently shadowing the estimate. The ingest
+  banner reports the true per-batch outcome and no longer shows success when
+  every file failed, analyzed tests can be removed so a wrong file stops
+  feeding the fit, the exported markdown report escapes pipe characters in
+  user text, non-finite constants render as "not finite" and are flagged in
+  the report, estimate inputs pass raw values so a zero yields the precise
+  domain error, and the launcher only writes streamlit's global credentials
+  file in the frozen build, not for pip users. An adversarial multi-agent
+  review of the fixes then caught two more: the staleness check reset the
+  fit options on page switches and wrongly cleared a valid fit (fixed by
+  mirroring the options into session state), and the ingest guard checked
+  the wrong key so a valid stress-only lab file was rejected (the reader
+  normalizes a stress column to the canonical ``stress_eng`` role).
 - The desktop exe opened a console showing streamlit's interactive
   first-run "enter your email" onboarding prompt, dead on arrival for a
   double-click user. Two-part fix: the launcher now writes streamlit's

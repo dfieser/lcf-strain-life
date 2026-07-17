@@ -25,6 +25,18 @@ def app_path() -> Path:
     return Path(__file__).with_name("app.py")
 
 
+def should_bootstrap_credentials() -> bool:
+    """Whether to auto-write streamlit credentials on launch.
+
+    Only the frozen desktop build does. It is windowed with no console to
+    answer streamlit's interactive first-run email prompt, so the prompt must
+    be suppressed by writing the credentials file ahead of it. A plain ``pip``
+    install runs from a terminal where streamlit's normal onboarding applies,
+    so we do not silently mutate that user's global ``~/.streamlit`` config.
+    """
+    return bool(getattr(sys, "frozen", False))
+
+
 def ensure_streamlit_credentials() -> None:
     """Suppress streamlit's first-run email prompt, once and for all.
 
@@ -68,7 +80,8 @@ def main() -> None:
             "    pip install lcf-strain-life[gui]"
         ) from exc
 
-    ensure_streamlit_credentials()
+    if should_bootstrap_credentials():
+        ensure_streamlit_credentials()
 
     sys.argv = [
         "streamlit", "run", str(app_path()),

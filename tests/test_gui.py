@@ -151,6 +151,28 @@ def test_ingest_raw_file_end_to_end(synthetic_cyclic):
     assert set(row) == {"test", "total_strain_amp", "stress_amp", "reversals"}
 
 
+def _machine_csv_stress_bytes(synthetic_cyclic) -> bytes:
+    """A machine export carrying a stress column and no force column."""
+    buf = io.StringIO()
+    buf.write("Time (s),Axial Strain (mm/mm),Axial Stress (MPa)\n")
+    for t, e, f in zip(synthetic_cyclic.time, synthetic_cyclic.strain,
+                       synthetic_cyclic.force):
+        buf.write(f"{t:.6f},{e:.6e},{f / synthetic_cyclic.area:.5f}\n")
+    return buf.getvalue().encode()
+
+
+def test_ingest_raw_file_stress_column_no_force(synthetic_cyclic):
+    # regression: a stress-only file normalizes to the canonical role
+    # 'stress_eng', which the ingest guard must accept without an area.
+    ing = core.ingest_raw_file(
+        "STRESS-1.csv", _machine_csv_stress_bytes(synthetic_cyclic),
+        name="STRESS-1", area=None, E=200000.0,
+    )
+    s = ing.analysis.summary
+    assert s["stress_amp"] == pytest.approx(synthetic_cyclic.stress_amp, rel=0.05)
+    assert "stress_eng" in ing.resolution.get("columns", {})
+
+
 def test_ingest_raw_file_bad_file_is_domain_error():
     with pytest.raises(core.GuiInputError):
         core.ingest_raw_file(
@@ -210,6 +232,132 @@ def test_credentials_bootstrap_writes_once(tmp_path, monkeypatch):
     cred.write_text("[general]\nemail = \"someone@lab.example\"\n", encoding="utf-8")
     gui.ensure_streamlit_credentials()
     assert "someone@lab.example" in cred.read_text(encoding="utf-8")
+
+
+def test_should_bootstrap_credentials_frozen_only(monkeypatch):
+    # finding 6: pip installs must not silently write the user's global
+    # ~/.streamlit; only the frozen desktop build bootstraps credentials.
+    import sys
+
+    import lcf.gui as gui
+
+    monkeypatch.delattr(sys, "frozen", raising=False)
+    assert gui.should_bootstrap_credentials() is False
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    assert gui.should_bootstrap_credentials() is True
+
+
+# --------------------------------------------------------------------------- #
+# core helpers behind the review fixes
+# --------------------------------------------------------------------------- #
+def test_fit_signature_stable_and_sensitive():
+    # finding 1: the signature must change when any fit-relevant input changes,
+    # so the app can drop a stale fit.
+    tbl = core.example_summary_table()
+    base = core.fit_signature(tbl, 208000.0, 5e-4, False)
+    assert base == core.fit_signature(tbl.copy(), 208000.0, 5e-4, False)
+
+    changed_data = tbl.copy()
+    changed_data.loc[0, "stress_amp"] = 999.0
+    assert core.fit_signature(changed_data, 208000.0, 5e-4, False) != base
+    assert core.fit_signature(tbl, 210000.0, 5e-4, False) != base
+    assert core.fit_signature(tbl, 208000.0, 1e-3, False) != base
+    assert core.fit_signature(tbl, 208000.0, 5e-4, True) != base
+    # a non-fit column (test name) must not affect the signature
+    renamed = tbl.copy()
+    renamed.loc[0, "test"] = "renamed"
+    assert core.fit_signature(renamed, 208000.0, 5e-4, False) == base
+
+
+def test_analyze_uploads_reports_batch_outcome(synthetic_cyclic):
+    # finding 3: the batch result must reflect this batch, not a running total.
+    good = _machine_csv_bytes(synthetic_cyclic)
+    files = [("good.csv", good), ("bad.csv", b"not a data file\n")]
+    ok, errors = core.analyze_uploads(
+        files, area=synthetic_cyclic.area, E=200000.0,
+    )
+    assert len(ok) == 1 and ok[0].filename == "good.csv"
+    assert len(errors) == 1 and errors[0][0] == "bad.csv"
+
+    # all-bad batch yields zero successes, so the app shows no false success
+    none_ok, all_err = core.analyze_uploads(
+        [("bad.csv", b"junk\n")], area=1.0, E=1.0,
+    )
+    assert none_ok == [] and len(all_err) == 1
+
+
+def test_drop_test_row():
+    # finding 4: removing a test must drop exactly its row.
+    tbl = core.example_summary_table()
+    n = len(tbl)
+    out = core.drop_test_row(tbl, "SAE1137-3")
+    assert len(out) == n - 1
+    assert "SAE1137-3" not in set(out["test"])
+    # dropping a non-existent name is a no-op, and a table without a test
+    # column is returned unchanged
+    assert len(core.drop_test_row(tbl, "nope")) == n
+    assert core.drop_test_row(pd.DataFrame({"x": [1]}), "a").equals(pd.DataFrame({"x": [1]}))
+
+
+def test_select_source_prefers_and_falls_back():
+    # finding 2: an explicit preference must win, with sane fallbacks.
+    assert core.select_source(True, True, "estimate") == "estimate"
+    assert core.select_source(True, True, "fit") == "fit"
+    assert core.select_source(True, True, None) == "fit"
+    assert core.select_source(False, True, "fit") == "estimate"   # prefer missing
+    assert core.select_source(True, False, "estimate") == "fit"   # prefer missing
+    assert core.select_source(False, False, None) is None
+
+
+def test_md_table_escapes_pipe():
+    # finding 5: a user test name containing '|' must not break the table.
+    import re
+
+    df = pd.DataFrame({"test": ["A|B"], "value": [1.0]})
+    md = core._md_table(df)
+    assert "A\\|B" in md
+    # the data row must have the same number of *unescaped* pipes (column
+    # delimiters) as the header, so the '|' in the value does not inject a column
+    def delimiters(line):
+        return len(re.findall(r"(?<!\\)\|", line))
+
+    lines = [ln for ln in md.splitlines() if ln.startswith("|")]
+    assert delimiters(lines[2]) == delimiters(lines[0])
+
+
+def test_format_value_nonfinite():
+    # finding 8: non-finite constants read plainly, never nan/inf.
+    assert core.format_value(float("inf")) == "not finite"
+    assert core.format_value(float("nan")) == "not finite"
+    assert core.format_value(np.float64(np.inf)) == "not finite"
+    assert core.format_value(1234.5) == "1234.5"
+    assert core.format_value("text") == "text"
+
+
+def test_report_flags_nonfinite_constants():
+    # finding 8: a degenerate fit's non-finite constant is flagged in the report.
+    constants = pd.DataFrame(
+        {"constant": ["b", "2N_t (reversals)"],
+         "value": [-0.09, float("inf")],
+         "meaning": ["exp", "transition"]},
+    )
+    md = core.build_report_markdown(
+        material="M", constants=constants, summary_table=None,
+        warnings=[], source="fitted",
+    )
+    assert "not finite" in md
+    assert "degenerate fit" in md
+
+
+def test_estimate_zero_ra_gives_specific_error():
+    # finding 7: a deliberately-zero RA must raise the RA-range error, not a
+    # misleading "requires RA". This is the library behavior the app relies on
+    # by passing raw field values instead of `RA or None`.
+    with pytest.raises(ValueError, match="RA must be a fraction"):
+        lcf.estimate_strain_life_constants(
+            "universal_slopes", material_class="steel",
+            Su=500.0, E=200000.0, HB=150.0, RA=0.0,
+        )
 
 
 # --------------------------------------------------------------------------- #
@@ -310,3 +458,80 @@ def test_app_report_page_after_fit():
     at.run()
     assert not at.exception
     assert at.markdown, "report preview should render markdown"
+
+
+def _load_example_and_fit(at):
+    at.button[0].click()  # load example on the start page
+    at.run()
+    at.sidebar.radio[0].set_value(at.sidebar.radio[0].options[2])  # fit page
+    at.run()
+    [b for b in at.button if "Fit the strain-life" in b.label][0].click()
+    at.run()
+    return at
+
+
+def test_app_clear_fit_button():
+    # finding 1/2: a clear-fit control exists and actually drops the fit.
+    at = _load_example_and_fit(_app().run())
+    assert at.session_state["fit"] is not None
+    clear = [b for b in at.button if b.label == "Clear fit"]
+    assert clear, "Clear fit button not found"
+    clear[0].click()
+    at.run()
+    assert at.session_state["fit"] is None
+
+
+def test_app_stale_fit_invalidated_on_option_change():
+    # finding 1: changing E after a fit invalidates the shown fit instead of
+    # leaving mismatched constants on screen.
+    at = _load_example_and_fit(_app().run())
+    assert at.session_state["fit"] is not None
+    e_inputs = [n for n in at.number_input if "Elastic modulus" in n.label]
+    assert e_inputs, "fit-page E input not found"
+    e_inputs[0].set_value(e_inputs[0].value + 1000.0)
+    at.run()
+    assert at.session_state["fit"] is None, "stale fit was not invalidated"
+
+
+def test_app_fit_survives_navigation_with_nondefault_options():
+    # regression: a non-default min-plastic-strain must persist across page
+    # switches so the staleness check does not wrongly drop a valid fit.
+    at = _app().run()
+    at.button[0].click()  # load example
+    at.run()
+    at.sidebar.radio[0].set_value(at.sidebar.radio[0].options[2])  # fit page
+    at.run()
+    minp = [n for n in at.number_input if "plastic strain below" in n.label]
+    assert minp, "min-plastic-strain input not found"
+    minp[0].set_value(1e-3)
+    at.run()
+    [b for b in at.button if "Fit the strain-life" in b.label][0].click()
+    at.run()
+    assert at.session_state["fit"] is not None
+    # leave the fit page and come back; the fit must still be there
+    at.sidebar.radio[0].set_value(at.sidebar.radio[0].options[3])  # predict
+    at.run()
+    at.sidebar.radio[0].set_value(at.sidebar.radio[0].options[2])  # back to fit
+    at.run()
+    assert at.session_state["fit"] is not None, "valid fit was spuriously cleared"
+
+
+def test_app_predict_source_radio_allows_estimate():
+    # finding 2: with both a fit and an estimate, the user can predict from the
+    # estimate, not only the fit.
+    at = _load_example_and_fit(_app().run())
+    at.sidebar.radio[0].set_value(at.sidebar.radio[0].options[4])  # estimate page
+    at.run()
+    [b for b in at.button if b.label == "Estimate"][0].click()
+    at.run()
+    assert at.session_state["estimated"] is not None
+    at.sidebar.radio[0].set_value(at.sidebar.radio[0].options[3])  # predict page
+    at.run()
+    source = [r for r in at.radio if "Use constants from" in (r.label or "")]
+    assert source, "source radio not shown when both fit and estimate exist"
+    source[0].set_value("estimate")
+    at.run()
+    [b for b in at.button if b.label == "Predict"][0].click()
+    at.run()
+    assert not at.exception
+    assert at.session_state["last_prediction"]["reversals"] > 0

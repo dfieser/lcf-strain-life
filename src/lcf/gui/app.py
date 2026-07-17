@@ -30,6 +30,10 @@ def _init_state() -> None:
     ss = st.session_state
     ss.setdefault("fit_table", core.empty_summary_table())
     ss.setdefault("fit_E", 200000.0)
+    # fit options are mirrored into session_state so switching sidebar steps
+    # does not reset them and spuriously invalidate a still-valid fit
+    ss.setdefault("fit_minp", 5e-4)
+    ss.setdefault("fit_refine", False)
     ss.setdefault("fit", None)                # lcf.StrainLifeFit
     ss.setdefault("fit_warnings", [])
     ss.setdefault("fit_data", None)           # DataFrame actually used in the fit
@@ -39,10 +43,32 @@ def _init_state() -> None:
     ss.setdefault("estimated_E", None)
 
 
-def _active_constants() -> tuple[dict, str] | None:
-    """The constants to predict with: the fit if present, else the estimate."""
+def _clear_fit() -> None:
+    """Drop the current fit and everything derived from it."""
     ss = st.session_state
-    if ss.fit is not None:
+    ss.fit = None
+    ss.fit_data = None
+    ss.fit_warnings = []
+    ss.pop("fit_signature", None)
+
+
+def _have_fit() -> bool:
+    return st.session_state.fit is not None
+
+
+def _have_estimate() -> bool:
+    return st.session_state.estimated is not None and bool(st.session_state.estimated_E)
+
+
+def _active_constants(prefer: str | None = None) -> tuple[dict, str] | None:
+    """The constants to predict with, honoring an explicit source preference.
+
+    ``prefer`` is ``fit``, ``estimate``, or None. Falls back to the fit, then
+    the estimate, so a user with both can choose either one.
+    """
+    ss = st.session_state
+    source = core.select_source(_have_fit(), _have_estimate(), prefer)
+    if source == "fit":
         f: lcf.StrainLifeFit = ss.fit
         return (
             {
@@ -52,7 +78,7 @@ def _active_constants() -> tuple[dict, str] | None:
             },
             "fitted from test data (step 2)",
         )
-    if ss.estimated is not None and ss.estimated_E:
+    if source == "estimate":
         e = ss.estimated
         return (
             {"sigma_f": e.sigma_f, "b": e.b, "eps_f": e.eps_f, "c": e.c,
@@ -142,35 +168,38 @@ def page_ingest() -> None:
         type=["csv", "txt", "dat", "tsv", "asc"],
     )
     if uploads and st.button("Analyze uploaded files", type="primary"):
-        for up in uploads:
-            name = up.name.rsplit(".", 1)[0]
-            try:
-                ing = core.ingest_raw_file(
-                    up.name, up.getvalue(),
-                    name=name,
-                    area=area or None,
-                    E=E_in or None,
-                    R=R,
-                    material=st.session_state.material,
-                    already_true=already_true,
-                    failure_criterion_pct=fail_pct,
-                )
-            except core.GuiInputError as exc:
-                st.error(str(exc))
-                continue
-            st.session_state.ingested[up.name] = ing
-            row = core.summary_row(ing.analysis)
-            tbl = st.session_state.fit_table
-            tbl = tbl[tbl["test"] != row["test"]]
-            st.session_state.fit_table = pd.concat(
-                [tbl, pd.DataFrame([row])], ignore_index=True
-            )
-        st.success(
-            f"{len(st.session_state.ingested)} test(s) analyzed. The half-life "
-            "summaries were added to the fit table in step 2."
+        files = [(up.name, up.getvalue()) for up in uploads]
+        ok, errors = core.analyze_uploads(
+            files,
+            area=area or None,
+            E=E_in or None,
+            R=R,
+            material=st.session_state.material,
+            already_true=already_true,
+            failure_criterion_pct=fail_pct,
         )
+        for _fname, msg in errors:
+            st.error(msg)
+        for ing in ok:
+            st.session_state.ingested[ing.filename] = ing
+            row = core.summary_row(ing.analysis)
+            st.session_state.fit_table = pd.concat(
+                [core.drop_test_row(st.session_state.fit_table, row["test"]),
+                 pd.DataFrame([row])],
+                ignore_index=True,
+            )
+        if ok:
+            st.success(
+                f"{len(ok)} of {len(files)} file(s) analyzed. The half-life "
+                "summaries were added to the fit table in step 2."
+            )
+        elif errors:
+            st.warning("No files could be analyzed. See the errors above.")
 
-    for fname, ing in st.session_state.ingested.items():
+    # Removal is deferred to after the loop so we do not mutate the dict while
+    # iterating it, then a rerun redraws the reduced set.
+    to_remove: tuple[str, str] | None = None
+    for fname, ing in list(st.session_state.ingested.items()):
         s = ing.analysis.summary
         with st.expander(f"{fname}: {s['n_cycles']} cycles, N_f = {s['n_f']}"):
             st.caption(
@@ -200,6 +229,16 @@ def page_ingest() -> None:
                 st.pyplot(plots.plot_peak_valley(ing.analysis.metrics))
             with p3:
                 st.pyplot(plots.plot_energy(ing.analysis.metrics))
+            if st.button("Remove this test", key=f"remove_{fname}"):
+                to_remove = (fname, s["name"])
+
+    if to_remove is not None:
+        fname, test_name = to_remove
+        st.session_state.ingested.pop(fname, None)
+        st.session_state.fit_table = core.drop_test_row(
+            st.session_state.fit_table, test_name
+        )
+        st.rerun()
 
 
 def page_fit() -> None:
@@ -246,15 +285,18 @@ def page_fit() -> None:
         st.session_state.fit_E = E
         minp = c2.number_input(
             "Exclude points with plastic strain below", min_value=0.0,
-            value=5e-4, format="%.5f",
+            value=float(st.session_state.fit_minp), format="%.5f",
             help="Near-runout points whose plastic strain is at measurement-"
                  "noise level distort the Coffin-Manson fit. 0 disables.",
         )
+        st.session_state.fit_minp = minp
         refine = st.checkbox(
-            "Nonlinear refinement of the combined curve", value=False,
+            "Nonlinear refinement of the combined curve",
+            value=bool(st.session_state.fit_refine),
             help="Refines the four constants with a nonlinear fit of the "
                  "total-strain curve, seeded by the standard log-log fits.",
         )
+        st.session_state.fit_refine = refine
 
     if st.button("Fit the strain-life models", type="primary"):
         try:
@@ -268,6 +310,9 @@ def page_fit() -> None:
         else:
             st.session_state.fit = fit
             st.session_state.fit_warnings = warns
+            st.session_state.fit_signature = core.fit_signature(
+                edited, st.session_state.fit_E, minp or None, refine
+            )
             df = edited.copy()
             for col in ("total_strain_amp", "stress_amp", "reversals"):
                 df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -275,13 +320,31 @@ def page_fit() -> None:
                 subset=["total_strain_amp", "stress_amp", "reversals"]
             )
 
+    # Invalidate a shown fit if the table or options changed since it was made,
+    # so the displayed constants and plots never disagree with the data above.
+    current_sig = core.fit_signature(
+        edited, st.session_state.fit_E, minp or None, refine
+    )
+    if (
+        st.session_state.fit is not None
+        and st.session_state.get("fit_signature") != current_sig
+    ):
+        _clear_fit()
+        st.info(
+            "The data or fit options changed since the last fit. Click Fit the "
+            "strain-life models to recompute the constants."
+        )
+
     fit: lcf.StrainLifeFit | None = st.session_state.fit
     if fit is not None:
+        if st.button("Clear fit"):
+            _clear_fit()
+            st.rerun()
         for w in st.session_state.fit_warnings:
             st.warning(w)
         st.subheader("Fitted constants")
         st.dataframe(
-            core.constants_frame(fit).style.format({"value": "{:.5g}"}),
+            core.constants_frame(fit).style.format({"value": core.format_value}),
             width="stretch", hide_index=True,
         )
         data = st.session_state.fit_data
@@ -310,7 +373,18 @@ def page_fit() -> None:
 
 def page_predict() -> None:
     st.header("Predict life")
-    active = _active_constants()
+    prefer = None
+    if _have_fit() and _have_estimate():
+        prefer = st.radio(
+            "Use constants from",
+            ["fit", "estimate"],
+            format_func={
+                "fit": "Fit from test data (step 2)",
+                "estimate": "Estimate from properties (step 4)",
+            }.get,
+            horizontal=True,
+        )
+    active = _active_constants(prefer)
     if active is None:
         st.info(
             "No constants yet. Fit them from test data (step 2) or estimate "
@@ -398,15 +472,21 @@ def page_estimate() -> None:
 
     if st.button("Estimate", type="primary"):
         try:
+            # Pass the raw field values, not `x or None`. A deliberately entered
+            # 0 is an invalid boundary, not a missing field, and the estimator's
+            # own validation gives the precise message (for example RA out of
+            # range) instead of a misleading "requires RA".
             est = lcf.estimate_strain_life_constants(
                 method, material_class=mat_class,
-                Su=Su or None, E=E or None, HB=HB or None, RA=RA or None,
+                Su=Su, E=E, HB=HB, RA=RA,
             )
         except ValueError as exc:
             st.error(str(exc))
         else:
             st.session_state.estimated = est
-            st.session_state.estimated_E = E or None
+            # Prediction needs a positive modulus. A zero here means no usable
+            # E, so store None and the predict page will say so.
+            st.session_state.estimated_E = E if E > 0 else None
 
     est = st.session_state.estimated
     if est is not None:
@@ -414,7 +494,7 @@ def page_estimate() -> None:
             st.warning(w)
         st.subheader("Estimated constants")
         st.dataframe(
-            core.estimated_constants_frame(est).style.format({"value": "{:.5g}"}),
+            core.estimated_constants_frame(est).style.format({"value": core.format_value}),
             width="stretch", hide_index=True,
         )
         st.caption(f"Source: {est.citation}")
@@ -422,8 +502,8 @@ def page_estimate() -> None:
             st.caption("These constants are now available in step 3 · Predict life.")
         else:
             st.caption(
-                "Step 3 uses the fitted constants from step 2. Clear that fit "
-                "to predict with these estimates instead."
+                "Both a fit (step 2) and this estimate are available. On step 3 · "
+                "Predict life you can choose which one to use."
             )
 
 

@@ -8,6 +8,7 @@ widgets to these functions.
 from __future__ import annotations
 
 import io
+import json
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -49,6 +50,41 @@ def empty_summary_table() -> pd.DataFrame:
 
 
 # --- fitting from a reduced-data table --------------------------------------
+
+FIT_COLUMNS = ["total_strain_amp", "stress_amp", "reversals"]
+
+
+def fit_signature(
+    table: pd.DataFrame,
+    E: float | None,
+    min_plastic_strain: float | None,
+    refine_nonlinear: bool,
+) -> str:
+    """A stable string identifying the inputs of a fit, for staleness checks.
+
+    Two calls return the same string exactly when the fit-relevant inputs (the
+    three numeric columns, E, and the two options) are identical. The app uses
+    it to tell when a displayed fit no longer matches the edited table and must
+    be recomputed, so it never shows constants that disagree with the data.
+    """
+    present = [c for c in FIT_COLUMNS if c in table.columns]
+    sub = table[present].copy()
+    for c in present:
+        sub[c] = pd.to_numeric(sub[c], errors="coerce")
+    records = [
+        {c: (None if pd.isna(v) else float(v)) for c, v in zip(present, row)}
+        for row in sub.to_numpy().tolist()
+    ]
+    payload = {
+        "data": records,
+        "E": None if E is None else float(E),
+        "min_plastic_strain": (
+            None if min_plastic_strain is None else float(min_plastic_strain)
+        ),
+        "refine_nonlinear": bool(refine_nonlinear),
+    }
+    return json.dumps(payload, sort_keys=True)
+
 
 def fit_from_table(
     table: pd.DataFrame,
@@ -182,19 +218,22 @@ def ingest_raw_file(
             raise GuiInputError(
                 f"'{filename}' could not be read as a delimited lab export: {exc}"
             ) from exc
+        # The lab reader normalizes a stress column to the canonical role
+        # "stress_eng" (see lcf.schema.COL_STRESS_ENG), not "stress".
         cols = resolution.get("columns", {})
+        has_stress = "stress_eng" in cols
         if "strain" not in cols:
             raise GuiInputError(
                 f"no strain column was recognized in '{filename}'. Columns "
                 f"found: {resolution.get('columns')}. Rename the strain column "
                 "(e.g. to 'strain') or export with a standard header."
             )
-        if "force" not in cols and "stress" not in cols:
+        if "force" not in cols and not has_stress:
             raise GuiInputError(
                 f"no force or stress column was recognized in '{filename}'. "
                 "The file needs a force (N/kN) or stress (MPa) column."
             )
-        if "force" in cols and "stress" not in cols and (area is None or area <= 0):
+        if "force" in cols and not has_stress and (area is None or area <= 0):
             raise GuiInputError(
                 f"'{filename}' has a force column, so the specimen "
                 "cross-sectional area (mm²) is required to compute stress."
@@ -233,7 +272,69 @@ def summary_row(a: "lcf.TestAnalysis") -> dict:
     }
 
 
+def analyze_uploads(
+    files: list[tuple[str, bytes]],
+    *,
+    area: float | None,
+    E: float | None,
+    R: float = -1.0,
+    material: str | None = None,
+    already_true: bool = False,
+    failure_criterion_pct: float = 50.0,
+) -> tuple[list[IngestedTest], list[tuple[str, str]]]:
+    """Analyze a batch of uploaded files, reporting the true per-batch outcome.
+
+    ``files`` is a list of ``(filename, data_bytes)``. Each file is ingested
+    independently. Returns ``(successes, errors)`` where ``errors`` is a list of
+    ``(filename, message)``, so the caller can report how many files in *this*
+    batch actually analyzed instead of a running total.
+    """
+    ok: list[IngestedTest] = []
+    errors: list[tuple[str, str]] = []
+    for filename, data in files:
+        name = filename.rsplit(".", 1)[0]
+        try:
+            ing = ingest_raw_file(
+                filename, data, name=name, area=area, E=E, R=R,
+                material=material, already_true=already_true,
+                failure_criterion_pct=failure_criterion_pct,
+            )
+        except GuiInputError as exc:
+            errors.append((filename, str(exc)))
+            continue
+        ok.append(ing)
+    return ok, errors
+
+
+def drop_test_row(table: pd.DataFrame, test_name: str) -> pd.DataFrame:
+    """Return the fit table without the row whose ``test`` equals test_name."""
+    if "test" not in table.columns:
+        return table
+    return table[table["test"] != test_name].reset_index(drop=True)
+
+
 # --- prediction --------------------------------------------------------------
+
+def select_source(
+    have_fit: bool, have_estimate: bool, prefer: str | None = None
+) -> str | None:
+    """Choose which constants source to predict with.
+
+    Honors an explicit ``prefer`` of ``fit`` or ``estimate`` when that source is
+    available, otherwise falls back to the fit, then the estimate, then None.
+    This lets a user with both a fit and an estimate pick either one, instead of
+    the fit permanently shadowing the estimate.
+    """
+    if prefer == "estimate" and have_estimate:
+        return "estimate"
+    if prefer == "fit" and have_fit:
+        return "fit"
+    if have_fit:
+        return "fit"
+    if have_estimate:
+        return "estimate"
+    return None
+
 
 def predict_life(
     constants: dict,
@@ -297,19 +398,43 @@ def fig_png_bytes(fig) -> bytes:
     return buf.getvalue()
 
 
+def format_value(v) -> str:
+    """Format one cell value for display. Non-finite numbers read plainly.
+
+    A degenerate fit can produce an infinite or NaN constant. Rendering it as a
+    bare ``inf`` or ``nan`` reads like a software bug, so it is shown as
+    ``not finite`` instead, both on screen and in exports.
+    """
+    if isinstance(v, bool):
+        return str(v)
+    if isinstance(v, (int, float, np.integer, np.floating)):
+        f = float(v)
+        return f"{f:.6g}" if np.isfinite(f) else "not finite"
+    return str(v)
+
+
+def _md_escape(text: str) -> str:
+    """Escape characters that would break a markdown table cell."""
+    return text.replace("\\", "\\\\").replace("|", "\\|").replace("\n", " ")
+
+
 def _md_table(df: pd.DataFrame) -> str:
     """A GitHub pipe table, without the optional tabulate dependency."""
-    def fmt(v) -> str:
-        if isinstance(v, float):
-            return f"{v:.6g}"
-        return str(v)
-
-    cols = list(df.columns)
+    cols = [_md_escape(str(c)) for c in df.columns]
     lines = ["| " + " | ".join(cols) + " |",
              "| " + " | ".join("---" for _ in cols) + " |"]
     for _, row in df.iterrows():
-        lines.append("| " + " | ".join(fmt(row[c]) for c in cols) + " |")
+        cells = [_md_escape(format_value(row[c])) for c in df.columns]
+        lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines)
+
+
+def _has_nonfinite(df: pd.DataFrame) -> bool:
+    """True if the frame's ``value`` column holds any non-finite number."""
+    if "value" not in df.columns:
+        return False
+    vals = pd.to_numeric(df["value"], errors="coerce").to_numpy(dtype=float)
+    return bool((~np.isfinite(vals)).any())
 
 
 def build_report_markdown(
@@ -341,8 +466,15 @@ def build_report_markdown(
             _md_table(summary_table),
             "",
         ]
-    if warnings:
+    notes = list(warnings)
+    if _has_nonfinite(constants):
+        notes.append(
+            "One or more constants above are not finite, which indicates a "
+            "degenerate fit (too few points, or points too close to collinear). "
+            "Treat these results as unreliable."
+        )
+    if notes:
         lines += ["## Notes", ""]
-        lines += [f"- {w}" for w in warnings]
+        lines += [f"- {w}" for w in notes]
         lines += [""]
     return "\n".join(lines)
