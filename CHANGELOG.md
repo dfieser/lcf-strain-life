@@ -31,8 +31,13 @@ workspace outside the public repository.
   builds it with that same script on each version tag and attaches the exe
   to the GitHub release. One-file is a deliberate choice for a single
   double-clickable artifact, accepting slower startup because the exe
-  unpacks itself on every launch. The exe exceeds GitHub's 100 MB file
-  limit so it is gitignored, not committed. The build is unsigned for now
+  unpacks itself on every launch. The build excludes packages the GUI can
+  never reach, numba/llvmlite, plotly, cryptography, tkinter, the AVIF
+  codec, and the MCP server with its pywin32 chain, each exclusion
+  documented with its measured size in the build script. That cut the exe
+  from 182 MB to 119 MB and startup from about 11 to about 7 seconds,
+  measured on Windows 11. The exe still exceeds GitHub's 100 MB file limit
+  so it is gitignored, not committed. The build is unsigned for now
   and SmartScreen will warn on first run, the README says so. The workflow
   job first runs on the next tag push.
 - The random fatigue limit fit is now benchmarked against the published

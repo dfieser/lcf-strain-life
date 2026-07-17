@@ -33,6 +33,30 @@ ROOT = Path(__file__).resolve().parents[1]
 APP_NAME = "lcf-strain-life-app"
 SEP = ";" if os.name == "nt" else ":"
 
+# Packages measurably bloating the exe that the GUI can never reach. Most are
+# optional imports that pandas, streamlit, or PIL guard with try/except, so
+# excluding them just makes the guard take its normal fallback path. Sizes are
+# the uncompressed payload measured from PKG-00.toc on 2026-07-17.
+EXCLUDES = [
+    # pulled through pandas' and the fatigue adapters' optional numba path,
+    # the GUI computes nothing with numba (llvmlite.dll alone was 107 MB)
+    "numba", "llvmlite",
+    # streamlit's optional plotly chart backend, the GUI only uses st.pyplot
+    # (14 MB)
+    "plotly",
+    # optional backend of PyJWT, only needed for streamlit's OIDC st.login,
+    # which a local single-user app has no use for (10 MB)
+    "cryptography",
+    # matplotlib's Tk window backend, the GUI renders figures headlessly
+    # (tcl/tk runtimes, 8 MB)
+    "tkinter", "_tkinter",
+    # PIL's AVIF codec, plots are PNG (8 MB)
+    "PIL._avif", "PIL.AvifImagePlugin",
+    # the MCP server has its own entry point and makes no sense inside the
+    # GUI exe, and it drags in the mcp SDK and pywin32 (7 MB and up)
+    "mcp", "win32com", "pythoncom", "pywintypes", "pythonwin",
+]
+
 
 def lcf_submodules() -> list[str]:
     """Every module in the installed lcf package, found at build time.
@@ -47,6 +71,9 @@ def lcf_submodules() -> list[str]:
 
     names = ["lcf"]
     for m in pkgutil.walk_packages(lcf.__path__, prefix="lcf."):
+        # the MCP server is excluded from the GUI exe, see EXCLUDES
+        if m.name == "lcf.mcp_server":
+            continue
         names.append(m.name)
     return names
 
@@ -69,6 +96,8 @@ def main() -> int:
     ]
     for name in lcf_submodules():
         cmd += ["--hidden-import", name]
+    for name in EXCLUDES:
+        cmd += ["--exclude-module", name]
     cmd.append(str(ROOT / "scripts" / "gui_entry.py"))
     print(" ".join(cmd))
     return subprocess.call(cmd, cwd=ROOT)
