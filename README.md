@@ -87,8 +87,10 @@ strain-life constants, predict life, estimate constants when no fatigue data
 exists, and export. A bundled published example dataset (SAE 1137) lets you
 try the whole flow without any files.
 
-A standalone Windows build (no Python needed) is attached to GitHub releases
-starting with the next release. It is currently unsigned, so Windows
+A standalone Windows exe (no Python needed) is attached to GitHub releases
+starting with the next release. Download it, double-click, and the app opens
+in the browser. Two honest caveats: the exe unpacks itself on every launch,
+so starting takes a while, and it is currently unsigned, so Windows
 SmartScreen will warn on first run. Choose "More info", then "Run anyway".
 
 ## Quick start, MCP server

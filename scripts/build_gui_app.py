@@ -2,16 +2,23 @@
 
 One script for local builds and CI, so there is a single build recipe. It
 freezes the same ``lcf.gui`` launcher that the ``lcf-gui`` command uses into
-a PyInstaller one-folder app. One-folder is deliberate: one-file builds start
-slowly and trigger antivirus false positives.
+a single PyInstaller one-file executable, dropped at the repository root.
+
+One-file is a deliberate maintainer choice for a single double-clickable
+artifact. The costs are real and accepted: the exe unpacks itself to a temp
+directory on every launch, so startup takes noticeably longer than the
+one-folder layout, and one-file builds trigger antivirus false positives
+more often. The exe is far over GitHub's 100 MB file limit, so it is
+gitignored and distributed as a release asset instead, uploaded by the
+windows-app job in publish.yml.
 
 Usage, from the repository root with the gui extra and pyinstaller installed:
 
     python scripts/build_gui_app.py
 
-Output: ``dist/lcf-strain-life-app/`` with ``lcf-strain-life-app.exe`` inside
-(or the platform equivalent). The build is unsigned. Windows SmartScreen and
-macOS Gatekeeper will warn until the app is code signed.
+Output: ``lcf-strain-life-app.exe`` at the repository root (or the platform
+equivalent). The build is unsigned. Windows SmartScreen and macOS Gatekeeper
+will warn until the app is code signed.
 """
 
 from __future__ import annotations
@@ -48,7 +55,9 @@ def main() -> int:
     app_py = ROOT / "src" / "lcf" / "gui" / "app.py"
     cmd = [
         sys.executable, "-m", "PyInstaller",
-        "--noconfirm", "--clean", "--onedir",
+        "--noconfirm", "--clean", "--onefile",
+        # the finished exe lands at the repository root automatically
+        "--distpath", str(ROOT),
         "--name", APP_NAME,
         # streamlit ships its web frontend as package data and reads its own
         # version from package metadata, both must be collected explicitly

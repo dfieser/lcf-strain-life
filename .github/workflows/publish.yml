@@ -5,7 +5,7 @@ name: publish
 # 2. create the GitHub Release, which triggers the Zenodo archiver and DOI
 #    when the Zenodo GitHub integration is switched on for this repository.
 # 3. build the Windows desktop app for the graphical interface with the same
-#    scripts/build_gui_app.py used locally, and attach the zip to the release.
+#    scripts/build_gui_app.py used locally, and attach the exe to the release.
 # To release: bump the version, update the changelog, commit, then
 # `git tag vX.Y.Z && git push origin vX.Y.Z`. The full release process is
 # documented in the maintainer notes outside this repository.
@@ -71,11 +71,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install ".[mcp,gui]" pyinstaller
-      - name: Build the one-folder app
+      - name: Build the one-file exe
         run: python scripts/build_gui_app.py
-      - name: Zip and attach to the release
+      - name: Attach the exe to the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          Compress-Archive -Path dist/lcf-strain-life-app -DestinationPath "lcf-strain-life-app-windows-$env:GITHUB_REF_NAME.zip"
-          gh release upload "$env:GITHUB_REF_NAME" "lcf-strain-life-app-windows-$env:GITHUB_REF_NAME.zip"
+          Copy-Item lcf-strain-life-app.exe "lcf-strain-life-app-windows-$env:GITHUB_REF_NAME.exe"
+          gh release upload "$env:GITHUB_REF_NAME" "lcf-strain-life-app-windows-$env:GITHUB_REF_NAME.exe"

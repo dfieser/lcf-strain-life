@@ -26,11 +26,15 @@ workspace outside the public repository.
   `tests/conftest.py` stays independent on purpose, a golden reference must
   not come from the code it validates.
 - A desktop build recipe, `scripts/build_gui_app.py`, freezing the same
-  `lcf.gui` launcher into a PyInstaller one-folder app, and a `windows-app`
-  job in the publish workflow that builds it with that same script on each
-  version tag and attaches the zip to the GitHub release. The build is
-  unsigned for now and SmartScreen will warn on first run, the README says
-  so. The workflow job first runs on the next tag push.
+  `lcf.gui` launcher into a single PyInstaller one-file exe dropped at the
+  repository root, and a `windows-app` job in the publish workflow that
+  builds it with that same script on each version tag and attaches the exe
+  to the GitHub release. One-file is a deliberate choice for a single
+  double-clickable artifact, accepting slower startup because the exe
+  unpacks itself on every launch. The exe exceeds GitHub's 100 MB file
+  limit so it is gitignored, not committed. The build is unsigned for now
+  and SmartScreen will warn on first run, the README says so. The workflow
+  job first runs on the next tag push.
 - The random fatigue limit fit is now benchmarked against the published
   Pascual-Meeker result. The laminate-panel dataset (Shimokawa and
   Hamaguchi 1987, 125 specimens, obtained from the public GPL SMRD.data R
