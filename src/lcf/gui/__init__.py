@@ -75,5 +75,8 @@ def main() -> None:
         "--global.developmentMode=false",
         # privacy: no usage statistics, ever, regardless of user config
         "--browser.gatherUsageStats=false",
+        # hide streamlit's Deploy button and developer menu. This is a
+        # local private app, there is nothing to deploy to their cloud.
+        "--client.toolbarMode=viewer",
     ]
     sys.exit(stcli.main())
