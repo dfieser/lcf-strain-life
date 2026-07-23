@@ -39,7 +39,13 @@ BASIS_LEVELS = {"A": (0.99, 0.95), "B": (0.90, 0.95)}
 
 @dataclass
 class LogLifeFit:
-    """Linear fit of log10(life) on log10(amplitude)."""
+    """Linear fit of log10(life) on log10(amplitude).
+
+    ``amp_min``/``amp_max`` record the amplitude interval the fit actually
+    used, so callers can flag predictions outside it. E739's own caveat is
+    that the curve should not be extrapolated outside the interval of
+    testing. NaN when the fit was built without that information.
+    """
 
     slope: float            # B
     intercept: float        # A
@@ -48,6 +54,8 @@ class LogLifeFit:
     x_mean: float           # mean of log10(amplitude)
     sxx: float              # sum of squared deviations of log10(amplitude)
     r_squared: float
+    amp_min: float = float("nan")
+    amp_max: float = float("nan")
 
 
 def _xy(amplitude, life):
@@ -78,6 +86,7 @@ def fit_log_life(amplitude, life) -> LogLifeFit:
         slope=float(res.slope), intercept=float(res.intercept),
         residual_std=float(s), n_points=int(n), x_mean=xbar, sxx=sxx,
         r_squared=float(res.rvalue**2),
+        amp_min=float(10.0 ** x.min()), amp_max=float(10.0 ** x.max()),
     )
 
 
@@ -152,7 +161,7 @@ def generalized_esd(values, *, max_outliers: int, alpha: float = 0.05) -> dict:
     n_out = 0
     for st in steps:
         if st["statistic"] > st["critical"]:
-            n_out = st["step"]
+            n_out = int(st["step"])
     return {"outlier_indices": sorted(removed[:n_out]), "steps": steps,
             "warnings": warnings}
 
@@ -380,4 +389,5 @@ def fit_log_life_censored(amplitude, life, censored) -> LogLifeFit:
     return LogLifeFit(
         slope=float(b1), intercept=float(b0), residual_std=float(np.exp(log_sigma)),
         n_points=int(x.size), x_mean=xbar, sxx=sxx, r_squared=float("nan"),
+        amp_min=float(a.min()), amp_max=float(a.max()),
     )

@@ -54,6 +54,33 @@ def test_fit_design_curve(service):
     assert service.recall("M1", "design_curve") is not None
 
 
+def test_fit_design_curve_flags_extrapolation(service):
+    amp = [0.01, 0.008, 0.006, 0.004, 0.003, 0.002]
+    life = [1e4 * (a / 0.002) ** (-2.0) for a in amp]
+    out = service.fit_design_curve(amp, life, design_amplitude=0.001)
+    assert out["amplitude_range"]["min"] == pytest.approx(0.002)
+    assert out["amplitude_range"]["max"] == pytest.approx(0.01)
+    codes = [w["code"] for w in out["warnings"]]
+    assert "extrapolation" in codes
+
+
+def test_fit_design_curve_no_warning_inside_range(service):
+    amp = [0.01, 0.008, 0.006, 0.004, 0.003, 0.002]
+    life = [1e4 * (a / 0.002) ** (-2.0) for a in amp]
+    out = service.fit_design_curve(amp, life, design_amplitude=0.005)
+    assert out["warnings"] == []
+
+
+def test_fit_design_curve_flags_extrapolation_censored(service):
+    amp = [0.01, 0.008, 0.006, 0.004, 0.003, 0.002]
+    life = [1e4 * (a / 0.002) ** (-2.0) for a in amp]
+    out = service.fit_design_curve(
+        amp, life, censored=[False] * 5 + [True], design_amplitude=0.05
+    )
+    codes = [w["code"] for w in out["warnings"]]
+    assert "extrapolation" in codes
+
+
 def test_compute_creep_fatigue(service):
     out = service.compute_creep_fatigue([900], [1000], [90], [100], name="cf1")
     assert out["d_total"] == pytest.approx(1.8)

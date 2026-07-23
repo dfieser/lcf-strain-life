@@ -12,6 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from types import SimpleNamespace
+from typing import Any, cast
 
 import numpy as np
 
@@ -407,11 +408,13 @@ class LcfService:
             fit = stats.fit_log_life_censored(amplitude, life_values, censored)
         else:
             fit = stats.fit_log_life(amplitude, life_values)
-        out = {
+        out: dict[str, Any] = {
             "slope": fit.slope, "intercept": fit.intercept,
             "residual_std": fit.residual_std, "n_points": fit.n_points,
             "r_squared": fit.r_squared,
             "owen_factor": stats.owen_tolerance_factor(fit.n_points, reliability, confidence),
+            "amplitude_range": {"min": fit.amp_min, "max": fit.amp_max},
+            "warnings": [],
         }
         if censored is not None and any(censored):
             out["lack_of_fit"] = {
@@ -425,6 +428,18 @@ class LcfService:
             out["design_life"] = stats.design_life(
                 fit, design_amplitude, reliability=reliability, confidence=confidence
             )
+            in_range = fit.amp_min <= design_amplitude <= fit.amp_max
+            if np.isfinite(fit.amp_min) and not in_range:
+                out["warnings"].append({
+                    "code": "extrapolation",
+                    "message": (
+                        f"design_amplitude {design_amplitude:g} lies outside "
+                        f"the fitted amplitude interval [{fit.amp_min:g}, "
+                        f"{fit.amp_max:g}]. E739 advises against extrapolating "
+                        "the fitted curve outside the interval of testing, "
+                        "treat this life as unreliable."
+                    ),
+                })
         if material:
             self.store.save(material, "design_curve", out,
                             input_hash=hash_inputs(list(amplitude), list(life_values),
@@ -954,7 +969,9 @@ class LcfService:
             if df is None or summary is None:
                 raise ValueError(f"no per-cycle result stored for key={key!r}")
             half_life = summary["value"].get("half_life_cycle")
-            shim = SimpleNamespace(table=df, half_life_cycle=half_life)
+            # duck-typed stand-in rebuilt from storage, the plot functions
+            # only touch .table and .half_life_cycle
+            shim = cast(Any, SimpleNamespace(table=df, half_life_cycle=half_life))
             fig = plots.plot_peak_valley(shim) if kind == "peak_valley" \
                 else plots.plot_energy(shim)
         elif kind == "strain_life":
@@ -962,12 +979,12 @@ class LcfService:
             if rec is None:
                 raise ValueError(f"no strain-life fit stored for key={key!r}")
             v = rec["value"]
-            shim = SimpleNamespace(
+            shim = cast(Any, SimpleNamespace(
                 E=v["E"],
                 basquin=SimpleNamespace(**v["basquin"]),
                 coffin_manson=SimpleNamespace(**v["coffin_manson"]),
                 transition_reversals=v.get("transition_reversals"),
-            )
+            ))
             fig = plots.plot_strain_life(shim)
         else:
             raise ValueError(

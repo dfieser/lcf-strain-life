@@ -156,7 +156,11 @@ percent confidence, A-basis is 99/95, following MMPDS practice. Pass raw
 Fit a strain-life regression, life is the dependent variable. Inputs:
 `amplitude` and `life_values` lists, `reliability`, `confidence`, optional
 `censored` flags for runouts, optional `design_amplitude`. Returns the fit, the
-Owen factor, and the design life.
+Owen factor, the design life, the fitted `amplitude_range`, and a `warnings`
+list of machine-readable `{"code", "message"}` flags. Surface every warning to
+the user. `code == "extrapolation"` means the requested `design_amplitude` is
+outside the fitted interval and the predicted life is unreliable, E739 itself
+cautions against extrapolating outside the interval of testing.
 
 ### flag_outliers
 Screen strain-life or stress-life data for outliers before fitting. Inputs:

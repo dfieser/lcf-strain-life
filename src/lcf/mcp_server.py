@@ -322,6 +322,13 @@ def fit_design_curve(
     amplitude levels, the result includes the E739 lack-of-fit F test under
     ``lack_of_fit`` (a significant F means the straight line does not
     represent the data, whatever r squared says).
+
+    The result carries machine-readable caution flags under ``warnings``,
+    each ``{"code", "message"}``. Surface every warning to the user. In
+    particular ``code == "extrapolation"`` means the requested
+    ``design_amplitude`` lies outside the fitted interval
+    (``amplitude_range``) and the predicted life is unreliable, per E739's
+    own caveat against extrapolation.
     """
     return _service.fit_design_curve(
         amplitude, life_values, reliability=reliability, confidence=confidence,
