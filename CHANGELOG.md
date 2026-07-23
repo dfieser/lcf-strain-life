@@ -9,6 +9,10 @@ workspace outside the public repository.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.2.0] - 2026-07-23
+
 ### Added
 - Open interchange formats for strain-life data, the backbone of the
   data-first phase 2 plan. `test-record@1` carries one strain-controlled
