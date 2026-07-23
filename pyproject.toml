@@ -78,7 +78,10 @@ target-version = "py311"
 
 [tool.mypy]
 files = ["src/lcf"]
-python_version = "3.11"
+# No python_version pin. Checking is done under the interpreter mypy runs
+# on (3.13 in CI). Pinning 3.11 broke on numpy 2.5 stubs, whose PEP 695
+# type statements are rejected below 3.12. Runtime 3.11 support is still
+# exercised by the 3.11 test job and ruff's py311 target.
 plugins = ["pydantic.mypy"]
 ignore_missing_imports = true
 
