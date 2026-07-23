@@ -11,7 +11,6 @@ strength 282 MPa, standard deviation 10.6 MPa. The variability statistic
 
 from __future__ import annotations
 
-import math
 
 import numpy as np
 import pytest

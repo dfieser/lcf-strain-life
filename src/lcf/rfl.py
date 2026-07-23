@@ -26,7 +26,6 @@ from dataclasses import dataclass, field
 
 import numpy as np
 from scipy import optimize
-from scipy import stats as scistats
 
 __all__ = ["RflFit", "rfl_loglik", "fit_rfl", "simulate_rfl"]
 
@@ -211,12 +210,18 @@ def simulate_rfl(
         for vi in v:
             gamma = np.exp(vi)
             if gamma >= s:
-                s_out.append(s); n_out.append(censor_time); c_out.append(True)
+                s_out.append(s)
+                n_out.append(censor_time)
+                c_out.append(True)
                 continue
             w = rng.normal(beta0 + beta1 * np.log(s - gamma), sigma)
             n = np.exp(w)
             if n >= censor_time:
-                s_out.append(s); n_out.append(censor_time); c_out.append(True)
+                s_out.append(s)
+                n_out.append(censor_time)
+                c_out.append(True)
             else:
-                s_out.append(s); n_out.append(n); c_out.append(False)
+                s_out.append(s)
+                n_out.append(n)
+                c_out.append(False)
     return np.asarray(s_out), np.asarray(n_out), np.asarray(c_out)

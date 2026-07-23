@@ -287,7 +287,7 @@ def test_keyhole_cr1_constant_amplitude_golden():
 # --------------------------------------------------------------------------- #
 # published-case validation, gated on locally downloaded FD&E data
 # --------------------------------------------------------------------------- #
-import os
+import os  # noqa: E402
 
 FDE_DIR = os.environ.get("LCF_FDE_DATA_DIR")
 

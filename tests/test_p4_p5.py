@@ -15,7 +15,7 @@ import math
 import numpy as np
 import pytest
 
-from lcf import criticalplane, interchange, report
+from lcf import criticalplane, interchange
 from lcf.service import LcfService
 
 

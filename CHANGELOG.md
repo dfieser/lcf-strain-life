@@ -9,7 +9,37 @@ workspace outside the public repository.
 
 ## [Unreleased]
 
+### Added
+- `fit_design_curve` now reports the fitted amplitude interval under
+  `amplitude_range` and a `warnings` list of machine-readable
+  `{"code", "message"}` flags. A `design_amplitude` outside the fitted
+  interval raises the `extrapolation` flag, following E739's own caveat
+  against extrapolating outside the interval of testing. This starts the
+  move from prose-only notes to caution flags an agent can branch on,
+  prompted by an external critical assessment.
+- Enforced code-quality gates. Ruff (default rules) and mypy with the
+  pydantic plugin run over the package in CI, and the test job now fails
+  if line coverage drops below 85 percent (86 percent when the gate was
+  added). The dev extra installs ruff, mypy, and pytest-cov. The fifteen
+  pre-existing ruff findings (unused imports, statements joined with
+  semicolons, an f-string without placeholders) and thirty-two mypy
+  findings were fixed. One annotation fix is behavioral in type terms
+  only: `labio.read_series` now accepts any sequence of paths, not only a
+  list.
+
+### Changed
+- The README no longer claims that established libraries do not cover
+  strain-life. pyLife and reliability implement strain-life equations, the
+  claim was overstated. The differentiation is now stated precisely:
+  reduction of raw strain-controlled lab exports, per-cycle evolution, and
+  the agent-native MCP interface.
+
 ### Fixed
+- The result store leaked one SQLite connection per operation. The sqlite3
+  context manager commits or rolls back but never closes, so every
+  save/recall/list left an open handle behind. Connections are now closed
+  explicitly. Found through ResourceWarnings surfaced by the new coverage
+  run.
 - A code review of the graphical interface surfaced eight state-handling
   defects, now all fixed and covered by tests. The displayed fit is dropped
   when the table or fit options change so the shown constants can never

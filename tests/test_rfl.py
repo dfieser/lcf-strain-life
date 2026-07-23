@@ -9,7 +9,6 @@ parameters from simulated data.
 
 from __future__ import annotations
 
-import csv
 from pathlib import Path
 
 import numpy as np
@@ -30,7 +29,8 @@ def _laminate_panel():
             if line.startswith("#") or line.startswith("mpa"):
                 continue
             s, k, e = line.strip().split(",")
-            mpa.append(float(s)); kc.append(float(k))
+            mpa.append(float(s))
+            kc.append(float(k))
             cen.append(e.strip() == "Censored")
     return np.array(mpa), np.array(kc), np.array(cen)
 

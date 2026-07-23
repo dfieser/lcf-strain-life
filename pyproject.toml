@@ -41,7 +41,7 @@ dependencies = [
 [project.optional-dependencies]
 mcp = ["mcp[cli]>=1.27,<2"]
 gui = ["streamlit>=1.49"]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.8", "mypy>=1.14"]
 
 [project.scripts]
 lcf-mcp = "lcf.mcp_server:main"
@@ -66,3 +66,25 @@ packages = ["src/lcf"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+# Quality gates, run in CI (tests.yml) and locally with:
+#   python -m ruff check src tests examples scripts
+#   python -m mypy src/lcf
+#   python -m pytest --cov=lcf
+[tool.ruff]
+target-version = "py311"
+
+[tool.mypy]
+files = ["src/lcf"]
+python_version = "3.11"
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["lcf"]
+
+[tool.coverage.report]
+# Total was 86 percent when the gate was added. The Streamlit page script
+# (gui/app.py) is exercised through gui/core, not imported by tests, and
+# accounts for most of the uncovered lines.
+fail_under = 85

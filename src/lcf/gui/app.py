@@ -300,7 +300,7 @@ def page_fit() -> None:
 
     if st.button("Fit the strain-life models", type="primary"):
         try:
-            fit, warns = core.fit_from_table(
+            new_fit, warns = core.fit_from_table(
                 edited, st.session_state.fit_E,
                 min_plastic_strain=minp or None,
                 refine_nonlinear=refine,
@@ -308,7 +308,7 @@ def page_fit() -> None:
         except core.GuiInputError as exc:
             st.error(str(exc))
         else:
-            st.session_state.fit = fit
+            st.session_state.fit = new_fit
             st.session_state.fit_warnings = warns
             st.session_state.fit_signature = core.fit_signature(
                 edited, st.session_state.fit_E, minp or None, refine
@@ -399,16 +399,17 @@ def page_predict() -> None:
         "Total strain amplitude Δε/2", min_value=0.0, value=0.004,
         format="%.6f", help="Fraction, not percent: 0.004 means 0.4 %",
     )
+    corr_labels = {
+        "none": "None (fully reversed)",
+        "morrow": "Morrow",
+        "swt": "Smith-Watson-Topper",
+    }
     corr = c2.selectbox(
         "Mean-stress correction",
-        ["none", "morrow", "swt"],
-        format_func={
-            "none": "None (fully reversed)",
-            "morrow": "Morrow",
-            "swt": "Smith-Watson-Topper",
-        }.get,
+        list(corr_labels),
+        format_func=corr_labels.__getitem__,
         help="Apply a correction when the cycle carries a tensile mean stress.",
-    )
+    ) or "none"
     mean = 0.0
     samp = None
     if corr in ("morrow", "swt"):
@@ -441,17 +442,18 @@ def page_estimate() -> None:
         "tensile properties or hardness. Estimates are a starting point, not "
         "a substitute for testing. Each method's validity caveats are shown."
     )
+    method_labels = {
+        "medians": "Medians (Meggiolaro-Castro 2004): needs Su",
+        "uniform_material_law": "Uniform Material Law (Baeumel-Seeger 1990): needs Su, E",
+        "universal_slopes": "Universal Slopes (Manson 1965): needs Su, E, RA",
+        "modified_universal_slopes": "Modified Universal Slopes (Muralidharan-Manson 1988): needs Su, E, RA",
+        "hardness": "Hardness method (Roessle-Fatemi 2000): needs HB, E",
+    }
     method = st.selectbox(
         "Method",
         list(lcf.ESTIMATION_METHODS),
-        format_func={
-            "medians": "Medians (Meggiolaro-Castro 2004): needs Su",
-            "uniform_material_law": "Uniform Material Law (Baeumel-Seeger 1990): needs Su, E",
-            "universal_slopes": "Universal Slopes (Manson 1965): needs Su, E, RA",
-            "modified_universal_slopes": "Modified Universal Slopes (Muralidharan-Manson 1988): needs Su, E, RA",
-            "hardness": "Hardness method (Roessle-Fatemi 2000): needs HB, E",
-        }.get,
-    )
+        format_func=lambda m: method_labels.get(m, m),
+    ) or "medians"
     c1, c2, c3, c4 = st.columns(4)
     Su = c1.number_input("Ultimate strength Su (MPa)", min_value=0.0, value=500.0)
     E = c2.number_input("Elastic modulus E (MPa)", min_value=0.0, value=200000.0)

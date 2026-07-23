@@ -21,6 +21,7 @@ unit overrides always win over auto-detection.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -411,7 +412,7 @@ def read_fde_history(source: str | Path) -> list[float]:
 def read_series(
     directory: str | Path | None = None,
     *,
-    files: list[str | Path] | None = None,
+    files: Sequence[str | Path] | None = None,
     pattern: str = "*.csv",
     metadata_defaults: dict | None = None,
     per_test_metadata: dict[str, dict] | None = None,

@@ -73,7 +73,7 @@ def main() -> None:
         blocks = out["blocks_to_failure"]
         print(f"  our {model} prediction: {blocks:,.0f} blocks "
               f"(pred/exp geo-mean = {blocks / geo_mean:.2f})")
-    print(f"  benchmark's calculation: 2,892 blocks")
+    print("  benchmark's calculation: 2,892 blocks")
     print(f"  experimental: {exp} blocks (geo-mean {geo_mean:,.0f})")
 
 

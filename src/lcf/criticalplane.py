@@ -23,7 +23,7 @@ Marquis, Multiaxial Fatigue, SAE, 2000.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -145,8 +145,11 @@ def search_critical_plane_tensor(
                               tau_zx, shear_is_engineering=False)
         if sig.shape != eps.shape:
             raise ValueError("stress and strain histories must align")
-    if parameter == "fatemi_socie" and (sigma_y is None or sigma_y <= 0):
-        raise ValueError("fatemi_socie requires a positive sigma_y")
+    sigma_y_val = 0.0
+    if parameter == "fatemi_socie":
+        if sigma_y is None or sigma_y <= 0:
+            raise ValueError("fatemi_socie requires a positive sigma_y")
+        sigma_y_val = float(sigma_y)
 
     best: PlaneResult | None = None
     thetas = np.arange(0.0, 180.0, grid_deg)
@@ -160,7 +163,7 @@ def search_critical_plane_tensor(
                 sn_max = float(((sig @ n) @ n).max())
             if parameter == "fatemi_socie":
                 value = multiaxial.fatemi_socie(
-                    shear_amp, sn_max, sigma_y=sigma_y, k=k
+                    shear_amp, sn_max, sigma_y=sigma_y_val, k=k
                 )
             elif parameter == "brown_miller":
                 value = multiaxial.brown_miller(shear_amp, normal_amp, S=S)
@@ -172,6 +175,7 @@ def search_critical_plane_tensor(
                     shear_strain_amp=shear_amp, normal_strain_amp=normal_amp,
                     sigma_n_max=sn_max, parameter=float(value),
                 )
+    assert best is not None
     return {
         "parameter": parameter,
         "critical_plane": {

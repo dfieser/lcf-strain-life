@@ -20,7 +20,7 @@ from lcf.service import LcfService
 OUT = Path(__file__).parent / "output"
 
 # --- published SAE 1137 per-test reduced data, from the bundled dataset -----
-from lcf.datasets import SAE1137_E as E, sae1137_reduced
+from lcf.datasets import SAE1137_E as E, sae1137_reduced  # noqa: E402
 
 _sae = sae1137_reduced()
 total_strain_amp = _sae["total_strain_amp"].tolist()

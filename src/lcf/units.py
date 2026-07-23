@@ -36,7 +36,7 @@ __all__ = [
 ]
 
 
-def _as_float_array(x: ArrayLike) -> NDArray[np.float64] | np.float64:
+def _as_float_array(x: ArrayLike) -> NDArray[np.float64]:
     """Return ``x`` as a float array. A 0-d input stays 0-d, callers handle scalars."""
     arr = np.asarray(x, dtype=np.float64)
     return arr
