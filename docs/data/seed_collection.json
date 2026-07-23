@@ -1,0 +1,281 @@
+{
+  "schema": "lcf-strain-life/collection",
+  "version": 1,
+  "name": "lcf-strain-life seed collection",
+  "description": "A small schema-reference dataset of published, citable strain-life data. It demonstrates the lcf-strain-life interchange formats and seeds the open strain-life data effort. It is not yet a database at publishable scale.",
+  "license": "CC-BY-4.0",
+  "created": "2026-07-23",
+  "homepage": "https://github.com/dfieser/lcf-strain-life",
+  "contributors": [
+    {
+      "name": "David Fieser",
+      "orcid": "https://orcid.org/0009-0007-5754-4331"
+    },
+    {
+      "name": "Hugh Shortt",
+      "orcid": "https://orcid.org/0000-0001-8015-3733"
+    }
+  ],
+  "materials": [
+    {
+      "schema": "lcf-strain-life/material",
+      "version": 1,
+      "name": "SAE 1005",
+      "units": {
+        "stress": "MPa",
+        "strain": "fraction",
+        "life": "reversals"
+      },
+      "E": 207000.0,
+      "basquin": {
+        "sigma_f": 886.0,
+        "b": -0.14
+      },
+      "coffin_manson": {
+        "eps_f": 0.28,
+        "c": -0.5
+      },
+      "transition_reversals": 110559.55032544702,
+      "ramberg_osgood": {
+        "K_prime": 1240.0,
+        "n_prime": 0.27
+      },
+      "provenance": {
+        "source": "Lee, Y.-L., Pan, J., Hathaway, R., Barkey, M., 'Fatigue Testing and Analysis: Theory and Practice', Elsevier Butterworth-Heinemann, 2005, chapter 5 worked notched-plate example",
+        "notes": "Constants transcribed verbatim from the cited text. Factual values re-tabulated with attribution."
+      }
+    },
+    {
+      "schema": "lcf-strain-life/material",
+      "version": 1,
+      "name": "Man-Ten",
+      "units": {
+        "stress": "MPa",
+        "strain": "fraction",
+        "life": "reversals"
+      },
+      "E": 203000.0,
+      "basquin": {
+        "sigma_f": 915.0,
+        "b": -0.095
+      },
+      "coffin_manson": {
+        "eps_f": 0.26,
+        "c": -0.47
+      },
+      "transition_reversals": 49673.95941890463,
+      "ramberg_osgood": {
+        "K_prime": 1200.6,
+        "n_prime": 0.2
+      },
+      "provenance": {
+        "source": "SAE Fatigue Design and Evaluation committee keyhole program material constants as documented on the eFatigue SAE keyhole benchmark page, archived at web.archive.org/web/20251215150910/https://www.efatigue.com/benchmarks/SAE_keyhole/SAE_keyhole.html",
+        "notes": "Strain-life constants from the SAE committee benchmark page. K' and n' from Wu, Zhang, Paraschivoiu, Materials 17 (2024) 4521, CC BY 4.0, cyclic curve constants K' and n'. Factual values re-tabulated with attribution."
+      }
+    },
+    {
+      "schema": "lcf-strain-life/material",
+      "version": 1,
+      "name": "RQC-100",
+      "units": {
+        "stress": "MPa",
+        "strain": "fraction",
+        "life": "reversals"
+      },
+      "E": 203000.0,
+      "basquin": {
+        "sigma_f": 1160.0,
+        "b": -0.075
+      },
+      "coffin_manson": {
+        "eps_f": 1.06,
+        "c": -0.75
+      },
+      "transition_reversals": 2293.5568117939374,
+      "ramberg_osgood": {
+        "K_prime": 1131.6,
+        "n_prime": 0.1
+      },
+      "provenance": {
+        "source": "SAE Fatigue Design and Evaluation committee keyhole program material constants as documented on the eFatigue SAE keyhole benchmark page, archived at web.archive.org/web/20251215150910/https://www.efatigue.com/benchmarks/SAE_keyhole/SAE_keyhole.html",
+        "notes": "Strain-life constants from the SAE committee benchmark page. K' and n' from Wu, Zhang, Paraschivoiu, Materials 17 (2024) 4521, CC BY 4.0, cyclic curve constants K' and n'. Factual values re-tabulated with attribution."
+      }
+    }
+  ],
+  "records": [
+    {
+      "schema": "lcf-strain-life/test-record",
+      "version": 1,
+      "record_id": "SAE1137-1",
+      "material": "SAE 1137",
+      "units": {
+        "stress": "MPa",
+        "strain": "fraction",
+        "life": "reversals",
+        "temperature": "C"
+      },
+      "test": {
+        "control_mode": "strain",
+        "strain_amplitude": 0.009
+      },
+      "response": {
+        "stress_amplitude": 553.0,
+        "at_life_fraction": 0.5
+      },
+      "failure": {
+        "reversals_to_failure": 4234.0,
+        "runout": false
+      },
+      "provenance": {
+        "source": "Williams, C.R., Lee, Y.-L., Rilly, J.T., 'A practical method for statistical analysis of strain-life fatigue data', International Journal of Fatigue 25 (2003) 427-436",
+        "origin": "republished-factual",
+        "notes": "Half-life values as tabulated in the cited source, elastic modulus 208000 MPa."
+      }
+    },
+    {
+      "schema": "lcf-strain-life/test-record",
+      "version": 1,
+      "record_id": "SAE1137-2",
+      "material": "SAE 1137",
+      "units": {
+        "stress": "MPa",
+        "strain": "fraction",
+        "life": "reversals",
+        "temperature": "C"
+      },
+      "test": {
+        "control_mode": "strain",
+        "strain_amplitude": 0.007
+      },
+      "response": {
+        "stress_amplitude": 522.0,
+        "at_life_fraction": 0.5
+      },
+      "failure": {
+        "reversals_to_failure": 7398.0,
+        "runout": false
+      },
+      "provenance": {
+        "source": "Williams, C.R., Lee, Y.-L., Rilly, J.T., 'A practical method for statistical analysis of strain-life fatigue data', International Journal of Fatigue 25 (2003) 427-436",
+        "origin": "republished-factual",
+        "notes": "Half-life values as tabulated in the cited source, elastic modulus 208000 MPa."
+      }
+    },
+    {
+      "schema": "lcf-strain-life/test-record",
+      "version": 1,
+      "record_id": "SAE1137-3",
+      "material": "SAE 1137",
+      "units": {
+        "stress": "MPa",
+        "strain": "fraction",
+        "life": "reversals",
+        "temperature": "C"
+      },
+      "test": {
+        "control_mode": "strain",
+        "strain_amplitude": 0.005
+      },
+      "response": {
+        "stress_amplitude": 464.0,
+        "at_life_fraction": 0.5
+      },
+      "failure": {
+        "reversals_to_failure": 14768.0,
+        "runout": false
+      },
+      "provenance": {
+        "source": "Williams, C.R., Lee, Y.-L., Rilly, J.T., 'A practical method for statistical analysis of strain-life fatigue data', International Journal of Fatigue 25 (2003) 427-436",
+        "origin": "republished-factual",
+        "notes": "Half-life values as tabulated in the cited source, elastic modulus 208000 MPa."
+      }
+    },
+    {
+      "schema": "lcf-strain-life/test-record",
+      "version": 1,
+      "record_id": "SAE1137-4",
+      "material": "SAE 1137",
+      "units": {
+        "stress": "MPa",
+        "strain": "fraction",
+        "life": "reversals",
+        "temperature": "C"
+      },
+      "test": {
+        "control_mode": "strain",
+        "strain_amplitude": 0.003
+      },
+      "response": {
+        "stress_amplitude": 405.0,
+        "at_life_fraction": 0.5
+      },
+      "failure": {
+        "reversals_to_failure": 77104.0,
+        "runout": false
+      },
+      "provenance": {
+        "source": "Williams, C.R., Lee, Y.-L., Rilly, J.T., 'A practical method for statistical analysis of strain-life fatigue data', International Journal of Fatigue 25 (2003) 427-436",
+        "origin": "republished-factual",
+        "notes": "Half-life values as tabulated in the cited source, elastic modulus 208000 MPa."
+      }
+    },
+    {
+      "schema": "lcf-strain-life/test-record",
+      "version": 1,
+      "record_id": "SAE1137-5",
+      "material": "SAE 1137",
+      "units": {
+        "stress": "MPa",
+        "strain": "fraction",
+        "life": "reversals",
+        "temperature": "C"
+      },
+      "test": {
+        "control_mode": "strain",
+        "strain_amplitude": 0.002
+      },
+      "response": {
+        "stress_amplitude": 350.0,
+        "at_life_fraction": 0.5
+      },
+      "failure": {
+        "reversals_to_failure": 437498.0,
+        "runout": false
+      },
+      "provenance": {
+        "source": "Williams, C.R., Lee, Y.-L., Rilly, J.T., 'A practical method for statistical analysis of strain-life fatigue data', International Journal of Fatigue 25 (2003) 427-436",
+        "origin": "republished-factual",
+        "notes": "Half-life values as tabulated in the cited source, elastic modulus 208000 MPa."
+      }
+    },
+    {
+      "schema": "lcf-strain-life/test-record",
+      "version": 1,
+      "record_id": "SAE1137-6",
+      "material": "SAE 1137",
+      "units": {
+        "stress": "MPa",
+        "strain": "fraction",
+        "life": "reversals",
+        "temperature": "C"
+      },
+      "test": {
+        "control_mode": "strain",
+        "strain_amplitude": 0.00175
+      },
+      "response": {
+        "stress_amplitude": 319.0,
+        "at_life_fraction": 0.5
+      },
+      "failure": {
+        "reversals_to_failure": 3327958.0,
+        "runout": false
+      },
+      "provenance": {
+        "source": "Williams, C.R., Lee, Y.-L., Rilly, J.T., 'A practical method for statistical analysis of strain-life fatigue data', International Journal of Fatigue 25 (2003) 427-436",
+        "origin": "republished-factual",
+        "notes": "Half-life values as tabulated in the cited source, elastic modulus 208000 MPa."
+      }
+    }
+  ]
+}
