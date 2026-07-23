@@ -38,7 +38,7 @@ Provide your own strain-controlled fatigue test data and get the standardized re
 | Provenance | every method maps to its published source through the citations registry |
 | Save and recall | results persisted per test or material, recalled without recomputation, rendered as plots |
 
-The toolkit is general purpose and material agnostic. It focuses on strain-life and per-cycle evolution, which the established stress-based high-cycle libraries such as pyLife, py-fatigue, and fatpack do not cover. It is input compatible with their pandas data shapes.
+The toolkit is general purpose and material agnostic. It centers on strain-life reduction of raw strain-controlled test data and per-cycle evolution, end to end from lab exports. Other open libraries cover parts of this ground. pyLife and reliability implement strain-life equations, and py-fatigue and fatpack cover cycle counting and stress-life. None of them focus on reducing raw LCF test data or on driving the analysis from an AI agent. It is input compatible with the pandas data shapes of pyLife and py-fatigue.
 
 ## Install
 
