@@ -18,6 +18,8 @@ import json
 import math
 import sqlite3
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -97,14 +99,21 @@ class LcfStore:
         with self._conn() as con:
             con.executescript(_SCHEMA)
 
-    def _conn(self) -> sqlite3.Connection:
+    @contextmanager
+    def _conn(self) -> Iterator[sqlite3.Connection]:
         con = sqlite3.connect(self.db_path, timeout=30.0)
         con.row_factory = sqlite3.Row
         # WAL + a generous busy timeout avoid "database is locked" when the MCP
         # server runs tools concurrently (M6).
         con.execute("PRAGMA journal_mode=WAL")
         con.execute("PRAGMA busy_timeout=30000")
-        return con
+        try:
+            # the sqlite3 context manager commits or rolls back but never
+            # closes, so close explicitly
+            with con:
+                yield con
+        finally:
+            con.close()
 
     # ----------------------------------------------------------------- save
     def save(
@@ -118,14 +127,14 @@ class LcfStore:
         png_path: str | Path | None = None,
     ) -> None:
         """Upsert a result. ``dataframe`` is written to Parquet under the store."""
-        parquet_path = None
+        parquet_path: str | None = None
         if dataframe is not None:
             # Hash suffix keeps the filename injective: distinct (key, quantity)
             # never collide after _safe() flattens separators (M4).
             suffix = hashlib.sha256(f"{key}\x00{quantity}".encode()).hexdigest()[:8]
-            parquet_path = self.root / f"{_safe(key)}__{_safe(quantity)}__{suffix}.parquet"
-            dataframe.to_parquet(parquet_path)
-            parquet_path = str(parquet_path)
+            pq_file = self.root / f"{_safe(key)}__{_safe(quantity)}__{suffix}.parquet"
+            dataframe.to_parquet(pq_file)
+            parquet_path = str(pq_file)
         value_json = dumps(value) if value is not None else None
         with self._conn() as con:
             con.execute(
