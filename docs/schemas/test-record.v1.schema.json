@@ -1,0 +1,556 @@
+{
+  "$defs": {
+    "Failure": {
+      "additionalProperties": true,
+      "description": "The test outcome.",
+      "properties": {
+        "criterion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For example 30% load drop, separation.",
+          "title": "Criterion"
+        },
+        "reversals_to_failure": {
+          "description": "2Nf, or the suspension point when runout is true.",
+          "exclusiveMinimum": 0,
+          "title": "Reversals To Failure",
+          "type": "number"
+        },
+        "runout": {
+          "default": false,
+          "description": "True when the test was suspended without failure.",
+          "title": "Runout",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "reversals_to_failure"
+      ],
+      "title": "Failure",
+      "type": "object"
+    },
+    "HalfLifeResponse": {
+      "additionalProperties": true,
+      "description": "Reduced stabilized response, by convention at half life.",
+      "properties": {
+        "at_life_fraction": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Life fraction the values were read at, 0.5 is half life.",
+          "title": "At Life Fraction"
+        },
+        "elastic_strain_amplitude": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Elastic Strain Amplitude"
+        },
+        "mean_stress": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mean Stress"
+        },
+        "plastic_strain_amplitude": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plastic Strain Amplitude"
+        },
+        "stress_amplitude": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stress Amplitude"
+        }
+      },
+      "title": "HalfLifeResponse",
+      "type": "object"
+    },
+    "PerCycleTable": {
+      "additionalProperties": true,
+      "description": "Optional per-cycle evolution table, the raw-data differentiator.",
+      "properties": {
+        "columns": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Columns",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "units": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Unit per column when not the fixed set.",
+          "title": "Units"
+        }
+      },
+      "required": [
+        "columns",
+        "rows"
+      ],
+      "title": "PerCycleTable",
+      "type": "object"
+    },
+    "RecordProvenance": {
+      "additionalProperties": true,
+      "description": "Where the record came from and on what basis it is shared.",
+      "properties": {
+        "license": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "SPDX id when the contributor licenses own data.",
+          "title": "License"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "enum": [
+                "own-data",
+                "republished-factual",
+                "digitized",
+                "permissioned"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "own-data, republished-factual, digitized, permissioned.",
+          "title": "Origin"
+        },
+        "source": {
+          "description": "Citation or origin of the data. Required.",
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "RecordProvenance",
+      "type": "object"
+    },
+    "RecordUnits": {
+      "additionalProperties": false,
+      "description": "The fixed unit convention of test-record@1.",
+      "properties": {
+        "life": {
+          "const": "reversals",
+          "default": "reversals",
+          "title": "Life",
+          "type": "string"
+        },
+        "strain": {
+          "const": "fraction",
+          "default": "fraction",
+          "title": "Strain",
+          "type": "string"
+        },
+        "stress": {
+          "const": "MPa",
+          "default": "MPa",
+          "title": "Stress",
+          "type": "string"
+        },
+        "temperature": {
+          "const": "C",
+          "default": "C",
+          "title": "Temperature",
+          "type": "string"
+        }
+      },
+      "title": "RecordUnits",
+      "type": "object"
+    },
+    "Specimen": {
+      "additionalProperties": true,
+      "description": "ASTM E606-style specimen description, all optional.",
+      "properties": {
+        "gauge_diameter_mm": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gauge Diameter Mm"
+        },
+        "gauge_length_mm": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gauge Length Mm"
+        },
+        "geometry": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For example uniform gauge, hourglass.",
+          "title": "Geometry"
+        },
+        "orientation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Sampling orientation, for example L, LT.",
+          "title": "Orientation"
+        },
+        "surface_finish": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Surface Finish"
+        }
+      },
+      "title": "Specimen",
+      "type": "object"
+    },
+    "TestControl": {
+      "additionalProperties": true,
+      "description": "How the test was driven.",
+      "properties": {
+        "control_mode": {
+          "default": "strain",
+          "enum": [
+            "strain",
+            "stress"
+          ],
+          "title": "Control Mode",
+          "type": "string"
+        },
+        "environment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For example lab air, vacuum, 3.5% NaCl.",
+          "title": "Environment"
+        },
+        "frequency_hz": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Frequency Hz"
+        },
+        "strain_amplitude": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Controlled true strain amplitude.",
+          "title": "Strain Amplitude"
+        },
+        "strain_rate": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strain rate, per second.",
+          "title": "Strain Rate"
+        },
+        "strain_ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "R ratio of the controlled strain.",
+          "title": "Strain Ratio"
+        },
+        "stress_amplitude": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Controlled true stress amplitude, MPa.",
+          "title": "Stress Amplitude"
+        },
+        "stress_ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stress Ratio"
+        },
+        "temperature_C": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temperature C"
+        },
+        "waveform": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For example triangular, sinusoidal.",
+          "title": "Waveform"
+        }
+      },
+      "title": "TestControl",
+      "type": "object"
+    }
+  },
+  "$id": "https://dfieser.github.io/lcf-strain-life/docs/schemas/test-record.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "description": "``lcf-strain-life/test-record@1``, one strain-controlled fatigue test.",
+  "properties": {
+    "condition": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Heat treatment or material condition.",
+      "title": "Condition"
+    },
+    "failure": {
+      "$ref": "#/$defs/Failure"
+    },
+    "material": {
+      "minLength": 1,
+      "title": "Material",
+      "type": "string"
+    },
+    "per_cycle": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PerCycleTable"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "provenance": {
+      "$ref": "#/$defs/RecordProvenance"
+    },
+    "record_id": {
+      "minLength": 1,
+      "title": "Record Id",
+      "type": "string"
+    },
+    "response": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/HalfLifeResponse"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema": {
+      "const": "lcf-strain-life/test-record",
+      "title": "Schema",
+      "type": "string"
+    },
+    "specimen": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Specimen"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "test": {
+      "$ref": "#/$defs/TestControl"
+    },
+    "units": {
+      "$ref": "#/$defs/RecordUnits"
+    },
+    "version": {
+      "const": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema",
+    "version",
+    "record_id",
+    "material",
+    "units",
+    "test",
+    "failure",
+    "provenance"
+  ],
+  "title": "lcf-strain-life/test-record@1",
+  "type": "object"
+}

@@ -1,0 +1,215 @@
+{
+  "$defs": {
+    "MaterialBasquin": {
+      "additionalProperties": true,
+      "properties": {
+        "b": {
+          "description": "Fatigue strength exponent, negative.",
+          "exclusiveMaximum": 0,
+          "title": "B",
+          "type": "number"
+        },
+        "sigma_f": {
+          "description": "Fatigue strength coefficient, MPa.",
+          "exclusiveMinimum": 0,
+          "title": "Sigma F",
+          "type": "number"
+        }
+      },
+      "required": [
+        "sigma_f",
+        "b"
+      ],
+      "title": "MaterialBasquin",
+      "type": "object"
+    },
+    "MaterialCoffinManson": {
+      "additionalProperties": true,
+      "properties": {
+        "c": {
+          "description": "Fatigue ductility exponent, negative.",
+          "exclusiveMaximum": 0,
+          "title": "C",
+          "type": "number"
+        },
+        "eps_f": {
+          "description": "Fatigue ductility coefficient.",
+          "exclusiveMinimum": 0,
+          "title": "Eps F",
+          "type": "number"
+        }
+      },
+      "required": [
+        "eps_f",
+        "c"
+      ],
+      "title": "MaterialCoffinManson",
+      "type": "object"
+    },
+    "MaterialProvenance": {
+      "additionalProperties": true,
+      "properties": {
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Citation for the constants.",
+          "title": "Source"
+        }
+      },
+      "title": "MaterialProvenance",
+      "type": "object"
+    },
+    "MaterialRambergOsgood": {
+      "additionalProperties": true,
+      "properties": {
+        "K_prime": {
+          "description": "Cyclic strength coefficient, MPa.",
+          "exclusiveMinimum": 0,
+          "title": "K Prime",
+          "type": "number"
+        },
+        "n_prime": {
+          "description": "Cyclic strain hardening exponent.",
+          "exclusiveMinimum": 0,
+          "title": "N Prime",
+          "type": "number"
+        }
+      },
+      "required": [
+        "K_prime",
+        "n_prime"
+      ],
+      "title": "MaterialRambergOsgood",
+      "type": "object"
+    },
+    "MaterialUnits": {
+      "additionalProperties": false,
+      "description": "The fixed unit convention of material@1.",
+      "properties": {
+        "life": {
+          "const": "reversals",
+          "title": "Life",
+          "type": "string"
+        },
+        "strain": {
+          "const": "fraction",
+          "title": "Strain",
+          "type": "string"
+        },
+        "stress": {
+          "const": "MPa",
+          "title": "Stress",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stress",
+        "strain",
+        "life"
+      ],
+      "title": "MaterialUnits",
+      "type": "object"
+    }
+  },
+  "$id": "https://dfieser.github.io/lcf-strain-life/docs/schemas/material.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "description": "``lcf-strain-life/material@1``, the constants document.",
+  "properties": {
+    "E": {
+      "description": "Elastic modulus, MPa.",
+      "exclusiveMinimum": 0,
+      "title": "E",
+      "type": "number"
+    },
+    "basquin": {
+      "$ref": "#/$defs/MaterialBasquin"
+    },
+    "coffin_manson": {
+      "$ref": "#/$defs/MaterialCoffinManson"
+    },
+    "name": {
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "provenance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MaterialProvenance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "ramberg_osgood": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MaterialRambergOsgood"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema": {
+      "const": "lcf-strain-life/material",
+      "title": "Schema",
+      "type": "string"
+    },
+    "transition_reversals": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Transition Reversals"
+    },
+    "units": {
+      "$ref": "#/$defs/MaterialUnits"
+    },
+    "version": {
+      "const": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema",
+    "version",
+    "name",
+    "units",
+    "E",
+    "basquin",
+    "coffin_manson"
+  ],
+  "title": "lcf-strain-life/material@1",
+  "type": "object"
+}
