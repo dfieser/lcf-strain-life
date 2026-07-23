@@ -312,27 +312,67 @@ def fit_design_curve(
     censored: list[bool] | None = None,
     design_amplitude: float | None = None,
     material: str | None = None,
+    distribution: str = "lognormal",
 ) -> dict:
     """Fit a strain-life regression and report design (reliability-confidence) life.
 
     Life is the dependent variable (E739 style). Right-censored runouts are
-    handled by maximum likelihood when ``censored`` flags are given. If
-    ``design_amplitude`` is set, returns the median and the R-C design life
-    there using the Owen tolerance factor. When the data contain replicate
-    amplitude levels, the result includes the E739 lack-of-fit F test under
-    ``lack_of_fit`` (a significant F means the straight line does not
-    represent the data, whatever r squared says).
+    handled by maximum likelihood when ``censored`` flags are given, with
+    ``distribution`` selecting lognormal or weibull life scatter. A censored
+    fit reports an ``ml`` block with standard errors, log likelihood, and
+    AIC, and at a ``design_amplitude`` also ``ml_design_life``, the
+    one-sided profile-likelihood lower bound on the reliability quantile,
+    the modern method aligned with ASTM work item WK88010. The legacy
+    ``design_life`` from the Owen tolerance factor is always reported. When
+    the data contain replicate amplitude levels, the result includes the
+    E739 lack-of-fit F test under ``lack_of_fit`` (a significant F means
+    the straight line does not represent the data, whatever r squared says).
 
     The result carries machine-readable caution flags under ``warnings``,
     each ``{"code", "message"}``. Surface every warning to the user. In
     particular ``code == "extrapolation"`` means the requested
     ``design_amplitude`` lies outside the fitted interval
     (``amplitude_range``) and the predicted life is unreliable, per E739's
-    own caveat against extrapolation.
+    own caveat against extrapolation, and ``code == "owen_with_censoring"``
+    means the Owen value is approximate and ``ml_design_life`` is the one
+    to prefer.
     """
     return _service.fit_design_curve(
         amplitude, life_values, reliability=reliability, confidence=confidence,
         censored=censored, design_amplitude=design_amplitude, material=material,
+        distribution=distribution,
+    )
+
+
+@mcp.tool()
+def fit_strain_life_ml(
+    total_strain_amp: list[float],
+    reversals: list[float],
+    E: float,
+    censored: list[bool] | None = None,
+    stress_amp: list[float] | None = None,
+    name: str | None = None,
+) -> dict:
+    """Fit the full strain-life curve by censored maximum likelihood.
+
+    Fits sigma_f, b, eps_f, c, and the lognormal scatter of log10 life
+    directly on the combined curve. Runouts, flagged in ``censored``,
+    contribute survival probability instead of being deleted. This is the
+    nonlinear-plus-runouts capability the withdrawn ASTM E739 lacked,
+    aligned with replacement work item WK88010. ``stress_amp`` is optional
+    and only improves the starting point. Units: strain as a fraction,
+    life in reversals, E in MPa.
+
+    Read ``standard_errors`` and surface every entry of ``warnings``. The
+    ``weak_identifiability`` warning is intrinsic to fitting the combined
+    curve from total strain alone: the curve is well determined inside the
+    tested range even when individual constants are not. Prefer the
+    branch-wise ``fit_strain_life`` when per-test stress amplitudes are
+    available and there are no runouts.
+    """
+    return _service.fit_strain_life_ml(
+        total_strain_amp, reversals, E=E, censored=censored,
+        stress_amp=stress_amp, name=name,
     )
 
 
@@ -570,6 +610,31 @@ def import_material(doc: dict) -> dict:
     rather than guessing.
     """
     return _service.import_material(doc)
+
+
+@mcp.tool()
+def validate_interchange(document: dict) -> dict:
+    """Validate any lcf-strain-life interchange document.
+
+    Covers the three formats: material@1 (constants), test-record@1 (one
+    strain-controlled test with E606-style metadata), and collection@1 (a
+    dataset manifest). Returns ``valid``, the detected ``schema`` and
+    ``kind``, and human-readable ``errors``. Never guesses and never repairs
+    a document. The formats are specified in docs/INTERCHANGE.md and as JSON
+    Schemas in docs/schemas/.
+    """
+    return _service.validate_interchange(document)
+
+
+@mcp.tool()
+def summarize_collection(document: dict) -> dict:
+    """Summarize a collection@1 dataset document.
+
+    Returns the record and material counts, records per material, strain
+    amplitude and life ranges, runout count, license, and contributors. If
+    the document is invalid the result has ``valid: false`` and the errors.
+    """
+    return _service.summarize_collection(document)
 
 
 @mcp.tool()

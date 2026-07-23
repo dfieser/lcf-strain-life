@@ -401,11 +401,23 @@ class LcfService:
         self, amplitude: list[float], life_values: list[float], *,
         reliability: float = 0.90, confidence: float = 0.90,
         censored: list[bool] | None = None, design_amplitude: float | None = None,
-        material: str | None = None,
+        material: str | None = None, distribution: str = "lognormal",
     ) -> dict:
-        """Fit a strain-life regression and report design (R-C) values."""
-        if censored is not None and any(censored):
-            fit = stats.fit_log_life_censored(amplitude, life_values, censored)
+        """Fit a strain-life regression and report design (R-C) values.
+
+        With runouts the fit is censored maximum likelihood and the result
+        carries the ML uncertainty block and, at a design amplitude, the
+        profile-likelihood bound ``ml_design_life`` alongside the legacy
+        Owen value. ``distribution`` selects lognormal or weibull life
+        scatter for the censored fit.
+        """
+        has_runouts = censored is not None and any(censored)
+        if has_runouts:
+            assert censored is not None
+            ml_fit = stats.fit_log_life_censored(
+                amplitude, life_values, censored, distribution=distribution
+            )
+            fit: stats.LogLifeFit = ml_fit
         else:
             fit = stats.fit_log_life(amplitude, life_values)
         out: dict[str, Any] = {
@@ -416,18 +428,58 @@ class LcfService:
             "amplitude_range": {"min": fit.amp_min, "max": fit.amp_max},
             "warnings": [],
         }
-        if censored is not None and any(censored):
+        if has_runouts:
             out["lack_of_fit"] = {
                 "available": False,
                 "reason": "not defined for censored (runout) fits",
             }
+            out["ml"] = {
+                "distribution": ml_fit.distribution,
+                "n_censored": ml_fit.n_censored,
+                "loglik": ml_fit.loglik,
+                "aic": ml_fit.aic,
+                "converged": ml_fit.converged,
+                "standard_errors": {
+                    "intercept": ml_fit.se_intercept,
+                    "slope": ml_fit.se_slope,
+                    "log_sigma": ml_fit.se_log_sigma,
+                },
+            }
+            out["warnings"].append({
+                "code": "owen_with_censoring",
+                "message": (
+                    "design_life applies the Owen tolerance factor to the "
+                    "censored ML sigma. The factor assumes a complete "
+                    "sample, with runouts prefer ml_design_life, the "
+                    "profile-likelihood bound."
+                ),
+            })
         else:
             out["lack_of_fit"] = stats.lack_of_fit(amplitude, life_values)
+            if distribution != "lognormal":
+                out["warnings"].append({
+                    "code": "distribution_ignored",
+                    "message": (
+                        "distribution applies to the censored ML fit only, "
+                        "the uncensored path is the E739-style least-squares "
+                        "fit in log10 life."
+                    ),
+                })
         if design_amplitude is not None:
             out["median_life"] = float(stats.predict_life(fit, design_amplitude))
             out["design_life"] = stats.design_life(
                 fit, design_amplitude, reliability=reliability, confidence=confidence
             )
+            if has_runouts:
+                assert censored is not None
+                ml = stats.design_life_ml(
+                    amplitude, life_values, censored,
+                    at_amplitude=design_amplitude, reliability=reliability,
+                    confidence=confidence, distribution=distribution,
+                )
+                out["median_life"] = ml["median_life"]
+                out["ml_design_life"] = ml["design_life"]
+                out["ml"]["design_method"] = ml["method"]
             in_range = fit.amp_min <= design_amplitude <= fit.amp_max
             if np.isfinite(fit.amp_min) and not in_range:
                 out["warnings"].append({
@@ -444,6 +496,69 @@ class LcfService:
             self.store.save(material, "design_curve", out,
                             input_hash=hash_inputs(list(amplitude), list(life_values),
                                                    reliability, confidence))
+        return to_jsonable(out)
+
+    def fit_strain_life_ml(
+        self, total_strain_amp: list[float], reversals: list[float], *,
+        E: float, censored: list[bool] | None = None,
+        stress_amp: list[float] | None = None, name: str | None = None,
+    ) -> dict:
+        """Censored nonlinear ML fit of the full strain-life curve.
+
+        The WK88010-aligned fit: the combined four-constant curve with
+        lognormal life scatter, runouts by likelihood. Returns the constants
+        with observed-information standard errors and machine-readable
+        warnings, including the intrinsic identifiability caveat when it
+        bites.
+        """
+        fit = stats.fit_strain_life_censored(
+            total_strain_amp, reversals, censored, E=E, stress_amp=stress_amp,
+        )
+        out: dict[str, Any] = {
+            "sigma_f": fit.sigma_f, "b": fit.b,
+            "eps_f": fit.eps_f, "c": fit.c, "E": fit.E,
+            "sigma_log10_life": fit.sigma_log10_life,
+            "transition_reversals": fit.transition_reversals,
+            "n_points": fit.n_points, "n_censored": fit.n_censored,
+            "loglik": fit.loglik, "aic": fit.aic, "converged": fit.converged,
+            "standard_errors": {
+                "sigma_f": fit.se_sigma_f, "b": fit.se_b,
+                "eps_f": fit.se_eps_f, "c": fit.se_c,
+                "sigma_log10_life": fit.se_sigma_log10_life,
+            },
+            "strain_range": {"min": fit.strain_min, "max": fit.strain_max},
+            "warnings": [],
+        }
+        ses = [fit.se_sigma_f, fit.se_b, fit.se_eps_f, fit.se_c]
+        vals = [fit.sigma_f, fit.b, fit.eps_f, fit.c]
+        weak = any(
+            not np.isfinite(s) or s > abs(v) for s, v in zip(ses, vals)
+        )
+        if weak:
+            out["warnings"].append({
+                "code": "weak_identifiability",
+                "message": (
+                    "at least one constant has a standard error as large as "
+                    "the estimate. The combined curve is well determined "
+                    "inside the tested strain range, individual constants "
+                    "are not. Use the curve, not single constants."
+                ),
+            })
+        if not fit.converged:
+            out["warnings"].append({
+                "code": "not_converged",
+                "message": (
+                    "the optimizer reported non-convergence, treat this fit "
+                    "as unreliable."
+                ),
+            })
+        if name:
+            self.store.save(
+                name, "strain_life_ml", out,
+                input_hash=hash_inputs(
+                    list(total_strain_amp), list(reversals), E
+                ),
+            )
         return to_jsonable(out)
 
     def simulate_variable_amplitude(
@@ -676,6 +791,63 @@ class LcfService:
     def import_material(self, doc: dict) -> dict:
         """Validate and flatten a lcf-strain-life material document."""
         return interchange.import_material(doc)
+
+    def validate_interchange(self, document: dict) -> dict:
+        """Validate any interchange document, returning a structured verdict.
+
+        Covers material@1, test-record@1, and collection@1. Pure check, no
+        store write, never repairs a document.
+        """
+        return interchange.validate_document(document)
+
+    def summarize_collection(self, document: dict) -> dict:
+        """Summarize a collection document, or report why it is invalid."""
+        verdict = interchange.validate_document(document)
+        if not verdict["valid"] or verdict["kind"] != "collection":
+            errors = list(verdict["errors"])
+            if verdict["valid"]:
+                errors.append(
+                    f"document is a {verdict['kind']}, not a collection"
+                )
+            return {"valid": False, "errors": errors}
+        col = interchange.import_collection(document)
+        by_material: dict[str, int] = {}
+        strains: list[float] = []
+        lives: list[float] = []
+        temps: list[float] = []
+        runouts = 0
+        for rec in col.records:
+            by_material[rec.material] = by_material.get(rec.material, 0) + 1
+            if rec.test.strain_amplitude is not None:
+                strains.append(rec.test.strain_amplitude)
+            lives.append(rec.failure.reversals_to_failure)
+            if rec.failure.runout:
+                runouts += 1
+            if rec.test.temperature_C is not None:
+                temps.append(rec.test.temperature_C)
+        out: dict[str, Any] = {
+            "valid": True,
+            "name": col.name,
+            "license": col.license,
+            "created": col.created,
+            "doi": col.doi,
+            "material_count": len(col.materials),
+            "record_count": len(col.records),
+            "materials": [m.name for m in col.materials],
+            "records_by_material": by_material,
+            "runout_count": runouts,
+        }
+        if strains:
+            out["strain_amplitude_range"] = {
+                "min": min(strains), "max": max(strains)
+            }
+        if lives:
+            out["reversals_range"] = {"min": min(lives), "max": max(lives)}
+        if temps:
+            out["temperature_C_range"] = {"min": min(temps), "max": max(temps)}
+        if col.contributors:
+            out["contributors"] = [c.name for c in col.contributors]
+        return out
 
     def search_critical_plane_tensor(
         self,
