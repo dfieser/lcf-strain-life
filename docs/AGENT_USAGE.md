@@ -15,7 +15,15 @@ units, and the compute, save, recall pattern. Start the server with `lcf-mcp`.
   counting, condense it with the racetrack filter, and predict spectrum life.
 - Convert a nominal notch stress to local stress, strain, and life.
 - Fit a statistical design curve with reliability and confidence, and flag
-  outliers in fatigue data while respecting runouts.
+  outliers in fatigue data while respecting runouts. With runouts the fit
+  is censored maximum likelihood with standard errors, and the design bound
+  can come from the profile likelihood instead of the complete-sample Owen
+  construction.
+- Fit the full strain-life curve by censored maximum likelihood when
+  runouts exist or only total strain is available, `fit_strain_life_ml`.
+- Validate and summarize open interchange documents, material constants,
+  test records, and dataset collections, `validate_interchange` and
+  `summarize_collection`.
 - Evaluate Woehler-line lives with original, elementary, or Haibach knee
   treatment, and sum damage with Miner, DLDR, or Corten-Dolan.
 - Evaluate critical-plane multiaxial parameters from known plane quantities.
@@ -155,12 +163,29 @@ percent confidence, A-basis is 99/95, following MMPDS practice. Pass raw
 ### fit_design_curve
 Fit a strain-life regression, life is the dependent variable. Inputs:
 `amplitude` and `life_values` lists, `reliability`, `confidence`, optional
-`censored` flags for runouts, optional `design_amplitude`. Returns the fit, the
-Owen factor, the design life, the fitted `amplitude_range`, and a `warnings`
-list of machine-readable `{"code", "message"}` flags. Surface every warning to
-the user. `code == "extrapolation"` means the requested `design_amplitude` is
-outside the fitted interval and the predicted life is unreliable, E739 itself
-cautions against extrapolating outside the interval of testing.
+`censored` flags for runouts, optional `design_amplitude`, optional
+`distribution` (`lognormal` default, `weibull` for the censored fit).
+Returns the fit, the Owen factor, the design life, the fitted
+`amplitude_range`, and a `warnings` list of machine-readable
+`{"code", "message"}` flags. With runouts the result adds an `ml` block,
+standard errors, log likelihood, AIC, convergence, and at a
+`design_amplitude` also `ml_design_life`, the profile-likelihood lower
+bound aligned with ASTM work item WK88010. Surface every warning to the
+user. `code == "extrapolation"` means the requested `design_amplitude` is
+outside the fitted interval and the predicted life is unreliable, E739
+itself cautions against extrapolating outside the interval of testing.
+`code == "owen_with_censoring"` means prefer `ml_design_life` over the
+approximate Owen value.
+
+### fit_strain_life_ml
+Fit the combined four-constant strain-life curve by censored maximum
+likelihood, lognormal life scatter. Inputs: `total_strain_amp`,
+`reversals`, `E`, optional `censored` runout flags, optional `stress_amp`
+to improve the starting point, optional `name` to persist. Returns the
+constants with `standard_errors`, `sigma_log10_life`, log likelihood, AIC,
+and warnings. Heed `weak_identifiability`: the curve is well determined
+inside the tested strain range even when single constants are not. Prefer
+`fit_strain_life` when stress amplitudes exist and nothing is censored.
 
 ### flag_outliers
 Screen strain-life or stress-life data for outliers before fitting. Inputs:
@@ -232,6 +257,15 @@ provenance block), or with `fmt="pylife"` the Basquin line in pyLife
 WoehlerCurve conventions (shape-compatible, the knee is a representation
 choice). `import_material` validates a document and refuses unknown
 versions and unit systems with the reason.
+
+### validate_interchange and summarize_collection
+`validate_interchange` checks any interchange document, `material@1`,
+`test-record@1`, or `collection@1`, and returns `valid`, the detected
+`kind`, and readable `errors`. It never guesses and never repairs.
+`summarize_collection` reports a collection's record and material counts,
+records per material, strain and life ranges, runouts, license, and
+contributors. The formats are specified in docs/INTERCHANGE.md, the seed
+dataset lives at docs/data/seed_collection.json.
 
 ### compute_multiaxial_parameter and search_critical_plane
 Evaluate a critical-plane damage parameter (fatemi_socie, brown_miller, swt,

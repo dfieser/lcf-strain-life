@@ -10,6 +10,51 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- Open interchange formats for strain-life data, the backbone of the
+  data-first phase 2 plan. `test-record@1` carries one strain-controlled
+  test with ASTM E606-style metadata, runout flagging, an optional
+  per-cycle table, and required provenance with a license basis.
+  `collection@1` bundles material documents and test records into a
+  dataset manifest. Both are defined as pydantic models, specified
+  field-by-field in `docs/INTERCHANGE.md`, and frozen as JSON Schema
+  artifacts under `docs/schemas/` with a drift-guard test. The existing
+  `material@1` format is unchanged. New API: `export_test_record`,
+  `import_test_record`, `export_collection`, `import_collection`,
+  `validate_document`, `json_schema`. New console entry `lcf-validate`
+  validates any interchange JSON file. New MCP tools
+  `validate_interchange` and `summarize_collection`.
+- A seed open-data collection, `docs/data/seed_collection.json`, built
+  from `lcf.datasets.seed_collection()` and drift-guarded by tests: the
+  six published SAE 1137 strain-controlled tests as test records, and
+  verified constant sets for SAE 1005, Man-Ten, and RQC-100 as material
+  documents, every value factual data re-tabulated with attribution. It is
+  a schema-reference seed, not yet a database at scale.
+  `docs/CONTRIBUTING-DATA.md` defines the contribution and licensing
+  rules.
+- Censored maximum-likelihood statistics aligned with the framework behind
+  ASTM work item WK88010, the replacement effort for the withdrawn E739.
+  `fit_log_life_censored` now returns standard errors from the observed
+  information, the log likelihood, AIC, and a convergence flag, and
+  accepts `distribution="weibull"` alongside the lognormal default. New
+  `design_life_ml` computes the one-sided lower confidence bound on a life
+  quantile by profile likelihood or the Wald method, the modern
+  replacement for applying the complete-sample Owen factor to censored
+  fits. New `compare_runout_handling` quantifies the design-life effect of
+  deleting runouts instead of censoring them. New
+  `fit_strain_life_censored` fits the combined four-constant strain-life
+  curve by censored ML with lognormal life scatter and reports the
+  intrinsic identifiability caveat through standard errors and a warning.
+  `fit_design_curve` (service and MCP) gains a `distribution` parameter
+  and, with runouts, an `ml` block, `ml_design_life`, and an
+  `owen_with_censoring` warning. New MCP tool `fit_strain_life_ml`. The
+  MCP tool count moves from 38 to 41.
+- A rendered documentation site built with mkdocs-material from `docs/`,
+  deployed to GitHub Pages under `/docs/` next to the existing landing
+  page: installation, usage, an SAE 1137 tutorial that reproduces the
+  published analysis, the post-E739 statistics guide, the interchange
+  specification, the open-data pages, the agent guide, and an API
+  reference generated from docstrings. New `docs` extra installs the
+  toolchain.
 - `fit_design_curve` now reports the fitted amplitude interval under
   `amplitude_range` and a `warnings` list of machine-readable
   `{"code", "message"}` flags. A `design_amplitude` outside the fitted

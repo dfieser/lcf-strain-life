@@ -31,7 +31,7 @@ Provide your own strain-controlled fatigue test data and get the standardized re
 | Variable amplitude | rainflow, level-crossing, and peak counting (ASTM E1049), racetrack filter, spectrum life, and a Masing-memory local-strain engine (strain or load-input Neuber) validated against published SAE datasets |
 | Damage | Miner, DLDR, Corten-Dolan, Woehler knee variants including Haibach |
 | Notch and multiaxial | Neuber and Glinka local strain, tensor critical-plane search (Fatemi-Socie, Brown-Miller, SWT) |
-| Statistics | design curves with runout handling, outlier screening, Dixon-Mood staircase, A/B-basis values, the random fatigue limit model |
+| Statistics | design curves, censored maximum likelihood with lognormal or Weibull scatter, profile-likelihood design bounds, outlier screening, Dixon-Mood staircase, A/B-basis values, the random fatigue limit model |
 | High temperature | frequency-modified Coffin-Manson, time-fraction creep-fatigue |
 | Surface | FKM roughness factor, and the FKM size-factor formula |
 | Interchange and reports | versioned material documents, pyLife and py-fatigue adapters, one-call markdown lab reports |
@@ -118,10 +118,25 @@ SmartScreen will warn on first run. Choose "More info", then "Run anyway".
 
 ## Documentation
 
+- **[The documentation site](https://dfieser.github.io/lcf-strain-life/docs/)** renders installation, usage, a tutorial reproducing a published SAE 1137 analysis, the statistics guide, and the API reference.
 - **[docs/PHYSICS_REVIEW.md](docs/PHYSICS_REVIEW.md)** is the science-only physics record: every equation defined and cited, no software detail. [docs/PHYSICS_REVIEW.pdf](docs/PHYSICS_REVIEW.pdf) is the same content typeset with a reviewer sign-off table, the file to share with a materials scientist for review.
 - [examples/](examples) holds runnable scripts: a strain-life fit and a machine-style CSV ingestion.
 - [docs/AGENT_USAGE.md](docs/AGENT_USAGE.md) describes the MCP tools and the compute, save, recall pattern for AI agents using the toolkit.
 - [CHANGELOG.md](CHANGELOG.md) is the chronological log of changes.
+
+## Open data
+
+The toolkit defines versioned, machine-readable interchange formats for
+strain-life data, specified in [docs/INTERCHANGE.md](docs/INTERCHANGE.md)
+with JSON Schemas in [docs/schemas/](docs/schemas). A citable seed
+collection ships at
+[docs/data/seed_collection.json](docs/data/seed_collection.json), six
+published SAE 1137 tests and three verified constant sets, every value
+re-tabulated from its cited source. It is a schema-reference seed, not yet
+a database at scale. Contributions of strain-controlled data, especially
+with per-cycle evolution, are welcome under the rules in
+[docs/CONTRIBUTING-DATA.md](docs/CONTRIBUTING-DATA.md), and `lcf-validate`
+checks any document from the command line.
 
 ## Project layout
 
@@ -129,7 +144,9 @@ SmartScreen will warn on first run. Choose "More info", then "Run anyway".
 src/lcf/            core library and MCP server
 tests/              unit tests including golden-value validation, SAE 1137
 examples/           runnable example scripts
-docs/               the physics PDF and the agent usage guide
+docs/               documentation site sources, physics PDF, interchange
+                    spec, JSON Schemas, and the seed data collection
+website/            the landing page, plain HTML and CSS
 ```
 
 ## Authors and citation

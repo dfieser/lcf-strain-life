@@ -16,6 +16,13 @@ fatigue exponents b and c are negative.
 - [README](README.md): overview, install, quick start for the library and the MCP server.
 - [Agent usage guide](docs/AGENT_USAGE.md): the MCP tools, their units, and the compute, save, recall pattern.
 - [AGENTS.md](AGENTS.md): guidance for agents working on the repository.
+- [Documentation site](https://dfieser.github.io/lcf-strain-life/docs/): rendered installation, usage, tutorial, statistics guide, and API reference.
+
+## Data and interchange
+
+- [Interchange specification](docs/INTERCHANGE.md): the versioned JSON formats for material constants, test records, and dataset collections, with JSON Schemas in docs/schemas/.
+- [Seed collection](docs/data/seed_collection.json): the citable seed dataset, six SAE 1137 tests and three verified constant sets.
+- [Contributing data](docs/CONTRIBUTING-DATA.md): provenance, licensing, and metadata rules for contributed records.
 
 ## Physics and changes
 
