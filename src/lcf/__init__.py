@@ -87,10 +87,15 @@ from .notch import (
 )
 from .stats import (
     LogLifeFit,
+    MlLogLifeFit,
+    MlStrainLifeFit,
+    compare_runout_handling,
     confidence_interval,
     design_life,
+    design_life_ml,
     fit_log_life,
     fit_log_life_censored,
+    fit_strain_life_censored,
     generalized_esd,
     grubbs_test,
     owen_tolerance_factor,
@@ -163,6 +168,9 @@ __all__ = [
     "fit_log_life", "fit_log_life_censored", "design_life", "owen_tolerance_factor",
     "confidence_interval", "prediction_interval", "LogLifeFit",
     "grubbs_test", "generalized_esd", "regression_diagnostics",
+    # phase 2 data-first plan: censored ML with uncertainty (WK88010-aligned)
+    "MlLogLifeFit", "MlStrainLifeFit", "design_life_ml",
+    "compare_runout_handling", "fit_strain_life_censored",
     # phase 2: high temperature
     "creep_fatigue_damage", "creep_fatigue_envelope_check",
     "frequency_modified_plastic_strain", "interpolate_constants", "CreepFatigueResult",

@@ -121,6 +121,37 @@ CITATIONS: dict[str, dict[str, str]] = {
         "citation": "Spindel and Haibach, Int. J. Fatigue 1 (1979), and "
                     "Ling and Pan, Int. J. Fatigue 19 (1997) 415-419",
     },
+    "ml_fatigue_framework": {
+        "method": "Censored maximum-likelihood fatigue-life fitting with "
+                  "lognormal or Weibull scatter, observed-information "
+                  "standard errors, and likelihood-based bounds",
+        "citation": "Meeker, Escobar, Pascual, Hong, Liu, Falk, "
+                    "Ananthasayanam, Modern statistical models and methods "
+                    "for estimating fatigue-life and fatigue-strength "
+                    "distributions from experimental data, "
+                    "arXiv:2212.04550. Foundations: Meeker and Escobar, "
+                    "Statistical Methods for Reliability Data, Wiley, 1998",
+        "note": "the technical basis cited by ASTM work item WK88010, the "
+                "replacement effort for the withdrawn E739",
+    },
+    "profile_likelihood_bound": {
+        "method": "Profile-likelihood confidence bounds on life quantiles",
+        "citation": "Venzon and Moolgavkar, Applied Statistics 37 (1988) "
+                    "87-94",
+    },
+    "censored_strain_life_ml": {
+        "method": "Censored nonlinear maximum-likelihood fit of the "
+                  "combined total strain-life curve",
+        "citation": "Model per Basquin plus Coffin-Manson with lognormal "
+                    "life scatter, estimation per Meeker, Escobar, Pascual "
+                    "et al., arXiv:2212.04550",
+        "note": "validated by seeded synthetic-data recovery at curve level "
+                "and by consistency with the uncensored least-squares "
+                "refined fit. The censored likelihood machinery itself is "
+                "anchored by the exact reproduction of the published "
+                "Pascual-Meeker random fatigue limit fit elsewhere in this "
+                "package",
+    },
     "owen_design_curve": {
         "method": "One-sided tolerance (reliability-confidence) design "
                   "curves via the Owen factor",

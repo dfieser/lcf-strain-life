@@ -294,6 +294,51 @@ by maximum likelihood rather than deletion. References: ASTM E739, withdrawn 202
 and used as the de facto reference, Owen 1963, Williams, Lee and Rilly 2003 (Int.
 J. Fatigue 25:427).
 
+The censored maximum-likelihood layer follows the framework behind the ASTM
+replacement work item WK88010. With \(y_i = \log_{10} N_i\),
+\(x_i = \log_{10}(\Delta\varepsilon/2)_i\), location
+\(\mu_i = \beta_0 + \beta_1 x_i\), scale \(\sigma\), and standardized residual
+\(z_i = (y_i-\mu_i)/\sigma\), observed failures contribute the density and
+runouts the survival probability,
+\begin{equation}
+\ell(\beta_0,\beta_1,\sigma)
+= \sum_{\text{failures}} \Big[\ln\phi(z_i) - \ln\sigma\Big]
++ \sum_{\text{runouts}} \ln S(z_i),
+\end{equation}
+where \(\phi\) and \(S\) are the density and survival function of the
+standardized scatter family: the standard normal for lognormal life, or the
+smallest-extreme-value distribution, \(S(z)=\exp(-e^{z})\), for Weibull
+life. Standard errors come from the observed information, the inverse
+Hessian of \(-\ell\) at the optimum, and the families are compared by AIC.
+The reliability-\(p\) life quantile at an amplitude \(x_0\) is
+\(q_p = \beta_0 + \beta_1 x_0 + z_p\,\sigma\) with \(z_p\) the standardized
+quantile of the chosen family. Its one-sided lower confidence bound at level
+\(\gamma\) inverts the likelihood ratio by profile likelihood,
+\begin{equation}
+q_L = \min\Big\{q : 2\big[\ell(\hat\theta) - \ell_p(q)\big]
+\le z_\gamma^2\Big\},
+\end{equation}
+with \(\ell_p\) the profile log likelihood over the remaining parameters, or
+alternatively the Wald bound \(\hat q - z_\gamma\,\mathrm{se}(\hat q)\) with
+the delta method. The Owen construction assumes a complete normal sample, so
+with censoring the profile bound is the one to prefer, and on complete
+samples the two agree closely, which the test suite checks. The same
+likelihood fits the combined strain-life curve directly, with
+\(\mu(\varepsilon_a)\) the base-10 logarithm of the life obtained by
+inverting the total strain-life equation, which the withdrawn E739 could not
+represent, its scope was linearized fits. The four constants of the combined
+curve are strongly correlated when inferred from total strain alone and the
+elastic exponent can collapse toward zero on sparse data. The fitted curve
+stays well determined inside the tested strain range, the standard errors
+report the weakness, and results carry an identifiability warning.
+References: Meeker, Escobar, Pascual, Hong, Liu, Falk and Ananthasayanam,
+arXiv:2212.04550, Meeker and Escobar 1998 (Statistical Methods for
+Reliability Data, Wiley), Venzon and Moolgavkar 1988 (Applied Statistics
+37:87). Validation: exact agreement with least squares in the uncensored
+lognormal limit including the \(\sqrt{(n-2)/n}\) scale relation, seeded
+synthetic recovery at curve level, and profile-versus-Owen consistency on
+complete samples.
+
 The fatigue limit from a staircase (up-and-down) test is estimated by the
 Dixon-Mood method. With \(n_i\) the counts of the less frequent event on the
 level grid, \(A=\sum i\,n_i\), \(B=\sum i^2 n_i\), \(N=\sum n_i\), step
