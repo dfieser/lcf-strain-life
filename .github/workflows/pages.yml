@@ -1,11 +1,18 @@
-# Publish the static site in website/ to GitHub Pages.
-# Enable once under Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
+# Publish the GitHub Pages site: the static landing page from website/ at
+# the site root, and the rendered mkdocs documentation under /docs/.
+# Enabled under Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
 name: pages
 
 on:
   push:
     branches: [main]
-    paths: ["website/**", ".github/workflows/pages.yml"]
+    paths:
+      - "website/**"
+      - "docs/**"
+      - "mkdocs.yml"
+      - "src/lcf/**"
+      - "pyproject.toml"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -26,9 +33,22 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Build the documentation
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[docs]"
+          mkdocs build --strict
+      - name: Assemble the site, landing page at root, docs under /docs/
+        run: |
+          mkdir -p _site
+          cp -r website/. _site/
+          mv site _site/docs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: website
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

@@ -1,0 +1,65 @@
+site_name: lcf-strain-life
+site_description: >-
+  AI-agent-native toolkit for low cycle fatigue strain-life analysis, with
+  open interchange formats and post-E739 statistics.
+site_url: https://dfieser.github.io/lcf-strain-life/docs/
+repo_url: https://github.com/dfieser/lcf-strain-life
+docs_dir: docs
+edit_uri: blob/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Tutorial, SAE 1137: tutorials/sae1137.md
+  - Statistics, post-E739: statistics.md
+  - Open data:
+      - The data effort: data.md
+      - Interchange formats: INTERCHANGE.md
+      - Contributing data: CONTRIBUTING-DATA.md
+  - Agents:
+      - Agent usage guide: AGENT_USAGE.md
+  - Reference:
+      - API reference: api.md
+      - Physics review: PHYSICS_REVIEW.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_source: false
+            members_order: source
+            show_root_heading: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
