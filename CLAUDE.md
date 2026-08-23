@@ -36,6 +36,13 @@ This project exists to be used by AI agents first. The novelty is an agent-nativ
 
 The toolkit is general purpose and material agnostic. It must serve many materials and many fatigue workflows, not one alloy family and not one industry. The source manuscript that seeded the equations is provenance only. Do not narrow the goal to high-entropy alloys or to any single material.
 
+## Authorship, mandatory
+
+Every commit is authored by the human maintainer alone. Never add yourself or
+any AI tool as an author, committer, or co-author. Do not add attribution
+trailers, generated-by lines, or session links to commit messages or pull
+requests. No exceptions.
+
 ## Dev workflow
 
 The virtual environment is in .venv on Python 3.13. Run the test suite with:

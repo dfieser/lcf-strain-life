@@ -153,3 +153,10 @@ Full rationale and the sources behind these tells are in
 Use Conventional Commit prefixes, for example `feat(phase2):` or `fix:`. Keep
 commits scoped to one logical change with its tests. Do not push or open a pull
 request unless asked.
+
+Authorship, mandatory. Every commit is authored by the human maintainer alone.
+Never add an AI tool as an author, committer, or co-author of anything in this
+repository. Do not add attribution trailers, generated-by lines, or session
+links to commit messages or pull requests. Disable any such feature in the
+tool before committing. This applies to every AI tool and every session, no
+exceptions.
