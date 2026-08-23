@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dfieser.github.io/lcf-strain-life/sitemap.xml
+Sitemap: https://dfieser.github.io/lcf-strain-life/docs/sitemap.xml

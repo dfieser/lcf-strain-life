@@ -1,3 +1,8 @@
+---
+description: >-
+  The open strain-life data effort: versioned interchange formats, a citable SAE 1137 seed collection, and how to contribute test records.
+---
+
 # The open data effort
 
 Fatigue model papers routinely state the same problem: there is no

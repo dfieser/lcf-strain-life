@@ -1,3 +1,8 @@
+---
+description: >-
+  API reference for the lcf Python package, generated from the docstrings.
+---
+
 # API reference
 
 Generated from the docstrings of the public modules. The package facade

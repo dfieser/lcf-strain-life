@@ -1,3 +1,8 @@
+---
+description: >-
+  Usage examples for the lcf library: reduce strain-controlled tests, fit strain-life constants, predict life, and save results for recall.
+---
+
 # Usage
 
 Worked examples for the main capabilities. All values use true stress in MPa

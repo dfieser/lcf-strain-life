@@ -1,3 +1,8 @@
+---
+description: >-
+  Specification of the versioned JSON interchange formats for strain-life materials, test records, and collections, with published JSON Schemas.
+---
+
 # Interchange formats
 
 lcf-strain-life defines three small JSON document formats for exchanging

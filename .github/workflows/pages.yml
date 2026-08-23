@@ -46,6 +46,7 @@ jobs:
           mkdir -p _site
           cp -r website/. _site/
           mv site _site/docs
+          cp llms.txt _site/llms.txt
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -5,8 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Get started: lcf-strain-life</title>
   <meta name="description" content="A step-by-step setup for non-programmers: install uv, add the fatigue toolkit to your AI assistant, and run your first analysis.">
+  <link rel="canonical" href="https://dfieser.github.io/lcf-strain-life/get-started.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Get started: lcf-strain-life">
+  <meta property="og:description" content="A step-by-step setup for non-programmers: install uv, add the fatigue toolkit to your AI assistant, and run your first analysis.">
+  <meta property="og:url" content="https://dfieser.github.io/lcf-strain-life/get-started.html">
+  <meta property="og:image" content="https://dfieser.github.io/lcf-strain-life/assets/img/social-preview.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Add fatigue analysis to your AI assistant",
+    "description": "Set up the lcf-strain-life MCP server for an AI assistant such as Claude Desktop, Cursor, VS Code, or Google Antigravity, and run a first strain-life analysis.",
+    "totalTime": "PT10M",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Install uv",
+        "text": "Install the uv package manager with the one-line installer for your platform. uv downloads and runs the toolkit on demand, so nothing else needs to be installed."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Add the toolkit to your assistant",
+        "text": "Add an lcf server entry to your assistant's MCP settings file with the command uvx and the arguments --from lcf-strain-life[mcp] lcf-mcp."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Restart the assistant",
+        "text": "Fully quit and reopen the assistant so it reads the new settings and starts the server."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Run your first analysis",
+        "text": "Ask the assistant to fit strain-life constants from your data, or paste the worked SAE 1137 example prompt from this guide."
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "The assistant does not show the lcf tools",
+        "acceptedAnswer": { "@type": "Answer", "text": "Make sure you fully quit and reopened it, not just closed the window. Then check the settings file again for a missing comma or a missing closing brace. Most failures are a small typo in that file." }
+      },
+      {
+        "@type": "Question",
+        "name": "It says uv or uvx was not found",
+        "acceptedAnswer": { "@type": "Answer", "text": "Desktop apps do not always see tools installed for the terminal. On Windows, find the full path by running where uvx in PowerShell, then use that full path in place of uvx in the settings file. On macOS, use ~/.local/bin/uvx. Restarting your computer once after installing uv also resolves this." }
+      },
+      {
+        "@type": "Question",
+        "name": "The first analysis is slow or seems to hang",
+        "acceptedAnswer": { "@type": "Answer", "text": "The first run downloads the toolkit and its scientific libraries. This can take a minute on a normal connection. It only happens once. Later runs start quickly." }
+      },
+      {
+        "@type": "Question",
+        "name": "I get a JSON or config error",
+        "acceptedAnswer": { "@type": "Answer", "text": "The settings file must be valid JSON. Every entry except the last needs a comma, braces must be balanced, and quotes must be straight quotes, not curly ones. Pasting the whole configuration block from the guide into an empty file avoids most of these." }
+      },
+      {
+        "@type": "Question",
+        "name": "Where is the settings file?",
+        "acceptedAnswer": { "@type": "Answer", "text": "In Claude Desktop, the reliable way to open it is Settings, Developer, Edit Config, which opens the exact file for your system so you never have to hunt for the path." }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>

@@ -1,3 +1,8 @@
+---
+description: >-
+  Fatigue statistics after ASTM E739: censored maximum likelihood, design curves, profile-likelihood bounds, outlier screening, and staircase analysis.
+---
+
 # Statistics after E739
 
 ASTM E739, the guide for statistical analysis of linearized stress-life and

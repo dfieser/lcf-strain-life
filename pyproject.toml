@@ -14,7 +14,12 @@ authors = [
     { name = "David Fieser", email = "dfieser9@gmail.com" },
     { name = "Hugh Shortt" },
 ]
-keywords = ["fatigue", "low-cycle-fatigue", "strain-life", "materials", "mcp", "coffin-manson", "basquin"]
+keywords = [
+    "fatigue", "low-cycle-fatigue", "strain-life", "fatigue-analysis",
+    "materials", "materials-science", "mcp", "mcp-server",
+    "model-context-protocol", "rainflow", "coffin-manson", "basquin",
+    "ramberg-osgood", "mean-stress",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
@@ -50,8 +55,8 @@ lcf-gui = "lcf.gui:main"
 lcf-validate = "lcf.validate_cli:main"
 
 [project.urls]
-Homepage = "https://github.com/dfieser/lcf-strain-life"
-Documentation = "https://github.com/dfieser/lcf-strain-life#readme"
+Homepage = "https://dfieser.github.io/lcf-strain-life/"
+Documentation = "https://dfieser.github.io/lcf-strain-life/docs/"
 Repository = "https://github.com/dfieser/lcf-strain-life"
 Changelog = "https://github.com/dfieser/lcf-strain-life/blob/main/CHANGELOG.md"
 Issues = "https://github.com/dfieser/lcf-strain-life/issues"

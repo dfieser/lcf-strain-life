@@ -1,3 +1,8 @@
+---
+description: >-
+  Install lcf-strain-life with pip or uvx, add the optional MCP server and GUI extras, and verify the setup.
+---
+
 # Installation
 
 ## Requirements

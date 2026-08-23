@@ -1,3 +1,8 @@
+---
+description: >-
+  How an AI agent drives the lcf MCP server: the tools, their units, and the compute, save, recall pattern.
+---
+
 # Agent usage guide
 
 How an AI agent drives the `lcf` MCP server. This describes the tools, their

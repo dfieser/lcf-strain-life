@@ -1,3 +1,8 @@
+---
+description: >-
+  Rules for contributing strain-controlled fatigue data: provenance, license basis, metadata, and validation with lcf-validate.
+---
+
 # Contributing strain-life data
 
 lcf-strain-life is building an open, machine-readable collection of
