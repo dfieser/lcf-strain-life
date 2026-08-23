@@ -1,3 +1,8 @@
+---
+description: >-
+  An AI-agent-native Python toolkit and MCP server for low cycle fatigue strain-life analysis: reduce test data, fit models, predict life, keep provenance.
+---
+
 # lcf-strain-life
 
 An AI-agent-native toolkit for low cycle fatigue strain-life analysis. A
@@ -5,6 +10,13 @@ Python library and an MCP server that take strain-controlled fatigue test
 data, reduce it cycle by cycle, fit the standard models, predict life, and
 persist every result for recall. Every capability is callable by a human or
 by an AI agent through the same service layer.
+
+![Strain-life plot for SAE 1137. Six measured points lie on the fitted total strain amplitude curve, with the elastic Basquin and plastic Coffin-Manson branches crossing at the transition life of 22,362 reversals.](assets/strain_life_sae1137.png)
+
+The library produces both figures on this page from the six published
+SAE 1137 tests used in the tutorial.
+
+![Stabilized hysteresis loops for the SAE 1137 cyclic fit at three strain amplitudes, drawn as Masing branches from the fitted Ramberg-Osgood constants.](assets/hysteresis_masing.png)
 
 - [Install](installation.md), then walk the [usage examples](usage.md) or
   the [SAE 1137 tutorial](tutorials/sae1137.md), which reproduces a

@@ -9,7 +9,36 @@ workspace outside the public repository.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+- Repository visuals under `docs/assets`: a banner, the SAE 1137
+  strain-life fit figure, a stabilized hysteresis loop figure, an
+  agent-workflow diagram, a GUI screenshot from a real run, and a social
+  preview image. Every plotted number comes from the library itself.
+- `CONTRIBUTING.md`, issue templates for bugs, features, and data
+  contributions, and a pull request template.
+- Open Graph and Twitter card tags, canonical links, and JSON-LD
+  structured data on the landing page and setup guide, plus robots.txt
+  and a sitemap for the website. The docs pages carry meta descriptions.
+- MCP Registry publishing: `server.json`, the PyPI ownership marker in
+  the README, and a release job that lists the server in the official
+  registry over GitHub OIDC on the next tag push. A `glama.json`
+  maintainer file for the Glama directory.
+- A project wiki: getting started, MCP client setup, validation status
+  with reproduced benchmark numbers, FAQ, and troubleshooting, alongside
+  the refreshed physics review and agent usage mirrors.
+
+### Changed
+- README reworked around the new figures, with a user-facing install
+  section. Corrected two stale claims: the `gui` extra and the Windows
+  exe were described as arriving with the next release, both shipped
+  with v0.2.0.
+- `pyproject.toml` project URLs now point Documentation at the rendered
+  documentation site and Homepage at the landing page.
+- The documentation site home shows the strain-life and hysteresis
+  figures.
+- AGENTS.md and CLAUDE.md now state the authorship rule: every commit is
+  authored by the human maintainer alone, with no AI attribution
+  trailers.
 
 ## [0.2.0] - 2026-07-23
 
