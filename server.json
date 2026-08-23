@@ -1,0 +1,45 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.dfieser/lcf-strain-life",
+  "title": "LCF Strain-Life",
+  "description": "Low cycle fatigue strain-life analysis tools: reduce test data, fit models, predict fatigue life.",
+  "repository": {
+    "url": "https://github.com/dfieser/lcf-strain-life",
+    "source": "github"
+  },
+  "websiteUrl": "https://dfieser.github.io/lcf-strain-life/",
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "lcf-strain-life",
+      "version": "0.2.0",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--from",
+          "value": "lcf-strain-life[mcp]==0.2.0",
+          "description": "Install the package with the mcp extra, which carries the MCP server."
+        },
+        {
+          "type": "positional",
+          "value": "lcf-mcp",
+          "valueHint": "lcf-mcp",
+          "description": "The MCP server entry point."
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "LCF_STORE_DIR",
+          "description": "Directory for the local result store. Defaults to .lcfstore in the working directory.",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
