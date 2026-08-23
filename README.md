@@ -30,6 +30,7 @@ Provide your own strain-controlled fatigue test data and get the standardized re
 | Cycle reduction | peak and valley per cycle, half-life cycle, cycles-to-failure `N_f` |
 | Per-cycle metrics | stress amplitude, plastic strain amplitude, mean stress, T/C ratio, hysteresis energy |
 | Strain-life fits | Basquin, Coffin-Manson, Ramberg-Osgood, transition life |
+| Energy-based life | Halford-Morrow plastic strain energy fit and life prediction, with the Masing-loop energy estimate |
 | Constant estimation | five published methods estimate the constants from tensile properties or hardness when no fatigue data exists |
 | Mean stress | Morrow, modified Morrow, SWT, Walker corrections |
 | Variable amplitude | rainflow, level-crossing, and peak counting (ASTM E1049), racetrack filter, spectrum life, and a Masing-memory local-strain engine (strain or load-input Neuber) validated against published SAE datasets |
@@ -62,7 +63,7 @@ virtual environment with `pip install -e ".[mcp,dev]"`.
 The MCP server is the point of this project: it is how an AI agent drives
 the whole analysis by calling tools.
 
-<img src="https://raw.githubusercontent.com/dfieser/lcf-strain-life/main/docs/assets/agent_workflow.png" alt="Diagram. An AI agent, any MCP client, talks to the lcf MCP server over stdio. The server exposes 41 tools such as analyze_test_csv, fit_strain_life, predict_life, count_rainflow, fit_design_curve, generate_report, get_citations, and recall_result. Results are saved to the .lcfstore directory and recalled without recomputation." width="100%">
+<img src="https://raw.githubusercontent.com/dfieser/lcf-strain-life/main/docs/assets/agent_workflow.png" alt="Diagram. An AI agent, any MCP client, talks to the lcf MCP server over stdio. The server exposes 44 tools such as analyze_test_csv, fit_strain_life, predict_life, count_rainflow, fit_design_curve, generate_report, get_citations, and recall_result. Results are saved to the .lcfstore directory and recalled without recomputation." width="100%">
 
 ```bash
 lcf-mcp                # runs the stdio MCP server

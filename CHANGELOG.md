@@ -10,6 +10,15 @@ workspace outside the public repository.
 ## [Unreleased]
 
 ### Added
+- The Halford-Morrow energy-based life relation, from the paper Hugh
+  circulated: Zhang, Zuo, and Liu, Fatigue Fract. Eng. Mater. Struct. 36
+  (2013) 623-630, Eqs. 2 and 3, after Morrow (ASTM STP 378, 1965) and
+  Halford (J. Materials 1, 1966). `lcf.energy` gains `fit_energy_life`,
+  `predict_life_energy`, and `masing_plastic_energy`, reusing the shared
+  power-law fitter. Three new MCP tools expose them, 44 tools total. The
+  Masing-loop closed form is verified against numeric loop integration in
+  the tests, and the physics review carries the new section. Not yet
+  validated against an independent golden dataset, and labeled so.
 - Repository visuals under `docs/assets`: a banner, the SAE 1137
   strain-life fit figure, a stabilized hysteresis loop figure, an
   agent-workflow diagram, a GUI screenshot from a real run, and a social

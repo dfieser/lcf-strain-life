@@ -68,3 +68,25 @@ def test_list_results(service):
     service.fit_strain_life([0.009, 0.005], [553, 464], [4234, 14768], 208000.0,
                             material="M1")
     assert any(r["key"] == "M1" for r in service.list_results())
+
+
+def test_energy_life_fit_persists_and_predicts(service):
+    # exact Halford-Morrow data from the Zhang 2013 Table 5 constants, 350 C
+    W_f, beta = 9.30, -0.43
+    rev = [3e2, 2e3, 1e4, 8e4]
+    dwp = [W_f * r**beta for r in rev]
+    out = service.fit_energy_life(dwp, rev, material="AlSi12")
+    assert out["W_f"] == pytest.approx(W_f, rel=1e-6)
+    assert out["beta"] == pytest.approx(beta, rel=1e-6)
+    saved = service.recall("AlSi12", "energy_life_fit")["value"]
+    assert saved["W_f"] == pytest.approx(W_f, rel=1e-6)
+    pred = service.predict_life_energy(dwp[2], W_f, beta)
+    assert pred["reversals"] == pytest.approx(rev[2], rel=1e-9)
+    assert pred["cycles"] == pytest.approx(rev[2] / 2.0, rel=1e-9)
+
+
+def test_estimate_plastic_energy_masing(service):
+    out = service.estimate_plastic_energy_masing(300.0, 0.004, 0.162)
+    expected = (1.0 - 0.162) / (1.0 + 0.162) * 300.0 * 0.004
+    assert out["plastic_energy_per_cycle"] == pytest.approx(expected)
+    assert "Masing" in out["note"]

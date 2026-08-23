@@ -33,6 +33,7 @@ SAE 1137 tests used in the tutorial.
 | Ingestion | Machine CSV and lab exports, batch series, engineering to true conversion |
 | Cycle reduction | Turning points, per-cycle metrics, hysteresis energy, half-life reduction |
 | Strain-life | Basquin, Coffin-Manson, Ramberg-Osgood fits, transition life, Masing check |
+| Energy-based life | Halford-Morrow energy-life fit and prediction, Masing-loop plastic energy estimate |
 | Mean stress | Morrow, modified Morrow, SWT, Walker |
 | Variable amplitude | ASTM E1049 rainflow with preserved indices, local-strain simulation with material memory |
 | Cumulative damage | Palmgren-Miner, Double Linear Damage Rule, Corten-Dolan |
@@ -42,7 +43,7 @@ SAE 1137 tests used in the tutorial.
 | Cyclic evolution | Mean stress relaxation and ratcheting power laws |
 | Multiaxial | Critical-plane parameters and tensor plane search |
 | Interchange | Versioned open formats for constants, test records, and collections, with JSON Schemas |
-| Interfaces | Python library, 41 MCP tools, no-code Streamlit GUI |
+| Interfaces | Python library, 44 MCP tools, no-code Streamlit GUI |
 
 ## The open data effort
 

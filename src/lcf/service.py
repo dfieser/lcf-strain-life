@@ -21,6 +21,7 @@ from . import (
     criticalplane,
     cyclic_evolution,
     damage,
+    energy,
     estimate,
     fits,
     hightemp,
@@ -243,6 +244,52 @@ class LcfService:
         )
         return to_jsonable({"reversals": two_nf, "cycles": two_nf / 2.0,
                             "total_strain_amp": total_strain_amp})
+
+    def fit_energy_life(
+        self, plastic_energy_per_cycle: list[float], reversals: list[float],
+        *, material: str | None = None,
+    ) -> dict:
+        """Fit the Halford-Morrow energy-life relation, persist if named.
+
+        ``ΔW_p = W'_f (2N_f)**β`` from the stabilized plastic strain energy
+        per cycle of each test (MJ/m³) against reversals to failure.
+        """
+        fit = energy.fit_energy_life(plastic_energy_per_cycle, reversals)
+        result = to_jsonable(fit)
+        if material:
+            ihash = hash_inputs(
+                list(plastic_energy_per_cycle), list(reversals),
+            )
+            self.store.save(material, "energy_life_fit", result,
+                            input_hash=ihash)
+        return result
+
+    def predict_life_energy(
+        self, plastic_energy_per_cycle: float, W_f: float, beta: float,
+    ) -> dict:
+        """Predict reversals/cycles from the Halford-Morrow relation."""
+        two_nf = energy.predict_life_energy(
+            plastic_energy_per_cycle, W_f, beta
+        )
+        return to_jsonable({
+            "reversals": two_nf, "cycles": two_nf / 2.0,
+            "plastic_energy_per_cycle": plastic_energy_per_cycle,
+        })
+
+    def estimate_plastic_energy_masing(
+        self, stress_range: float, plastic_strain_range: float,
+        n_prime: float,
+    ) -> dict:
+        """Masing-loop plastic strain energy per cycle, ``ΔW_p`` in MJ/m³."""
+        w = energy.masing_plastic_energy(
+            stress_range, plastic_strain_range, n_prime
+        )
+        return to_jsonable({
+            "plastic_energy_per_cycle": w, "stress_range": stress_range,
+            "plastic_strain_range": plastic_strain_range,
+            "n_prime": n_prime,
+            "note": "exact for Masing behavior, an estimate otherwise",
+        })
 
     def mean_stress_equivalent_stress(
         self, stress_amp: float, mean_stress: float, model: str,

@@ -16,6 +16,9 @@ units, and the compute, save, recall pattern. Start the server with `lcf-mcp`.
 - Estimate strain-life constants from monotonic properties when no fatigue
   test data exists, five published methods with citations and guardrails.
 - Predict life for a strain amplitude, with or without a mean-stress correction.
+- Fit the Halford-Morrow energy-life relation and predict life from the
+  plastic strain energy per cycle, the criterion that holds up at high
+  temperature where strength and ductility shift in opposite directions.
 - Count a variable-amplitude history with rainflow, level crossing, or peak
   counting, condense it with the racetrack filter, and predict spectrum life.
 - Convert a nominal notch stress to local stress, strain, and life.
@@ -92,6 +95,27 @@ row count, and notes.
 ### predict_life
 Reversals and cycles to failure for a `total_strain_amp`, given the four
 strain-life constants and `E`.
+
+### fit_energy_life
+Fit the Halford-Morrow energy-life relation, `ΔW_p = W'_f (2N_f)^β`, from
+per-test stabilized plastic strain energy per cycle in MJ/m³, for example
+the half-life hysteresis energy from the per-cycle reduction, against
+reversals. Returns `W_f`, `beta` (negative), r squared, and standard
+errors. Useful at high temperature, where the energy criterion captures the
+stress drop that a strain-only correlation misses. Saved under `material`
+when given. Source: Zhang, Zuo, and Liu, FFEMS 36 (2013), after Morrow and
+Halford.
+
+### predict_life_energy
+Reversals and cycles to failure from the Halford-Morrow relation, given
+`plastic_energy_per_cycle` in MJ/m³ and the fitted `W_f` and `beta`.
+
+### estimate_plastic_energy_masing
+Plastic strain energy per cycle of a Masing loop,
+`ΔW_p = ((1 - n')/(1 + n')) Δσ Δε_p`. Inputs: `stress_range` in MPa,
+`plastic_strain_range` as a fraction, and `n_prime`. Exact for Masing
+behavior, an estimate otherwise. Feeds `fit_energy_life` or
+`predict_life_energy` when measured loop energies are unavailable.
 
 ### mean_stress_equivalent_stress
 Equivalent fully-reversed stress for a cycle. Inputs: `stress_amp`, `mean_stress`

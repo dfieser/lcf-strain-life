@@ -163,6 +163,55 @@ def predict_life(
 
 
 @mcp.tool()
+def fit_energy_life(
+    plastic_energy_per_cycle: list[float],
+    reversals: list[float],
+    material: str | None = None,
+) -> dict:
+    """Fit the Halford-Morrow energy-life relation, ΔW_p = W'_f (2N_f)^β.
+
+    ``plastic_energy_per_cycle`` is the stabilized plastic strain energy per
+    cycle of each test in MJ/m³, for example the half-life hysteresis energy
+    from the per-cycle reduction, against reversals to failure. Returns W'_f,
+    β (negative), r squared, and standard errors. Useful at high temperature,
+    where the energy criterion captures the stress drop that a strain-only
+    correlation misses. If ``material`` is given, the fit is saved for recall.
+    """
+    return _service.fit_energy_life(
+        plastic_energy_per_cycle, reversals, material=material
+    )
+
+
+@mcp.tool()
+def predict_life_energy(
+    plastic_energy_per_cycle: float, W_f: float, beta: float
+) -> dict:
+    """Predict reversals and cycles to failure from the Halford-Morrow relation.
+
+    Inverts ΔW_p = W'_f (2N_f)^β for a stabilized plastic strain energy per
+    cycle in MJ/m³. ``beta`` is negative, like b and c.
+    """
+    return _service.predict_life_energy(plastic_energy_per_cycle, W_f, beta)
+
+
+@mcp.tool()
+def estimate_plastic_energy_masing(
+    stress_range: float, plastic_strain_range: float, n_prime: float
+) -> dict:
+    """Plastic strain energy per cycle of a Masing loop, in MJ/m³.
+
+    ΔW_p = ((1 - n')/(1 + n')) Δσ Δε_p, with the total stress range in MPa,
+    the total plastic strain range as a fraction, and the cyclic
+    strain-hardening exponent n'. Exact for Masing behavior, an estimate
+    otherwise. Feed the result to ``fit_energy_life`` or
+    ``predict_life_energy`` when measured loop energies are unavailable.
+    """
+    return _service.estimate_plastic_energy_masing(
+        stress_range, plastic_strain_range, n_prime
+    )
+
+
+@mcp.tool()
 def mean_stress_equivalent_stress(
     stress_amp: float,
     mean_stress: float,

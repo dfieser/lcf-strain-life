@@ -38,6 +38,19 @@ CITATIONS: dict[str, dict[str, str]] = {
         "method": "Morrow mean-stress correction",
         "citation": "Morrow, in Fatigue Design Handbook, SAE, 1968",
     },
+    "halford_morrow_energy_life": {
+        "method": "Halford-Morrow energy-based life relation, "
+                  "ΔW_p = W'_f (2N_f)^β, with the Masing-loop plastic "
+                  "energy estimate ΔW_p = ((1-n')/(1+n')) Δσ Δε_p",
+        "citation": "Morrow, ASTM STP 378 (1965) 45-87, and Halford, "
+                    "J. Materials 1 (1966) 3-18. Implemented as applied to "
+                    "high-temperature low cycle fatigue by Zhang, Zuo, and "
+                    "Liu, Fatigue Fract. Eng. Mater. Struct. 36 (2013) "
+                    "623-630, Eqs. 2 and 3",
+        "note": "Verified against its defining equations, including the "
+                "exact Masing-loop identity, not yet against an "
+                "independent golden dataset.",
+    },
     "swt": {
         "method": "Smith-Watson-Topper damage parameter and life relation",
         "citation": "Smith, Watson, and Topper, Journal of Materials 5 "
