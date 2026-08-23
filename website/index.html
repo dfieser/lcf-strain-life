@@ -60,7 +60,7 @@
 
 <header class="nav">
   <div class="container nav__inner">
-    <a class="brand" href="index.html">lcf<span class="dot">·</span>strain-life</a>
+    <a class="brand" href="index.html"><svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="5" fill="#0C8A8C"/><path d="M7 22 C 8 13, 14 10, 25 10 C 24 19, 18 22, 7 22 Z" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round"/></svg>lcf<span class="dot">·</span>strain-life</a>
     <nav class="nav__links" aria-label="Primary">
       <a class="hide-sm" href="#what">What it does</a>
       <a class="hide-sm" href="#example">Example</a>
@@ -105,7 +105,7 @@
                 <dt>Transition life</dt><dd>~22,000 rev.</dd>
               </dl>
             </span></div>
-            <div class="readout__plot"><img src="assets/img/strain_life.png" alt="Strain-life plot: total, elastic, and plastic strain amplitude against reversals to failure on log-log axes for the SAE 1137 example."></div>
+            <div class="readout__plot"><img src="assets/img/strain_life_hero.png" width="1100" height="720" alt="Strain-life plot for SAE 1137: six measured points on the fitted total strain amplitude curve, with the elastic Basquin and plastic Coffin-Manson branches crossing at the transition life."></div>
           </div>
         </div>
         <p class="caption">Illustration of a typical exchange. The numbers and plot are the real SAE 1137 example from the repository.</p>
@@ -118,7 +118,7 @@
     <div class="container stack" style="gap:1.1rem">
       <div class="chips">
         <a class="chip" href="https://doi.org/10.5281/zenodo.21222820"><b>DOI</b> 10.5281/zenodo.21222820</a>
-        <a class="chip" href="https://pypi.org/project/lcf-strain-life/"><b>PyPI</b> v0.1.1</a>
+        <a class="chip" href="https://pypi.org/project/lcf-strain-life/"><b>PyPI</b> v0.2.0</a>
         <span class="chip"><b>License</b> MIT</span>
         <span class="chip"><b>Python</b> 3.11+</span>
         <a class="chip" href="https://github.com/dfieser/lcf-strain-life/actions"><b>CI</b> tests</a>
@@ -175,8 +175,8 @@
           </div>
         </div>
         <figure class="stack" style="gap:0">
-          <div class="readout__plot" style="border-radius:var(--radius)"><img src="assets/img/sample_hysteresis.png" alt="Stress-strain hysteresis loop reconstructed from a reduced strain-controlled test."></div>
-          <figcaption class="caption caption--center">A hysteresis loop from a reduced test, rendered by the toolkit.</figcaption>
+          <div class="readout__plot" style="border-radius:var(--radius)"><img src="assets/img/hysteresis_loops.png" width="1300" height="840" alt="Stabilized stress-strain hysteresis loops at three strain amplitudes, drawn as Masing branches from the fitted SAE 1137 Ramberg-Osgood constants."></div>
+          <figcaption class="caption caption--center">Stabilized loops at three amplitudes, drawn by the toolkit from the SAE 1137 cyclic fit.</figcaption>
         </figure>
       </div>
     </div>
@@ -184,8 +184,12 @@
 
   <!-- Who -->
   <section class="section--tight" id="who">
-    <div class="container">
+    <div class="container stack" style="gap:1.4rem">
       <p class="lead" style="max-width:60ch"><strong style="color:var(--text)">Material-agnostic by design.</strong> It serves many materials and many fatigue workflows across research and engineering, not one alloy family and not one industry.</p>
+      <div class="callout callout--ok" style="max-width:640px">
+        <span class="callout__label">No assistant? Use the app.</span>
+        <p>The same analysis ships as a local no-code app: upload test files, fit the constants, predict life, export a report. Each release carries a <a href="https://github.com/dfieser/lcf-strain-life/releases">standalone Windows app</a>, currently unsigned, so SmartScreen warns on first run. With Python installed, <code>pip install "lcf-strain-life[gui]"</code> then <code>lcf-gui</code> starts it faster.</p>
+      </div>
     </div>
   </section>
 
@@ -197,7 +201,7 @@
         <h2>Before you start</h2>
       </div>
       <div class="faq">
-        <details><summary>Do I need to know how to code?</summary><p>No. You talk to your AI assistant in plain language, and it calls the analysis for you. A Python library is available for those who want to script it, but it is optional.</p></details>
+        <details><summary>Do I need to know how to code?</summary><p>No. You talk to your AI assistant in plain language, and it calls the analysis for you. A local no-code app covers the same workflow, and a Python library serves anyone who wants to script it. Both are optional.</p></details>
         <details><summary>Which AI assistants work?</summary><p>Any assistant that supports the Model Context Protocol, for example Claude Desktop, Cursor, VS Code in Copilot agent mode, or Google Antigravity. The setup guide shows the one command to run and where to add it. It is not tied to a single product.</p></details>
         <details><summary>Does my data leave my machine?</summary><p>The toolkit installs and runs on your own computer, and all computation happens locally. Your assistant only sees what you choose to share with it in the conversation.</p></details>
         <details><summary>Is it free?</summary><p>Yes. It is open source under the MIT license, and the source is on GitHub.</p></details>
@@ -241,6 +245,7 @@
         <div class="footer__links">
           <a href="https://github.com/dfieser/lcf-strain-life/blob/main/docs/AGENT_USAGE.md">Tool list</a>
           <a href="https://github.com/dfieser/lcf-strain-life/blob/main/docs/PHYSICS_REVIEW.md">Physics review</a>
+          <a href="https://github.com/dfieser/lcf-strain-life/wiki">Wiki</a>
           <a href="https://doi.org/10.5281/zenodo.21222820">DOI &amp; citation</a>
           <a href="https://github.com/dfieser/lcf-strain-life/blob/main/LICENSE">MIT license</a>
         </div>

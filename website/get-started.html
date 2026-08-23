@@ -86,7 +86,7 @@
 
 <header class="nav">
   <div class="container nav__inner">
-    <a class="brand" href="index.html">lcf<span class="dot">·</span>strain-life</a>
+    <a class="brand" href="index.html"><svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="5" fill="#0C8A8C"/><path d="M7 22 C 8 13, 14 10, 25 10 C 24 19, 18 22, 7 22 Z" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round"/></svg>lcf<span class="dot">·</span>strain-life</a>
     <nav class="nav__links" aria-label="Primary">
       <a class="hide-sm" href="index.html#what">What it does</a>
       <a href="docs/">Docs</a>
@@ -244,6 +244,7 @@ tell me the transition life.
         <details><summary>I get a JSON or config error</summary><p>The settings file must be valid JSON. Every entry except the last needs a comma, braces must be balanced, and quotes must be straight quotes, not curly ones. Pasting the whole block from Step 2 into an empty file avoids most of these.</p></details>
         <details><summary>Where is the settings file?</summary><p>In Claude Desktop, the reliable way to open it is Settings &rarr; Developer &rarr; Edit Config, which opens the exact file for your system so you never have to hunt for the path.</p></details>
       </div>
+      <p class="note-line">More fixes are on the <a href="https://github.com/dfieser/lcf-strain-life/wiki/Troubleshooting">wiki troubleshooting page</a>.</p>
     </div>
   </section>
 
@@ -271,8 +272,8 @@ print(fit.transition_reversals)</code></pre></div>
         </div>
       </details>
       <div class="callout callout--ok">
-        <span class="callout__label">Coming soon</span>
-        <p>A one-click installer that adds the toolkit to Claude Desktop without editing any settings file is in testing. It is not published yet, so for now the steps above are the supported way in.</p>
+        <span class="callout__label">No assistant? Use the app.</span>
+        <p>The same analysis also ships as a local no-code app: upload test files, fit the constants, predict life, export a report. Each release carries a <a href="https://github.com/dfieser/lcf-strain-life/releases">standalone Windows app</a>, currently unsigned, so SmartScreen warns on first run. With Python installed, <code>pip install "lcf-strain-life[gui]"</code> then <code>lcf-gui</code> starts it faster.</p>
       </div>
     </div>
   </section>
