@@ -31,7 +31,17 @@ workspace outside the public repository.
 - MCP Registry publishing: `server.json`, the PyPI ownership marker in
   the README, and a release job that lists the server in the official
   registry over GitHub OIDC on the next tag push. A `glama.json`
-  maintainer file for the Glama directory.
+  maintainer file for the Glama directory. The registry steps moved to
+  `.github/workflows/mcp-registry.yml`, which the release calls and which
+  can also be run by hand to refresh the listing without a release. It
+  verifies the ownership marker is present in the target version's PyPI
+  README first, so a failure names the real cause. `server.json` carries
+  the project icon for directories that display one.
+- `llms-install.md`, install instructions written for an AI assistant
+  setting the server up for a user: the uv and pip paths, the VS Code
+  `servers` key difference, the store directory, and a verification call
+  with known expected values. Every command in it was run against a clean
+  install of the published package.
 - A project wiki: getting started, MCP client setup, validation status
   with reproduced benchmark numbers, FAQ, and troubleshooting, alongside
   the refreshed physics review and agent usage mirrors.
