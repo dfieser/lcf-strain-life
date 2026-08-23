@@ -13,18 +13,31 @@ from __future__ import annotations
 import os
 
 from . import labio
+from . import __version__
 from .service import LcfService
 from .store import dumps
 
 try:
     from mcp.server.fastmcp import FastMCP
+    from mcp.types import Icon
 except ModuleNotFoundError as exc:  # pragma: no cover
     raise SystemExit(
         "The MCP SDK is not installed. Install the optional extra:\n"
         '    pip install "lcf-strain-life[mcp]"'
     ) from exc
 
-mcp = FastMCP("lcf-strain-life")
+SITE_URL = "https://dfieser.github.io/lcf-strain-life/"
+ICON_URL = SITE_URL + "assets/img/icon-512.png"
+
+mcp = FastMCP(
+    "lcf-strain-life",
+    website_url=SITE_URL,
+    icons=[Icon(src=ICON_URL, mimeType="image/png", sizes=["512x512"])],
+)
+# FastMCP does not forward a version to the low-level server, and the SDK then
+# reports its own version as the server version. Set it so clients see the
+# lcf-strain-life version they actually installed.
+mcp._mcp_server.version = __version__
 _service = LcfService(os.environ.get("LCF_STORE_DIR", ".lcfstore"))
 
 

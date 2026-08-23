@@ -48,6 +48,16 @@ workspace outside the public repository.
 - AGENTS.md and CLAUDE.md now state the authorship rule: every commit is
   authored by the human maintainer alone, with no AI attribution
   trailers.
+- The MCP server now reports its website and icon during initialization,
+  so clients and directories can show them.
+
+### Fixed
+- The MCP server reported the MCP SDK version as its own version, for
+  example 1.29.0 instead of 0.2.0. FastMCP does not forward a version to
+  the low-level server, and the SDK falls back to its own package
+  version. The server version is now set explicitly and a test asserts it
+  matches `lcf.__version__`. Found by driving the published package over
+  stdio the way a client does.
 
 ## [0.2.0] - 2026-07-23
 

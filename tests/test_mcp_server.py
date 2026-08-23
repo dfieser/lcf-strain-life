@@ -10,6 +10,26 @@ def test_server_imports_and_names():
     assert mcp_server.mcp.name == "lcf-strain-life"
 
 
+def test_initialization_options_report_our_version_not_the_sdk():
+    """The version a client sees must be lcf-strain-life's, not the SDK's.
+
+    FastMCP does not forward a version to the low-level server, and the SDK
+    then falls back to reporting its own package version.
+    """
+    from lcf import __version__, mcp_server
+    opts = mcp_server.mcp._mcp_server.create_initialization_options()
+    assert opts.server_name == "lcf-strain-life"
+    assert opts.server_version == __version__
+
+
+def test_initialization_options_carry_site_and_icon():
+    """Clients and registries can show the project site and its icon."""
+    from lcf import mcp_server
+    opts = mcp_server.mcp._mcp_server.create_initialization_options()
+    assert opts.website_url == mcp_server.SITE_URL
+    assert [i.src for i in (opts.icons or [])] == [mcp_server.ICON_URL]
+
+
 def test_expected_tools_registered():
     from lcf import mcp_server
     tools = asyncio.run(mcp_server.mcp.list_tools())
