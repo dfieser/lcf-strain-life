@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation site
+    url: https://dfieser.github.io/lcf-strain-life/docs/
+    about: Installation, usage, tutorial, statistics guide, and API reference.
+  - name: Wiki, FAQ and troubleshooting
+    url: https://github.com/dfieser/lcf-strain-life/wiki
+    about: Client setup, validation status, FAQ, and troubleshooting.
