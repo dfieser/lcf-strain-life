@@ -8,6 +8,13 @@
     "source": "github"
   },
   "websiteUrl": "https://dfieser.github.io/lcf-strain-life/",
+  "icons": [
+    {
+      "src": "https://dfieser.github.io/lcf-strain-life/assets/img/icon-512.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
   "version": "0.2.0",
   "packages": [
     {

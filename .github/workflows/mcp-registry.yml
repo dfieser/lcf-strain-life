@@ -1,0 +1,101 @@
+name: mcp-registry
+
+# Lists the server in the official MCP Registry, registry.modelcontextprotocol.io.
+# Two ways in:
+#   1. called by publish.yml after a tag release uploads the new PyPI version.
+#   2. run by hand from the Actions tab to refresh the listing metadata, for
+#      example a new icon or description, without cutting a release.
+#
+# Authentication is GitHub OIDC, no stored token. The registry proves package
+# ownership by fetching the version-specific PyPI metadata and looking for the
+# `mcp-name: io.github.dfieser/lcf-strain-life` marker in that version's
+# README. PyPI descriptions are immutable per release, so the marker must be in
+# the README at the time the version is uploaded. A version published before
+# the marker existed can never validate, and needs a newer release instead.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version to list, without the leading v.
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: >-
+          Version to list, without the leading v. Leave blank to use the
+          version already in server.json.
+        required: false
+        type: string
+
+jobs:
+  publish:
+    name: publish to the MCP Registry
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write          # required for OIDC login to the registry
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve the version
+        id: v
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(jq -r '.version' server.json)
+            echo "no version given, using server.json: $VERSION"
+          fi
+          # Callers may pass a tag name, so drop a leading v.
+          VERSION="${VERSION#v}"
+          echo "publishing version $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set the version in server.json
+        run: |
+          VERSION='${{ steps.v.outputs.version }}'
+          jq --arg v "$VERSION" \
+            '.version = $v
+             | .packages[0].version = $v
+             | .packages[0].runtimeArguments[0].value = "lcf-strain-life[mcp]==" + $v' \
+            server.json > server.tmp && mv server.tmp server.json
+          cat server.json
+
+      - name: Wait until PyPI serves the version
+        run: |
+          VERSION='${{ steps.v.outputs.version }}'
+          for i in $(seq 1 20); do
+            if curl -fsSL "https://pypi.org/pypi/lcf-strain-life/json" \
+              | jq -e --arg v "$VERSION" '.releases[$v]' > /dev/null; then
+              echo "PyPI serves $VERSION"; exit 0
+            fi
+            echo "not yet, retry $i"; sleep 30
+          done
+          echo "PyPI never served $VERSION"; exit 1
+
+      - name: Check the ownership marker is in that version's PyPI README
+        # Fails early with a clear reason instead of letting the publish step
+        # report a generic validation error.
+        run: |
+          VERSION='${{ steps.v.outputs.version }}'
+          NAME=$(jq -r '.name' server.json)
+          if curl -fsSL "https://pypi.org/pypi/lcf-strain-life/$VERSION/json" \
+            | jq -r '.info.description' | grep -q "mcp-name: $NAME"; then
+            echo "marker present for $VERSION"
+          else
+            echo "The PyPI README for $VERSION does not contain 'mcp-name: $NAME'."
+            echo "PyPI descriptions are immutable, so this version can never validate."
+            echo "Release a newer version whose README carries the marker."
+            exit 1
+          fi
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to the MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to the MCP Registry
+        run: ./mcp-publisher publish
