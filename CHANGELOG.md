@@ -62,6 +62,13 @@ workspace outside the public repository.
   so clients and directories can show them.
 
 ### Fixed
+- The primary button on the landing page failed the WCAG AA contrast
+  floor in the light theme. White text on the teal accent `#0C8A8C`
+  measured 4.18:1, short of the 4.5:1 required at 16 px and weight 600.
+  The light-theme accent is now `#0B807F`, which measures 4.76:1. The
+  dark theme already passed at 7.86:1 and is unchanged. The accent is
+  only used behind text in the primary button and the skip link, so the
+  rest of the palette keeps the same teal.
 - The MCP server reported the MCP SDK version as its own version, for
   example 1.29.0 instead of 0.2.0. FastMCP does not forward a version to
   the low-level server, and the SDK falls back to its own package

@@ -11,7 +11,7 @@
   --text-muted:  #52616D;
   --border:      #D7DEE4;
   --border-strong: #C2CCD4;
-  --accent:      #0C8A8C;   /* teal, for filled controls */
+  --accent:      #0B807F;   /* teal, for filled controls. AA 4.76:1 with white */
   --accent-ink:  #096F71;   /* darker teal, AA for text links on light */
   --accent-soft: #E1F0F0;   /* teal wash for surfaces */
   --on-accent:   #FFFFFF;
@@ -59,7 +59,7 @@
 :root[data-theme="light"] {
   --bg:#F5F7F9; --surface:#FFFFFF; --surface-2:#EDF1F4; --text:#14181D;
   --text-muted:#52616D; --border:#D7DEE4; --border-strong:#C2CCD4;
-  --accent:#0C8A8C; --accent-ink:#096F71; --accent-soft:#E1F0F0; --on-accent:#FFFFFF;
+  --accent:#0B807F; --accent-ink:#096F71; --accent-soft:#E1F0F0; --on-accent:#FFFFFF;
   --caution:#8A5510; --caution-soft:#F6ECDC;
   --hero-grid: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='28'%20height='28'%3E%3Cpath%20d='M28%200H0V28'%20fill='none'%20stroke='%23d3dae0'%20stroke-width='1'/%3E%3C/svg%3E");
 }
