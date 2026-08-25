@@ -84,18 +84,17 @@
     <div class="container hero__grid">
       <div class="hero__copy">
         <span class="eyebrow">Open fatigue toolkit · MCP server</span>
-        <h1>Run a full fatigue analysis by describing what you want.</h1>
-        <p class="lead">lcf-strain-life connects to any AI assistant that supports the Model Context Protocol and turns your own strain-controlled test data into standardized results, fitted models, life predictions, and plots. No coding required.</p>
+        <h1>Run a full fatigue analysis by describing it.</h1>
+        <p class="lead">Any MCP-compatible AI assistant turns your strain-controlled test data into fitted models, life predictions, and plots. No code required.</p>
         <div class="btn-row">
           <a class="btn btn-primary" href="get-started.html">Set it up in 5 minutes</a>
           <a class="btn btn-ghost" href="https://github.com/dfieser/lcf-strain-life">View on GitHub</a>
         </div>
-        <p class="hero__note">Python 3.11+ · MIT license · works with the lab exports you already have</p>
       </div>
 
       <div class="hero__visual">
         <div class="readout" role="img" aria-label="Illustration of an assistant fitting strain-life constants for the SAE 1137 example and returning a plot.">
-          <div class="readout__bar"><span class="lamp on"></span><span class="lamp"></span><span class="lamp"></span><span class="title">assistant · lcf tools</span></div>
+          <div class="readout__bar"><span class="title">Example exchange</span></div>
           <div class="readout__body">
             <div class="msg user"><span class="who">You</span><span class="bubble">Fit the strain-life constants for this SAE 1137 series and give me the transition life.</span></div>
             <div class="msg bot"><span class="who">Assistant</span><span class="bubble">
@@ -134,7 +133,6 @@
   <section class="section" id="why">
     <div class="container">
       <div class="section-intro">
-        <span class="eyebrow">Why it exists</span>
         <h2>The analysis is standard. Getting there is the slow part.</h2>
       </div>
       <p>Plenty of fatigue software exists. What did not exist is a toolkit an AI assistant can drive from start to finish. You have the test data. Turning it into standardized, reproducible results is the manual, error-prone part, often locked inside one-off scripts and spreadsheets. lcf-strain-life lets you describe the analysis in plain language and get results you can reproduce, with the published source cited for every method it uses.</p>
@@ -148,15 +146,30 @@
         <span class="eyebrow">What it does</span>
         <h2>From raw signal to life prediction, all reachable in plain language.</h2>
       </div>
-      <div class="grid-cards">
-        <div class="card"><span class="card__tag">Reduce</span><h3>Read your test data</h3><p>Turn a raw strain, force, and time signal into per-cycle metrics and a half-life summary. Reads the delimited exports labs actually produce, including MTS and Instron style files.</p></div>
-        <div class="card"><span class="card__tag">Fit</span><h3>Fit the standard models</h3><p>Coffin-Manson, Basquin, and Ramberg-Osgood, with the transition life and a Masing consistency check on the fit.</p></div>
-        <div class="card"><span class="card__tag">Predict</span><h3>Predict life</h3><p>Cycles to failure for a given strain amplitude, with Morrow, SWT, or Walker mean-stress corrections.</p></div>
-        <div class="card"><span class="card__tag">Count</span><h3>Variable amplitude</h3><p>Rainflow, level-crossing, and peak counting to ASTM E1049, plus spectrum life and a local-strain engine with material memory.</p></div>
-        <div class="card"><span class="card__tag">Estimate</span><h3>No fatigue data yet?</h3><p>Five published methods estimate the strain-life constants from monotonic properties or hardness. These are screening estimates, and they are labeled as such.</p></div>
-        <div class="card"><span class="card__tag">Design</span><h3>Statistics and design curves</h3><p>Design curves with reliability and confidence, outlier screening, Dixon-Mood staircase, and A- and B-basis values.</p></div>
-        <div class="card"><span class="card__tag">Notch</span><h3>Notch and multiaxial</h3><p>Neuber and Glinka local strain, and a critical-plane search with Fatemi-Socie, Brown-Miller, and SWT parameters.</p></div>
-        <div class="card"><span class="card__tag">Hot</span><h3>High temperature</h3><p>Frequency-modified Coffin-Manson and time-fraction creep-fatigue with a D-diagram check.</p></div>
+      <div class="clusters">
+        <div class="cluster">
+          <h3 class="cluster__name">The core workflow</h3>
+          <div class="grid-cards">
+            <div class="card"><h4>Read your test data</h4><p>Turn a raw strain, force, and time signal into per-cycle metrics and a half-life summary. Reads the delimited exports labs actually produce, including MTS and Instron style files.</p></div>
+            <div class="card"><h4>Fit the standard models</h4><p>Coffin-Manson, Basquin, and Ramberg-Osgood, with the transition life and a Masing consistency check on the fit.</p></div>
+            <div class="card"><h4>Predict life</h4><p>Cycles to failure for a given strain amplitude, with Morrow, SWT, or Walker mean-stress corrections.</p></div>
+          </div>
+        </div>
+        <div class="cluster">
+          <h3 class="cluster__name">Beyond constant amplitude</h3>
+          <div class="grid-cards">
+            <div class="card"><h4>Variable amplitude</h4><p>Rainflow, level-crossing, and peak counting to ASTM E1049, plus spectrum life and a local-strain engine with material memory.</p></div>
+            <div class="card"><h4>Notch and multiaxial</h4><p>Neuber and Glinka local strain, and a critical-plane search with Fatemi-Socie, Brown-Miller, and SWT parameters.</p></div>
+            <div class="card"><h4>High temperature</h4><p>Frequency-modified Coffin-Manson and time-fraction creep-fatigue with a D-diagram check.</p></div>
+          </div>
+        </div>
+        <div class="cluster">
+          <h3 class="cluster__name">From data to design values</h3>
+          <div class="grid-cards">
+            <div class="card"><h4>No fatigue data yet?</h4><p>Five published methods estimate the strain-life constants from monotonic properties or hardness. These are screening estimates, and they are labeled as such.</p></div>
+            <div class="card"><h4>Statistics and design curves</h4><p>Design curves with reliability and confidence, outlier screening, Dixon-Mood staircase, and A- and B-basis values.</p></div>
+          </div>
+        </div>
       </div>
       <p class="note-line">Every method cites its published source. All analysis uses true stress and true strain. Results are saved and can be recalled later without recomputing. <a href="https://github.com/dfieser/lcf-strain-life/blob/main/docs/AGENT_USAGE.md">See the full tool list &rarr;</a></p>
     </div>
@@ -166,7 +179,6 @@
   <section class="section" id="example">
     <div class="container">
       <div class="section-intro">
-        <span class="eyebrow">One example, start to finish</span>
         <h2>Ask for a fit. Get constants, a life estimate, and a plot.</h2>
       </div>
       <div class="example">
@@ -216,7 +228,6 @@
   <!-- CTA -->
   <section class="section">
     <div class="container cta-band">
-      <span class="eyebrow">Ready when you are</span>
       <h2>Try it on your own fatigue data.</h2>
       <p class="lead">A one-time setup of about five minutes, then it is there every time you open your assistant.</p>
       <div class="btn-row">

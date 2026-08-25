@@ -60,6 +60,22 @@ workspace outside the public repository.
   trailers.
 - The MCP server now reports its website and icon during initialization,
   so clients and directories can show them.
+- The landing page was audited against the site design rules and the
+  patterns that make a page read as machine-generated. Six section
+  eyebrows are down to three. The eight capability cards are grouped
+  into three named clusters instead of one wall of identical tiles, so
+  the per-card uppercase tags are gone. The hero lost the imitation
+  application window chrome around the example exchange, its three
+  decorative status dots, the tagline under the buttons, and twelve
+  words of subtext. Every capability description is preserved word for
+  word.
+- The landing page headline set on four lines and pushed the primary
+  button below the fold at 1280 by 720. The cause was a `15ch` cap on
+  the hero heading. Because `ch` scales with the font size, the headline
+  wrapped to four lines at every size from 30 px to 59 px, so changing
+  the type scale alone could never have fixed it. The cap is now `26ch`
+  with a smaller heading clamp, and the headline is two words shorter.
+  The headline sets on two lines and the button sits above the fold.
 
 ### Fixed
 - The primary button on the landing page failed the WCAG AA contrast
